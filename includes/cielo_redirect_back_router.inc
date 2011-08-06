@@ -10,7 +10,8 @@
  * ...
  */
 function cielo_redirect_back($order) {
-   
+ dprint_r($order);
+ 
   global $user;
 
   if (!in_array('authenticated user', $user->roles)) {

@@ -366,14 +366,42 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   if($payment_method['settings']['collect_card_details']){
     //the merchant is in charge of collecting the credit card details
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-    $form = commerce_payment_credit_card_form(array('code' => '', 'owner' => '',));
+    
+    //possible values for type are 1 == Credit Card or A == Debit Card
+    $type = 1;
+    if(isset($pane_values['payment_details']['credit_card']['type'])){
+      $type = $pane_values['payment_details']['credit_card']['type'];
+    }
+    
+    //default flag
+    $flag = 'mastercard';
+    
+    if(isset($pane_values['payment_details']['credit_card']['flag'])){
+      $flag = $pane_values['payment_details']['credit_card']['flag'];
+    }
+    
+    if($type == 1){
+      //CVC field shows up on the form
+      $form = commerce_payment_credit_card_form(array('code' => '',));
+      
+      //attach a wrapper div to it
+      $form['credit_card']['code']['#prefix'] = '<div id="credit-card_code_wrapper">';
+      $form['credit_card']['code']['#suffix'] = '</div>';
+      
+    }else{
+      //cvc doesn't show up when Debit Card option is/was selected
+      $form = commerce_payment_credit_card_form();
+    }
     
     $form['credit_card']['flag'] = array(
       '#type' => 'select',
       '#title' => t('Card Flag'),
       '#options' => array('mastercard' => t('Mastercard'), 'visa' => t('Visa'), 'elo' => t('Elo'),),
       '#weight'  => -3,
-      '#default_value' => 'mastercard',
+      '#ajax'    => array('callback' => 'credit_card_flag_ajax_callback',
+                          'wrapper'  => 'credit-card_installments_wrapper',
+                         ),
+      '#default_value' => $flag,
     );
   
     $form['credit_card']['type'] = array(
@@ -382,9 +410,8 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       '#options' => array(1 => t('Credit'), 'A' => t('Debit')),
       '#weight'  => -2,
       '#ajax'    => array('callback' => 'credit_card_type_ajax_callback',
-                          //'wrapper' => 'credit-card_code_wrapper',
                          ),
-      '#default_value' => 1,
+      '#default_value' => $type,
     );
     //make it hidden and set value to 1
     $form['credit_card']['installments'] = array(
@@ -397,42 +424,22 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       '#suffix' => '</div>',
     );
     
-    //defaults
-    $type = 1;
-    $flag = 'mastercard';
-    
-    if(isset($pane_values['payment_details']['credit_card']['type'])){
-      $type = $pane_values['payment_details']['credit_card']['type'];
-    }
-    
-    if(isset($pane_values['payment_details']['credit_card']['flag'])){
-      $flag = $pane_values['payment_details']['credit_card']['flag'];
-    }
-    
+    //construct a list of options for installment field
     if($order->commerce_order_total['und'][0]['currency_code'] == 'BRL' && $type == 1){
-      //show the installment option only for purchase orders made in Brazilian Real
+      //the installment field only shows up for purchase orders made in Brazilian Real
       
       $maxInstallments = $payment_method['settings']['installments'][$flag.'_max'];
       
-      for($i=1; $i<=$maxInstallments; $i++){
-        if($i == 1){
-          $options[$i] = t('Single pay out');
-        }else{
-          
-          /**
-           * TODO: Create a hook of something or perhaps add some fine-grained settings that allows
-           *       interest rates to be applied on pre-set conditions.
-           */
-          
-          $InstallmentAmount = number_format(($order->commerce_order_total['und'][0]['amount'] / 100) / $i, 2, ',', '.');
-          $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $InstallmentAmount));
-        }
-      }
+      $poTotal = $order->commerce_order_total['und'][0]['amount'];
+      
+      $options = generateInstallmentOptions($poTotal, $maxInstallments);
+  
+
       $form['credit_card']['installments'] = array(
         '#type' => 'select',
         '#title' => t('Number of installments'),
         '#options' => $options,
-        '#weight'  => 0,
+        '#weight'  => -1,
         '#default_value' => 1,
         '#prefix' => '<div id="credit-card_installments_wrapper">',
         '#suffix' => '</div>',
@@ -448,6 +455,12 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       '#prefix' => '<div id="credit-card_code_wrapper">',
       '#suffix' => '</div>',
     );
+
+    
+    if($type == 'A'){
+      $form['credit_card']['code']['#type']     = 'hidden';
+      $form['credit_card']['code']['#required'] = FALSE;
+    }
   }else{
     //user gets redirected to Cielo for card handling
     $form = array();
@@ -459,8 +472,65 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   return $form;
 }
 
+
 /**
- * AJAX callback for collect_card_details.
+ * AJAX callback for calculating the max number of installments for the installment field.
+ */
+function credit_card_flag_ajax_callback($form, $form_state) {
+  
+  $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
+  $type     = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
+  
+  if($currency == 'BRL' && $type == 1){
+    
+    $flag            = $form_state['values']['commerce_payment']['payment_details']['credit_card']['flag'];
+    $maxInstallments = $form_state['order']->payment_methods['cielo|commerce_payment_cielo']['settings']['installments'][$flag.'_max'];
+    $poTotal         = $form_state['order']->commerce_order_total['und'][0]['amount'];
+    
+    $options = generateInstallmentOptions($poTotal, $maxInstallments);
+
+    $form['credit_card']['installments'] = array(
+      '#type' => 'select',
+      '#title' => t('Number of installments'),
+      '#options' => $options,
+      '#weight'  => -1,
+      '#default_value' => 1,
+      '#prefix' => '<div id="credit-card_installments_wrapper">',
+      '#suffix' => '</div>',
+    );
+    
+    return $form['credit_card']['installments'];
+    
+  }
+  
+}
+
+/**
+ * Helper function for gerenating a list of options for Installment field
+ * 
+ */
+function generateInstallmentOptions($poTotal, $maxInstallments){
+
+  for($i=1; $i<=$maxInstallments; $i++){
+    if($i == 1){
+      $options[$i] = t('Single pay out');
+    }else{
+      
+      /**
+       * TODO: Create a hook of something or perhaps add some fine-grained settings that allows
+       *       interest rates to be applied on pre-set conditions.
+       */
+      
+      $InstallmentAmount = number_format(($poTotal / 100) / $i, 2, ',', '.');
+      $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $InstallmentAmount));
+    }
+  }
+  
+  return $options;
+}
+
+/**
+ * AJAX callback for CVC and Installment fields.
  */
 function credit_card_type_ajax_callback($form, $form_state) {
 /*$File = "/home/francisco/Desktop/cielo.txt"; 
@@ -473,9 +543,10 @@ $fp=fopen($File,'w');
 fputs($fp,$var); 
 fclose($fp);*/
 
-  //create an empty markup
+  /** we need to send empty values to the BrazilCards library, so that is the why
+      these fields are being hidden instead of removed */
   $form['credit_card']['code'] = array(
-    '#type' => 'markup',
+    '#type' => 'hidden',
     '#prefix' => '<div id="credit-card_code_wrapper">',
     '#suffix' => '</div>',
   );
@@ -490,7 +561,7 @@ fclose($fp);*/
   $type     = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
   if($type == 1){
-      //reconstruct markup
+      //reconstruct cvc field
       $form['credit_card']['code'] = array(
         '#type'        => 'textfield',
         '#title'       => t('Security Code'),
@@ -514,11 +585,11 @@ fclose($fp);*/
       }
   }
 
-    return array('#type'     => 'ajax',
-                 '#commands' => array(ajax_command_replace("#credit-card_code_wrapper", render($form['credit_card']['code'])),
-                                      ajax_command_replace("#credit-card_installments_wrapper", render($form['credit_card']['installments'])),
-                                     ),
-                );
+  return array('#type'     => 'ajax',
+               '#commands' => array(ajax_command_replace("#credit-card_code_wrapper", render($form['credit_card']['code'])),
+                                    ajax_command_replace("#credit-card_installments_wrapper", render($form['credit_card']['installments'])),
+                                   ),
+              );
 }
 
 
@@ -533,12 +604,22 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
     $settings = array(
       'form_parents' => array_merge($form_parents, array('credit_card')),
     );
-    
+
+/*$File = "/home/francisco/Desktop/cielo.txt"; 
+ 
+ob_start(); 
+echo 'test';
+dprint_r($pane_values['credit_card']); 
+$var = ob_get_contents(); 
+ob_end_clean(); 
+$fp=fopen($File,'w'); 
+fputs($fp,$var); 
+fclose($fp);*/
+
     //check if this is a debit card
     if($pane_values['credit_card']['type'] == 'A'){
+      //remove cvc from being validated
       unset($pane_values['credit_card']['code']);
-
-      
     }
   
     if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
@@ -594,19 +675,83 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
                                   );
   }
 
+  //get the ISO 4217 info about all the enabled currencies
+  $currencies = commerce_currencies(TRUE);
+  //get current order currency code formatted as 3 letters. ie. USD
+  $currencyLetterCode = $order->commerce_order_total['und'][0]['currency_code'];
+  
+  //get the currency code formatted as 3 digits number. ie. 840 for USD
+  foreach($currencies as $treeLetterCode => $value){
+    if($treeLetterCode == $charge['currency_code']){
+      $currencyNumericCode = $value['numeric_code'];
+      break;
+    }
+  }
+  
   /** INSTANTIATE A NEW PAYMENT OBJECT **/
-  //$Cielo = new Cielo($arguments);
+  $Cielo = new Cielo($arguments);
+
+  //set currency code
+  $Cielo->setCurrency($currencyNumericCode);
+
+  //set the url for returning from Cielo
+  $url = url('checkout/'.$order->order_number.'/payment/cielo', array('absolute' => TRUE));
+  $Cielo->setReturnUrl($url);
+
+  //REQUEST AUTHORIZATION
+  $Cielo->authorize();
+  
+  $remote_id = '';
+  if(isset($Cielo->response['tid'])){
+    $remote_id = $Cielo->response['tid'];
+  }
+  
+  $status = '';
+  if(isset($Cielo->response['status'])){
+  /**
+   * Status code descriptions are
+   * 
+   * 0 => 'Transaction was created'
+   * 1 => 'In progress'
+   * 2 => 'Authenticated'
+   * 3 => 'Not Authenticated'
+   * 4 => 'Authorized or still to be Captured'
+   * 5 => 'Not Authorized'
+   * 6 => 'Captured'
+   * 8 => 'Not Captured'
+   * 9 => 'Voided (Cancelada)'
+   * 10 => 'Being Authenticated'
+   */
+  $status = $Cielo->response['status'];
+  }elseif(isset($Cielo->response['codigo'])){
+    //the remote server reported an error 
+    $status = $Cielo->response['codigo'];
+  }
+  
+  // Prepare a transaction object to log the API response.
+  $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
+  $transaction->instance_id           = $payment_method['instance_id'];
+  $transaction->remote_id             = $remote_id;
+  $transaction->amount                = $charge['amount'];
+  $transaction->currency_code         = $charge['currency_code'];
+  $transaction->payload[REQUEST_TIME] = $Cielo->response;
+   // Store the type of transaction in the remote status.
+  $transaction->remote_status         = $status;
+  
+  
+  // Save the transaction information.
+  commerce_payment_transaction_save($transaction);
   
 $File = "/home/francisco/Desktop/cielo.txt"; 
  
 ob_start(); 
-  dprint_r($arguments);
+  dprint_r($transaction);
 $var = ob_get_contents(); 
 ob_end_clean(); 
 $fp=fopen($File,'w'); 
 fputs($fp,$var); 
 fclose($fp);
-    
+   
 
     //dev
   return FALSE;
@@ -619,18 +764,7 @@ fclose($fp);
  * /
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
 
-  // Build a name-value pair array for this transaction.
-  $nvp = array(
-    'x_type' => commerce_CIELO_txn_type($payment_method['settings']['txn_type']),
-    'x_method' => 'CC',
-    'x_amount' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'x_card_num' => $pane_values['credit_card']['number'],
-    'x_exp_date' => $pane_values['credit_card']['exp_month'] . $pane_values['credit_card']['exp_year'],
-  );
 
-  if (isset($pane_values['credit_card']['code'])) {
-    $nvp['x_card_code'] = $pane_values['credit_card']['code'];
-  }
 
 
   // Add additional transaction invormation to the request array.
