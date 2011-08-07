@@ -7,32 +7,28 @@
 
 
 /**
- * ...
+ * Menu callback Function for checkout/%commerce_order/payment/cielo
  */
 function cielo_redirect_back($order) {
- dprint_r($order);
- 
   global $user;
 
   if (!in_array('authenticated user', $user->roles)) {
-    
-    
     drupal_set_message('Please, login to conclude your checkout payment process.', 'warning');
     
-    //send user to the login form
+    //send the user to the login form page and fill the url query value of destination with the current url path
     $destination = drupal_get_destination();
     drupal_goto('user', array('query' => array('destination' => $destination['destination'])));
   }
-  //making sure the po belongs to the logged in user
+  //making sure the PO belongs to the current logged in user
   if($user->uid == $order->uid){
     
 
-    return 'testsomething';  
+   
+   
+   
   }else{
-    //
-    drupal_set_message(t('Sorry, the order #%po does not belong to you.', array('%po' => $order->order_number)), 'error');
+    //interropts the flow and sends the browser to the home page
+    drupal_set_message(t('Sorry, but apparently the order #%po does not belong to you. Please contact the store administrator.', array('%po' => $order->order_number)), 'error');
     drupal_goto();
   }
-
-  
 }

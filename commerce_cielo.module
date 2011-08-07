@@ -102,6 +102,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     'credentials'          => array('affiliation' => '', //filiacao
                                     'token'       => '', //chave
                                    ),
+    'language'             => 'EN', 
     'authorization_type'   => 2, //Default == 2. Possible values are 0 == authentication only, 1 == authorize only if authenticaded, 2 == authorize either authenticated or not, 3 == skip authentication and go straight to authorization
     'collect_card_details' => 1,
     'authenticate'         => 1,
@@ -117,10 +118,9 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type'        => 'radios',
     '#title'       => t('Live / Sandbox'),
     '#description' => t('Define either if this is a Sandbox enviroment for testing out the webservice or a Live Production Webservice.'),
-    '#options'     => array(
-      0            => t('Live Webservice - Real Transactions'),
-      1            => t('Cielo Sandbox - Test enviroment'),
-    ),
+    '#options'     => array(0 => t('Live Webservice - Real Transactions'),
+                            1 => t('Cielo Sandbox - Test enviroment'),
+                            ),
     '#ajax'    => array('callback' => 'credentials_ajax_callback',
                         'wrapper' => 'credentials_wrapper',
                        ),
@@ -158,11 +158,23 @@ function commerce_cielo_settings_form($settings = NULL) {
       '#required'      => TRUE,
     );
   }
+  
+  $form['language'] = array(
+    '#type'        => 'select',
+    '#title'       => t('Language Interface'),
+    '#description' => t('Set the language in which Cielo will provide its webservice responses as well as its user interface for when a client redirection to Cielo is required.'),
+    '#options'     => array('PT' => t('Portuguese'),
+                            'EN' => t('English'),
+                            'ES' => t('Spanish'),
+                           ),
+    '#default_value' => $settings['language'],
+  );
+  
   $form['auto_capture'] = array(
     '#type'        => 'radios',
     '#title'       => t('Auto Capture'),
     '#description' => t('Define whether or not to automatically capture the order total amount up on authorization granting.'),
-    '#options'     => array(0 => t('Nope, just request authorization and get the tid. (requires manual or automated capture after checkout).'),
+    '#options'     => array(0 => t('Nope, just request authorization. (requires manual or automated capture after checkout).'),
                             1 => t('Yeap! take every penny.'),
                            ),
     '#default_value' => $settings['auto_capture'],
@@ -193,7 +205,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#default_value' => $settings['collect_card_details'],
   );
 
-  // Setting an empty element with a wrapper to be populated.
+  // Setting an empty element with a wrapper for ajax use.
   $form['authenticate'] = array(
     '#type' => 'markup',
     '#prefix' => '<div id="authenticate_wrapper">',
@@ -206,7 +218,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     $form['authenticate']['#description'] = t('Define whether or not the card holder (buyer) will be prompted for card ownership verification.');
     $form['authenticate']['#options']     = array(0 => t('Nope.'),
                                                   1 => t('Yes.'),
-                                                );
+                                                 );
     $form['authenticate']['#default_value'] = $settings['authenticate'];
  }
 
@@ -251,18 +263,6 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#default_value' => $settings['installments']['elo_max'],
   );
   
- 
-/*
-$File = "/home/francisco/Desktop/cielo.txt"; 
- 
-ob_start(); 
-print_r($settings); 
-$var = ob_get_contents(); 
-ob_end_clean(); 
-$fp=fopen($File,'w'); 
-fputs($fp,$var); 
-fclose($fp); */
- 
   return $form;
 }
 
@@ -291,7 +291,6 @@ function collect_card_details_ajax_callback($form, $form_state) {
         '#prefix' => '<div id="authenticate_wrapper">',
         '#suffix' => '</div>',
       );
-  
   }
 
   return $form['authenticate'];
@@ -384,7 +383,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       //CVC field shows up on the form
       $form = commerce_payment_credit_card_form(array('code' => '',));
       
-      //attach a wrapper div to it
+      //attach a wrapper div to cvc field
       $form['credit_card']['code']['#prefix'] = '<div id="credit-card_code_wrapper">';
       $form['credit_card']['code']['#suffix'] = '</div>';
       
@@ -417,7 +416,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     $form['credit_card']['installments'] = array(
       '#type'    => 'hidden',
       '#title'   => t('Number of installments'),
-      '#value'   => 1,
       '#weight'  => 0,
       '#default_value' => 1,
       '#prefix' => '<div id="credit-card_installments_wrapper">',
@@ -434,7 +432,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       
       $options = generateInstallmentOptions($poTotal, $maxInstallments);
   
-
       $form['credit_card']['installments'] = array(
         '#type' => 'select',
         '#title' => t('Number of installments'),
@@ -443,7 +440,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
         '#default_value' => 1,
         '#prefix' => '<div id="credit-card_installments_wrapper">',
         '#suffix' => '</div>',
-
       );
     }
     
@@ -468,6 +464,8 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   }
   //$teste = commerce_order_status_update($order, 'pending', TRUE);
   //commerce_order_save($teste);
+  
+  //commerce_payment_transaction_load($transaction_id) {
     
   return $form;
 }
@@ -500,9 +498,7 @@ function credit_card_flag_ajax_callback($form, $form_state) {
     );
     
     return $form['credit_card']['installments'];
-    
   }
-  
 }
 
 /**
@@ -510,22 +506,18 @@ function credit_card_flag_ajax_callback($form, $form_state) {
  * 
  */
 function generateInstallmentOptions($poTotal, $maxInstallments){
-
   for($i=1; $i<=$maxInstallments; $i++){
     if($i == 1){
       $options[$i] = t('Single pay out');
     }else{
-      
       /**
        * TODO: Create a hook of something or perhaps add some fine-grained settings that allows
        *       interest rates to be applied on pre-set conditions.
        */
-      
       $InstallmentAmount = number_format(($poTotal / 100) / $i, 2, ',', '.');
       $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $InstallmentAmount));
     }
   }
-  
   return $options;
 }
 
@@ -533,16 +525,6 @@ function generateInstallmentOptions($poTotal, $maxInstallments){
  * AJAX callback for CVC and Installment fields.
  */
 function credit_card_type_ajax_callback($form, $form_state) {
-/*$File = "/home/francisco/Desktop/cielo.txt"; 
- 
-ob_start(); 
-print_r($form_state['order']->commerce_order_total['und'][0]['currency_code']); 
-$var = ob_get_contents(); 
-ob_end_clean(); 
-$fp=fopen($File,'w'); 
-fputs($fp,$var); 
-fclose($fp);*/
-
   /** we need to send empty values to the BrazilCards library, so that is the why
       these fields are being hidden instead of removed */
   $form['credit_card']['code'] = array(
@@ -561,28 +543,28 @@ fclose($fp);*/
   $type     = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
   if($type == 1){
-      //reconstruct cvc field
-      $form['credit_card']['code'] = array(
-        '#type'        => 'textfield',
-        '#title'       => t('Security Code'),
-        '#description' => t('Enter the 3 digits number located at the back of your card.'),
-        '#size'        => 3,
-        '#prefix' => '<div id="credit-card_code_wrapper">',
+    //reconstruct cvc field
+    $form['credit_card']['code'] = array(
+      '#type'        => 'textfield',
+      '#title'       => t('Security Code'),
+      '#description' => t('Enter the 3 digits number located at the back of your card.'),
+      '#size'        => 3,
+      '#prefix' => '<div id="credit-card_code_wrapper">',
+      '#suffix' => '</div>',
+    );
+    
+    if($currency == 'BRL'){
+      //Brazilian Real
+      $form['credit_card']['installments'] = array(
+        '#type' => 'select',
+        '#title' => t('Number of installments'),
+        '#options' => $form['commerce_payment']['payment_details']['credit_card']['installments']['#options'],
+        '#weight'  => 0,
+        '#default_value' => 1,
+        '#prefix' => '<div id="credit-card_installments_wrapper">',
         '#suffix' => '</div>',
       );
-      
-      if($currency == 'BRL'){
-        //Brazilian Real
-        $form['credit_card']['installments'] = array(
-          '#type' => 'select',
-          '#title' => t('Number of installments'),
-          '#options' => $form['commerce_payment']['payment_details']['credit_card']['installments']['#options'],
-          '#weight'  => 0,
-          '#default_value' => 1,
-          '#prefix' => '<div id="credit-card_installments_wrapper">',
-          '#suffix' => '</div>',
-        );
-      }
+    }
   }
 
   return array('#type'     => 'ajax',
@@ -605,20 +587,9 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
       'form_parents' => array_merge($form_parents, array('credit_card')),
     );
 
-/*$File = "/home/francisco/Desktop/cielo.txt"; 
- 
-ob_start(); 
-echo 'test';
-dprint_r($pane_values['credit_card']); 
-$var = ob_get_contents(); 
-ob_end_clean(); 
-$fp=fopen($File,'w'); 
-fputs($fp,$var); 
-fclose($fp);*/
-
     //check if this is a debit card
     if($pane_values['credit_card']['type'] == 'A'){
-      //remove cvc from being validated
+      //remove cvc field from being validated
       unset($pane_values['credit_card']['code']);
     }
   
@@ -678,8 +649,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   //get the ISO 4217 info about all the enabled currencies
   $currencies = commerce_currencies(TRUE);
   //get current order currency code formatted as 3 letters. ie. USD
-  $currencyLetterCode = $order->commerce_order_total['und'][0]['currency_code'];
-  
+   
   //get the currency code formatted as 3 digits number. ie. 840 for USD
   foreach($currencies as $treeLetterCode => $value){
     if($treeLetterCode == $charge['currency_code']){
@@ -693,6 +663,10 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 
   //set currency code
   $Cielo->setCurrency($currencyNumericCode);
+  
+  //set interface language 
+  $language = $payment_method['settings']['language'];
+  $Cielo->setLanguage($language);
 
   //set the url for returning from Cielo
   $url = url('checkout/'.$order->order_number.'/payment/cielo', array('absolute' => TRUE));
@@ -700,47 +674,146 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 
   //REQUEST AUTHORIZATION
   $Cielo->authorize();
+  // Prepare a transaction object to log the API response.
+  $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
+  $transaction->payload[REQUEST_TIME] = $Cielo->response;
   
+  //see list of code descriptions a few lines down below
+  if($payment_method['settings']['authenticate']){
+    //it has been explicit set that card holder must be authenticated
+    $pending = array(0, 1, 2, 4, 10,);
+  }else{
+    //authentication is not required
+    $pending = array(0, 1, 2, 3, 4, 10,);
+  }
+  
+  //this step might not be necessary. I am putting it here just in case something is really out of my sight
+  if($payment_method['settings']['auto_capture'] && !isset($Cielo->response['url-autenticacao']) &&
+    isset($Cielo->response['status'])){
+    
+    if(in_array($Cielo->response['status'], $pending)){
+      //TRY TO CAPTURE
+      $Cielo->capture();
+      //add 1 second ahead to avoid overridding the authorize request values
+      $transaction->payload[REQUEST_TIME+1] = $Cielo->response;
+    }
+  }
+ 
+  //record warnings
+  if(!empty($Cielo->warnings)){
+    watchdog('commerce_cielo', '<pre>'.$Cielo->warnings.'</pre>', array(), WATCHDOG_DEBUG);
+  }
+
   $remote_id = '';
   if(isset($Cielo->response['tid'])){
     $remote_id = $Cielo->response['tid'];
   }
   
-  $status = '';
+  $status  = '';
+  $message = '';
   if(isset($Cielo->response['status'])){
-  /**
-   * Status code descriptions are
-   * 
-   * 0 => 'Transaction was created'
-   * 1 => 'In progress'
-   * 2 => 'Authenticated'
-   * 3 => 'Not Authenticated'
-   * 4 => 'Authorized or still to be Captured'
-   * 5 => 'Not Authorized'
-   * 6 => 'Captured'
-   * 8 => 'Not Captured'
-   * 9 => 'Voided (Cancelada)'
-   * 10 => 'Being Authenticated'
-   */
-  $status = $Cielo->response['status'];
+    //no communication errors have occured
+    $status  = $Cielo->response['status'];
+    $message = t('Status Code: %code', array('%code' => $Cielo->response['status']));
+    
+    foreach($Cielo->response as $process => $values){
+      //record only the processes that have messages attached to them
+      if(key_exists('mensagem', $values)){
+        $message .= t("<br>$process: ".$values['mensagem']);
+      }
+    }
+    
   }elseif(isset($Cielo->response['codigo'])){
     //the remote server reported an error 
-    $status = $Cielo->response['codigo'];
+    $status  = $Cielo->response['codigo'];
+    $message = t('Error Code: %code', array('%code' => $Cielo->response['codigo']));
+    $message .= t("<br>Message: ".$Cielo->response['mensagem']);
   }
   
-  // Prepare a transaction object to log the API response.
-  $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
-  $transaction->instance_id           = $payment_method['instance_id'];
-  $transaction->remote_id             = $remote_id;
-  $transaction->amount                = $charge['amount'];
-  $transaction->currency_code         = $charge['currency_code'];
-  $transaction->payload[REQUEST_TIME] = $Cielo->response;
-   // Store the type of transaction in the remote status.
-  $transaction->remote_status         = $status;
+
+  $transaction->instance_id   = $payment_method['instance_id'];
+  $transaction->remote_id     = $remote_id;
+  $transaction->amount        = $charge['amount'];
+  $transaction->currency_code = $charge['currency_code'];
+  // Store the type of transaction in the remote status.
+  $transaction->remote_status = $status;
+  $transaction->message       = $message;
   
+  /**
+   * Status code descriptions are
+   * //PENDING
+   * 0 == Transaction was created
+   * 1 == In progress
+   * 2 == Authenticated
+   * 3 == Not Authenticated  // if authentication was not requested
+   * 4 == Authorized or still to be Captured
+   * 10 == Being Authenticated
+   *
+   * //SUCCESS
+   * 6 == Captured
+   *
+   * //FAILURE
+   * 3 == Not Authenticated  //if authentication was requested
+   * 5 == Authorization was denied
+   * 8 == Not Captured
+   * 
+   *
+   * //wont happen in this context
+   * 9 == Voided (Cancelada)
+   * 
+   */
   
-  // Save the transaction information.
-  commerce_payment_transaction_save($transaction);
+    //make sure $pending is empty
+    $pending = array();
+    
+    if($payment_method['settings']['authenticate']){
+      //it has been explicit set that card holder must be authenticated
+      $pending = array(0, 1, 2, 4, 10,);
+      $failure = array(3, 5, 8,);
+    }else{
+      //even if authentication fails, it still might be possible to get an authorization and thereafter a capturing
+      $pending = array(0, 1, 2, 3, 4, 10,);
+      $failure = array(5, 8,);
+    }
+  
+    $status_code = array('PENDING' => $pending,
+                         'SUCCESS' => array(6),
+                         'FAILURE' => $failure
+                        );
+    
+    //set default value for when $status might come with an error code instead of a status code
+    $status_state = 'FAILURE';
+    
+    //search for a match
+    foreach($status_code as $state => $codes){
+      if(in_array($status, $codes)){
+        $status_state = $state;
+        break;
+      }
+    }
+    
+    //apply the constant value set by the payment module for the given state
+    switch($status_state){
+      case 'PENDING':
+        $status_state = COMMERCE_PAYMENT_STATUS_PENDING;
+      break;
+      case 'SUCCESS':
+        $status_state = COMMERCE_PAYMENT_STATUS_SUCCESS;
+      break;
+      case 'FAILURE':
+        $status_state = COMMERCE_PAYMENT_STATUS_FAILURE;      
+      break;
+    }
+    
+    $transaction->status = $status_state;
+  
+  // Save the transaction.
+  //commerce_payment_transaction_save($transaction);
+  
+  if(isset($Cielo->response['url-autenticacao'])){
+    //send browser to Cielo
+    drupal_goto($Cielo->response['url-autenticacao']);
+  }
   
 $File = "/home/francisco/Desktop/cielo.txt"; 
  
@@ -845,113 +918,6 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 }
 
 /**
- * Submits an AIM API request to Authorize.Net.
- *
- * @param $payment_method
- *   The payment method instance array associated with this API request.
- * /
-function commerce_cielo_request($payment_method, $nvp = array()) {
-  // Get the API endpoint URL for the method's transaction mode.
-  $url = commerce_CIELO_aim_server_url($payment_method['settings']['txn_mode']);
-
-  // Add the default name-value pairs to the array.
-  $nvp += array(
-    // API credentials
-    'x_login' => $payment_method['settings']['login'],
-    'x_tran_key' => $payment_method['settings']['tran_key'],
-    'x_version' => '3.1',
-
-    // Extra administrative values
-    'x_test_request' => $payment_method['settings']['txn_mode'] == CIELO_TXN_MODE_LIVE_TEST ? 'TRUE' : 'FALSE',
-    'x_delim_data' => 'TRUE',
-    'x_delim_char' => '|',
-    'x_encap_char' => '"',
-    'x_relay_response' => 'FALSE',
-    'x_email_customer' => $payment_method['settings']['email_customer'],
-  );
-
-  // Allow modules to alter parameters of the API request.
-  drupal_alter('commerce_CIELO_aim_request', $nvp);
-
-  // Log the request if specified.
-  if ($payment_method['settings']['log']['request'] == 'request') {
-    // Mask the credit card number and CVV.
-    $log_nvp = $nvp;
-    $log_nvp['x_login'] = str_repeat('X', strlen($log_nvp['x_login']));
-    $log_nvp['x_tran_key'] = str_repeat('X', strlen($log_nvp['x_tran_key']));
-
-    if (!empty($log_nvp['x_card_num'])) {
-      $log_nvp['x_card_num'] = str_repeat('X', strlen($log_nvp['x_card_num']) - 4) . substr($log_nvp['x_card_num'], -4);
-    }
-
-    if (!empty($log_nvp['x_card_code'])) {
-      $log_nvp['x_card_code'] = str_repeat('X', strlen($log_nvp['x_card_code']));
-    }
-
-    watchdog('commerce_authnet', 'Authorize.Net AIM request to @url: !param', array('@url' => $url, '!param' => '<pre>' . check_plain(print_r($log_nvp, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
-  }
-
-  // Prepare the name-value pair array to be sent as a string.
-  $pairs = array();
-
-  foreach ($nvp as $key => $value) {
-    $pairs[] = $key . '=' . urlencode($value);
-  }
-
-  // Setup the cURL request.
-  $ch = curl_init();
-  curl_setopt($ch, CURLOPT_URL, $url);
-  curl_setopt($ch, CURLOPT_VERBOSE, 0);
-  curl_setopt($ch, CURLOPT_POST, 1);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, implode('&', $pairs));
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-  curl_setopt($ch, CURLOPT_NOPROGRESS, 1);
-  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
-  $result = curl_exec($ch);
-
-  // Log any errors to the watchdog.
-  if ($error = curl_error($ch)) {
-    watchdog('commerce_authnet', 'cURL error: @error', array('@error' => $error), WATCHDOG_ERROR);
-    return FALSE;
-  }
-  curl_close($ch);
-
-  // Make the response an array and trim off the encapsulating characters.
-  $response = explode('|', $result);
-
-  for ($i = 0; $i < count($response); $i++) {
-    $response[$i] = substr($response[$i], 1, strlen($response[$i]) - 2);
-  }
-
-  // Log the response if specified.
-  if ($payment_method['settings']['log']['response'] == 'response') {
-    watchdog('commerce_authnet', 'Authorize.Net AIM response: !param', array('!param' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>', WATCHDOG_DEBUG));
-  }
-
-  return $response;
-}
-
-/**
- * Returns the URL to the Authorize.Net server determined by transaction mode.
- *
- * @param $txn_mode
- *   The transaction mode that relates to the live or test server.
- *
- * @return
- *   The URL to use to submit requests to the Authorize.Net server.
- * /
-function commerce_cielo_server_url($txn_mode) {
-  switch ($txn_mode) {
-    case CIELO_TXN_MODE_LIVE:
-    case CIELO_TXN_MODE_LIVE_TEST:
-      return 'https://secure.authorize.net/gateway/transact.dll';
-    case CIELO_TXN_MODE_DEVELOPER:
-      return 'https://test.authorize.net/gateway/transact.dll';
-  }
-}
-
-/**
  * Returns the transaction type string for Authorize.Net that corresponds to the
  *   Drupal Commerce constant.
  *
@@ -997,61 +963,5 @@ function commerce_cielo_reverse_txn_type($txn_type) {
     case 'VOID':
       return t('Void');
   }
-}
-
-/**
- * Returns the message text for an AVS response code.
- * /
-function commerce_cielo_avs_response($code) {
-  switch ($code) {
-    case 'A':
-      return t('Address (Street) matches, ZIP does not');
-    case 'B':
-      return t('Address information not provided for AVS check');
-    case 'E':
-      return t('AVS error');
-    case 'G':
-      return t('Non-U.S. Card Issuing Bank');
-    case 'N':
-      return t('No Match on Address (Street) or ZIP');
-    case 'P':
-      return t('AVS not applicable for this transaction');
-    case 'R':
-      return t('Retry – System unavailable or timed out');
-    case 'S':
-      return t('Service not supported by issuer');
-    case 'U':
-      return t('Address information is unavailable');
-    case 'W':
-      return t('Nine digit ZIP matches, Address (Street) does not');
-    case 'X':
-      return t('Address (Street) and nine digit ZIP match');
-    case 'Y':
-      return t('Address (Street) and five digit ZIP match');
-    case 'Z':
-      return t('Five digit ZIP matches, Address (Street) does not');
-  }
-
-  return '-';
-}
-
-/**
- * Returns the message text for a CVV match.
- * /
-function commerce_cielo_cvv_response($code) {
-  switch ($code) {
-    case 'M':
-      return t('Match');
-    case 'N':
-      return t('No Match');
-    case 'P':
-      return t('Not Processed');
-    case 'S':
-      return t('Should have been present');
-    case 'U':
-      return t('Issuer unable to process request');
-  }
-
-  return '-';
 }
  */
