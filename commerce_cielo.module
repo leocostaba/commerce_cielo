@@ -925,7 +925,7 @@ function commerce_cielo_saveTransaction($Cielo, $transaction, $authenticate, $re
  * @return array $arguments Array of commom arguments
  *
  */
-function commerce_cielo_getArguments($payment_method, $order_number, $order_amount){
+function commerce_cielo_getArguments($payment_method, $order_number, $order_amount) {
   //Include the external class file
   include_once(drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php');
   

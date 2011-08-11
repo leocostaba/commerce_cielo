@@ -34,35 +34,35 @@ function cielo_redirect_back($order) {
          $arguments = commerce_cielo_getArguments($payment_method, $order->order_number, $transaction->amount);
          
          /** INSTANTIATE A NEW PAYMENT OBJECT FROM THE EXTERNAL LIBRARY **/
-         $Cielo = new Cielo($arguments);
+         $cielo = new Cielo($arguments);
 
          //set the tid assigned by Cielo
-         $Cielo->setTid($transaction->remote_id);
+         $cielo->setTid($transaction->remote_id);
          
          if ($payment_method['settings']['is_test']) {
            //make sure we use the same credentials previously used
-           $Cielo->membership['filiacao'] = $_COOKIE['filiacao'];
-           $Cielo->membership['chave']    = $_COOKIE['chave'];
+           $cielo->membership['filiacao'] = $_COOKIE['filiacao'];
+           $cielo->membership['chave']    = $_COOKIE['chave'];
          }
          
          //look up on the transaction created while away at Cielo
-         $Cielo->followUp();
+         $cielo->followUp();
     
          //check for and save any warnings that might have been issued by the external library (Brazilcards)
-         commerce_cielo_logWatchDog($Cielo);
+         commerce_cielo_logWatchDog($cielo);
 
          $message       = '';
-         if (isset($Cielo->response['status'])) {
+         if (isset($cielo->response['status'])) {
            //no transaction errors have occured
-           $status        = $Cielo->response['status'];
+           $status        = $cielo->response['status'];
            $message       = t('Status Code: %code (Follow Up)', array('%code' => $status));
       
-           foreach ($Cielo->response as $process => $values) {
+           foreach ($cielo->response as $process => $values) {
              if (is_array($values)) {
                /** Payment tab message **/
                if (key_exists('mensagem', $values)) {
                  //assemble payment tab message
-                 $message .= '<br>' . t("$process: ") . $values['mensagem'];
+                 $message .= '<br>' . t("$process:") . ' ' . $values['mensagem'];
                }
                
              }
@@ -71,7 +71,7 @@ function cielo_redirect_back($order) {
          
          $authenticate = !isset($payment_method['settings']['authenticate'])?TRUE:$payment_method['settings']['authenticate'];
 
-         if (isset($Cielo->response['status']) && $Cielo->response['status'] == 4 && !$payment_method['settings']['auto_capture']) {
+         if (isset($cielo->response['status']) && $cielo->response['status'] == 4 && !$payment_method['settings']['auto_capture']) {
            //authorization has been granted and capturing will be done later at the store backend
            $remote_status = 'authorization_only';
          }
@@ -88,7 +88,7 @@ function cielo_redirect_back($order) {
          $trans->remote_status         = $remote_status;
          $trans->status                = commerce_cielo_getStatusState($authenticate, $status);
          $trans->message               = $message;
-         $trans->payload[REQUEST_TIME] = $Cielo->response;
+         $trans->payload[REQUEST_TIME] = $cielo->response;
 
          // Save the follow up transaction.
          commerce_payment_transaction_save($trans);
@@ -104,15 +104,15 @@ function cielo_redirect_back($order) {
          
          /** CAPTURING **/
          
-         if (isset($Cielo->response['status']) && $Cielo->response['status'] == 4 && $payment_method['settings']['auto_capture']) {
+         if (isset($cielo->response['status']) && $cielo->response['status'] == 4 && $payment_method['settings']['auto_capture']) {
            //authorization has been granted and auto capture is switched on, so we will try to capture
-           $Cielo->capture();
+           $cielo->capture();
        
            //check for and save any warnings that might have been issued by the external library (Brazilcards)
-           commerce_cielo_logWatchDog($Cielo);
+           commerce_cielo_logWatchDog($cielo);
            
            //save the capturing transaction
-           commerce_cielo_saveTransaction($Cielo, $trans, $authenticate);
+           commerce_cielo_saveTransaction($cielo, $trans, $authenticate);
            
             //Rebuilds the checkout review form if follow up transaction fails
            if ($trans->status == COMMERCE_PAYMENT_STATUS_FAILURE) {

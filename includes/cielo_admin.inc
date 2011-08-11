@@ -90,22 +90,22 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
   
   /** INSTANTIATE A NEW PAYMENT OBJECT FROM THE EXTERNAL LIBRARY **/
-  $Cielo = new Cielo($arguments);
+  $cielo = new Cielo($arguments);
 
   //set the tid assigned by Cielo
-  $Cielo->setTid($transaction->remote_id);
+  $cielo->setTid($transaction->remote_id);
 
-  $Cielo->capturePreAuthorize($amount);
+  $cielo->capturePreAuthorize($amount);
   
   //check for and save any warnings that might have been issued by the external library (Brazilcards)
-  commerce_cielo_logWatchDog($Cielo);
+  commerce_cielo_logWatchDog($cielo);
   
   // Update and save the transaction based on the response.
-  $transaction->payload[REQUEST_TIME] = $Cielo->response;
+  $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_setStatusMessage($Cielo->response);
+  $message = commerce_cielo_setStatusMessage($cielo->response);
 
-  if (isset($Cielo->response['status']) && $Cielo->response['status'] == 6){
+  if (isset($cielo->response['status']) && $cielo->response['status'] == 6) {
     drupal_set_message(t('Prior authorization captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
@@ -164,20 +164,20 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
   
   /** INSTANTIATE A NEW PAYMENT OBJECT FROM THE EXTERNAL LIBRARY **/
-  $Cielo = new Cielo($arguments);
+  $cielo = new Cielo($arguments);
 
   //set the tid assigned by Cielo
-  $Cielo->setTid($transaction->remote_id);
+  $cielo->setTid($transaction->remote_id);
 
-  $Cielo->voidTransaction();
+  $cielo->voidTransaction();
   
   //check for and save any warnings that might have been issued by the external library (Brazilcards)
-  commerce_cielo_logWatchDog($Cielo);
+  commerce_cielo_logWatchDog($cielo);
   
   // Update and save the transaction based on the response.
-  $transaction->payload[REQUEST_TIME] = $Cielo->response;
+  $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_setStatusMessage($Cielo->response);
+  $message = commerce_cielo_setStatusMessage($cielo->response);
   
   
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
@@ -204,7 +204,7 @@ function commerce_cielo_setStatusMessage($reponse) {
         /** Payment tab message **/
         if (key_exists('mensagem', $values)) {
           //assemble payment tab message
-          $message['message'] .= '<br />' . t("$process: ") . $values['mensagem'];
+          $message['message'] .= '<br />' . t("$process:") . ' ' . $values['mensagem'];
         }
         
       }
