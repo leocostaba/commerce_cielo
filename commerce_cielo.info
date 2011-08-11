@@ -1,4 +1,4 @@
-name = Cielo
+name = Commerce Cielo
 description = Implements Cielo's payment web service for use with Drupal Commerce.
 package = Commerce (contrib)
 dependencies[] = commerce
@@ -12,9 +12,5 @@ core = 7.x
 files[] = commerce_cielo.module
 
 ; Includes
-; files[] = includes/commerce_authnet.admin.inc
-
-; Simple tests
-; files[] = tests/commerce_authnet.test
-
-
+files[] = includes/cielo_redirect_back_router.inc
+files[] = includes/cielo_admin.inc
