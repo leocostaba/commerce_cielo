@@ -540,7 +540,7 @@ function credit_card_flag_ajax_callback($form, $form_state) {
 /**
  * Helper function for gerenating a list of options for Installment field
  * 
- * Only for the Brazilian Real currency
+ * Brazilian Real currency Only
  */
 function generateInstallmentOptions($poTotal, $maxInstallments) {
   for ($i=1; $i<=$maxInstallments; $i++) {
@@ -851,7 +851,7 @@ function commerce_cielo_getStatusState($authenticate, $status) {
 /**
  * Saves the payment transaction after each call to the remote Webservice
  *
- * @param object $Cielo         The instantiated object from the external library class
+ * @param object $Cielo         The object from the external library class
  * @param object $transaction   The payment transaction object
  * @param string $remote_status When no value is passed (default == empty) it will be automatically
  *                              determined.
@@ -952,8 +952,6 @@ function commerce_cielo_getArguments($payment_method, $order_number, $order_amou
   return $arguments;
   
 }
-
-
 
 /**
  * Check for warnings that might have been issued by the external library (Brazilcards)
