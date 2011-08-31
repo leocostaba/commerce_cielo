@@ -86,18 +86,18 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount      = $form_state['values']['amount'];
 
-  //prepare the arguments to pass to object instantiantion of the external library class
+  // prepare the arguments to pass to object instantiantion of the external library class.
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
   
-  /** INSTANTIATE A NEW PAYMENT OBJECT FROM THE EXTERNAL LIBRARY **/
+  // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
-  //set the tid assigned by Cielo
+  // set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
 
   $cielo->capturePreAuthorize($amount);
   
-  //check for and save any warnings that might have been issued by the external library (Brazilcards)
+  // check for and save any warnings that might have been issued by the external library (Brazilcards).
   commerce_cielo_logWatchDog($cielo);
   
   // Update and save the transaction based on the response.
@@ -130,7 +130,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
 
 /**
- * Form callback: allows the user to void a captured transaction
+ * Form callback: allows the user to void a captured transaction.
  */
 function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
   $form_state['order']       = $order;
@@ -160,18 +160,18 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   
   
-  //prepare the arguments to pass to object instantiantion of the external library class
+  // prepare the arguments to pass to object instantiantion of the external library class.
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
   
-  /** INSTANTIATE A NEW PAYMENT OBJECT FROM THE EXTERNAL LIBRARY **/
+  // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
-  //set the tid assigned by Cielo
+  // set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
 
   $cielo->voidTransaction();
   
-  //check for and save any warnings that might have been issued by the external library (Brazilcards)
+  // check for and save any warnings that might have been issued by the external library (Brazilcards).
   commerce_cielo_logWatchDog($cielo);
   
   // Update and save the transaction based on the response.
@@ -184,10 +184,12 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function - Generates a user friendly status / error message fetched
- *                   from the remote server
+ * Helper function
+ * Generates a user friendly status / error message fetched
+ * from the remote server.
  *
- * @param array $reponse The webservice response array
+ * @param array $reponse
+ *    The webservice response array.
  */
 function commerce_cielo_setStatusMessage($reponse) {
   $message = array('status'  => '',
@@ -195,15 +197,15 @@ function commerce_cielo_setStatusMessage($reponse) {
                    );
   
   if (isset($reponse['status'])) {
-    //no transaction errors have occured
+    // no transaction errors have occured.
     $message['status']  = $reponse['status'];
     $message['message'] = t('Status Code: %code', array('%code' => $message['status']));
     
     foreach ($reponse as $process => $values) {
       if (is_array($values)) {
-        /** Payment tab message **/
+        // Payment tab message.
         if (key_exists('mensagem', $values)) {
-          //assemble payment tab message
+          // assemble payment tab message.
           $message['message'] .= '<br />' . t("$process:") . ' ' . $values['mensagem'];
         }
         
@@ -212,7 +214,7 @@ function commerce_cielo_setStatusMessage($reponse) {
     
   }
   elseif (isset($reponse['codigo'])) {
-    //the remote server reported an error 
+    // the remote server reported an error.
     $message['status']  = $reponse['codigo'];
     $message['message'] = t('Error Code: %code', array('%code' => $reponse['codigo']));
     $message['message'].= '<br />' . t('Error Message: %message', array('%message' => t($reponse['mensagem'])));
