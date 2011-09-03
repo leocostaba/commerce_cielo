@@ -197,7 +197,7 @@ function commerce_cielo_setStatusMessage($reponse) {
                    );
   
   if (isset($reponse['status'])) {
-    // no transaction errors have occured.
+    // No transaction errors have occured.
     $message['status']  = $reponse['status'];
     $message['message'] = t('Status Code: %code', array('%code' => $message['status']));
     
@@ -205,7 +205,7 @@ function commerce_cielo_setStatusMessage($reponse) {
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
-          // assemble payment tab message.
+          // Assemble payment tab message.
           $message['message'] .= '<br />' . t("$process:") . ' ' . $values['mensagem'];
         }
         
@@ -214,7 +214,7 @@ function commerce_cielo_setStatusMessage($reponse) {
     
   }
   elseif (isset($reponse['codigo'])) {
-    // the remote server reported an error.
+    // The remote server reported an error.
     $message['status']  = $reponse['codigo'];
     $message['message'] = t('Error Code: %code', array('%code' => $reponse['codigo']));
     $message['message'].= '<br />' . t('Error Message: %message', array('%message' => t($reponse['mensagem'])));
