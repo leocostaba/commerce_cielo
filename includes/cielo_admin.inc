@@ -88,7 +88,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   // prepare the arguments to pass to object instantiantion of the external library class.
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
-  
+
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
@@ -96,10 +96,10 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $cielo->setTid($transaction->remote_id);
 
   $cielo->capturePreAuthorize($amount);
-  
+
   // check for and save any warnings that might have been issued by the external library (Brazilcards).
   commerce_cielo_logWatchDog($cielo);
-  
+
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
@@ -119,7 +119,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   else{
     // Display an error message but leave the transaction pending.
     drupal_set_message(t('Prior authorization capture failed, so the transaction will remain in a pending status.'), 'error');
-    drupal_set_message(check_plain($message['message']), 'error');    
+    drupal_set_message(check_plain($message['message']), 'error');
   }
 
   $transaction->message = $message['message'];
@@ -158,11 +158,11 @@ function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
  */
 function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
-  
-  
+
+
   // prepare the arguments to pass to object instantiantion of the external library class.
   $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
-  
+
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
@@ -170,16 +170,16 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $cielo->setTid($transaction->remote_id);
 
   $cielo->voidTransaction();
-  
+
   // check for and save any warnings that might have been issued by the external library (Brazilcards).
   commerce_cielo_logWatchDog($cielo);
-  
+
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
   $message = commerce_cielo_setStatusMessage($cielo->response);
-  
-  
+
+
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
 }
 
@@ -192,15 +192,16 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
  *    The webservice response array.
  */
 function commerce_cielo_setStatusMessage($reponse) {
-  $message = array('status'  => '',
-                   'message' => '',
-                   );
-  
+  $message = array(
+    'status'  => '',
+    'message' => '',
+  );
+
   if (isset($reponse['status'])) {
     // No transaction errors have occured.
     $message['status']  = $reponse['status'];
     $message['message'] = t('Status Code: %code', array('%code' => $message['status']));
-    
+
     foreach ($reponse as $process => $values) {
       if (is_array($values)) {
         // Payment tab message.
@@ -208,18 +209,17 @@ function commerce_cielo_setStatusMessage($reponse) {
           // Assemble payment tab message.
           $message['message'] .= '<br />' . t("$process:") . ' ' . $values['mensagem'];
         }
-        
       }
     }
-    
+
   }
   elseif (isset($reponse['codigo'])) {
     // The remote server reported an error.
-    $message['status']  = $reponse['codigo'];
+    $message['status'] = $reponse['codigo'];
     $message['message'] = t('Error Code: %code', array('%code' => $reponse['codigo']));
-    $message['message'].= '<br />' . t('Error Message: %message', array('%message' => t($reponse['mensagem'])));
+    $message['message'] .= '<br />' . t('Error Message: %message', array('%message' => t($reponse['mensagem'])));
   }
-  
+
   return $message;
-  
+
 }
