@@ -10,161 +10,161 @@
  * 
  * Authentication Only.
  */
-define(COMMERCE_CIELO_AUTHENTICATION_ONLY, 0);
+define('COMMERCE_CIELO_AUTHENTICATION_ONLY', 0);
 
 /**
  * Authentication Type.
  * 
  * Authorize Only If Athenticated.
  */
-define(COMMERCE_CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED, 1);
+define('COMMERCE_CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED', 1);
 
 /**
  * Authentication Type.
  * 
  * Authorize Either Authenticated Or Not.
  */
-define(COMMERCE_CIELO_AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT, 2);
+define('COMMERCE_CIELO_AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT', 2);
 
 /**
  * Authentication Type.
  * 
  * Skip Authentication And Go Straight To Authorization.
  */
-define(COMMERCE_CIELO_SKIP_AUTHENTICATION, 3);
+define('COMMERCE_CIELO_SKIP_AUTHENTICATION', 3);
 
 /**
  * Used for installment payment terms.
  * 
  * A 3rd party (finantial institution) is the credit provider.
  */
-define(COMMERCE_CIELO_CREDITOR_ISSUER, 3);
+define('COMMERCE_CIELO_CREDITOR_ISSUER', 3);
 
 /**
  * Used for installment payment terms.
  * 
  * The merchant is the credit provider.
  */
-define(COMMERCE_CIELO_CREDITOR_MERCHANT, 2);
+define('COMMERCE_CIELO_CREDITOR_MERCHANT', 2);
 
 /**
  * Defines the Cielo's languange interface.
  * 
  * Portuguese.
  */
-define(COMMERCE_CIELO_LANG_PT, 'PT');
+define('COMMERCE_CIELO_LANG_PT', 'PT');
 
 /**
  * Defines the Cielo's languange interface.
  * 
  * Spanish.
  */
-define(COMMERCE_CIELO_LANG_ES, 'ES');
+define('COMMERCE_CIELO_LANG_ES', 'ES');
 
 /**
  * Defines the Cielo's languange interface.
  * 
  * English.
  */
-define(COMMERCE_CIELO_LANG_EN, 'EN');
+define('COMMERCE_CIELO_LANG_EN', 'EN');
 
 /**
  * Defines the Card Mode, either Credit or Debit.
  * 
  * Debit.
  */
-define(COMMERCE_CIELO_CARD_DEBIT, 'A');
+define('COMMERCE_CIELO_CARD_DEBIT', 'A');
 
 /**
  * Defines the Card Mode, either Credit or Debit.
  * 
  * Credit.
  */
-define(COMMERCE_CIELO_CARD_CREDIT, 1);
+define('COMMERCE_CIELO_CARD_CREDIT', 1);
 
 /**
  * Defines the Card Flag.
  * 
  * Master Card.
  */
-define(COMMERCE_CIELO_FLAG_MASTERCARD, 'mastercard');
+define('COMMERCE_CIELO_FLAG_MASTERCARD', 'mastercard');
 
 /**
  * Defines the Card Flag.
  * 
  * Visa.
  */
-define(COMMERCE_CIELO_FLAG_VISA, 'visa');
+define('COMMERCE_CIELO_FLAG_VISA', 'visa');
 
 /**
  * Defines the Card Flag.
  * 
  * Elo.
  */
-define(COMMERCE_CIELO_FLAG_ELO, 'elo');
+define('COMMERCE_CIELO_FLAG_ELO', 'elo');
 
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  */
-define(COMMERCE_CIELO_TRANSACTION_CREATED, 0);
+define('COMMERCE_CIELO_TRANSACTION_CREATED', 0);
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  */
-define(COMMERCE_CIELO_IN_PROGRESS, 1);
+define('COMMERCE_CIELO_IN_PROGRESS', 1);
 
  
 /**
  * Defines the Remote Status of the Transaction.
  *
  */
-define(COMMERCE_CIELO_AUTHENTICATED, 2);
+define('COMMERCE_CIELO_AUTHENTICATED', 2);
 
 /**
  * Defines the Remote Status of the Transaction.
  */
-define(COMMERCE_CIELO_NOT_AUTHENTICATED, 3);
+define('COMMERCE_CIELO_NOT_AUTHENTICATED', 3);
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  * Authorized or still to be captured.
  */
-define(COMMERCE_CIELO_AUTHORIZED, 4);
+define('COMMERCE_CIELO_AUTHORIZED', 4);
 
 /**
  * Defines the Remote Status of the Transaction.
  */
-define(COMMERCE_CIELO_BEING_AUTHENTICATED, 10); 
+define('COMMERCE_CIELO_BEING_AUTHENTICATED', 10); 
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  * Success.
  */
-define(COMMERCE_CIELO_CAPTURED, 6);
+define('COMMERCE_CIELO_CAPTURED', 6);
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  * Failure.
  */
-define(COMMERCE_CIELO_AUTHORIZATION_DENIED, 5);
+define('COMMERCE_CIELO_AUTHORIZATION_DENIED', 5);
 
 /**
  * Defines the Remote Status of the Transaction.
  *
  * Failure.
  */
-define(COMMERCE_CIELO_NOT_CAPTURED, 8);
+define('COMMERCE_CIELO_NOT_CAPTURED', 8);
 
 /**
  * Defines the Remote Status of the Transaction.
  */
-define(COMMERCE_CIELO_VOIDED, 9);
+define('COMMERCE_CIELO_VOIDED', 9);
 
 /**
  * Determines access to the prior authorization capture form for Cielo Payment Method.
