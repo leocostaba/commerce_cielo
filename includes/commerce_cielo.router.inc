@@ -10,7 +10,7 @@
  * This page and function are trigged only when there is a redirection back from Cielo.
  *
  */
-function cielo_redirect_back($order) {
+function commerce_cielo_redirect_back($order) {
   global $user;
   // Make sure the user is logged in.
   if (!in_array('authenticated user', $user->roles)) {
@@ -72,12 +72,13 @@ function cielo_redirect_back($order) {
 
           $authenticate = !isset($payment_method['settings']['authenticate'])?TRUE:$payment_method['settings']['authenticate'];
 
-          if (isset($cielo->response['status']) && $cielo->response['status'] == 4 && !$payment_method['settings']['auto_capture']) {
+          if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_AUTHORIZED
+              && !$payment_method['settings']['auto_capture']) {
             // Authorization has been granted and capturing will be done later at the store backend
             $remote_status = 'authorization_only';
           }
           else{
-            $remote_status = commerce_cielo_getStatusState($authenticate, $status);
+            $remote_status = commerce_cielo_get_status_state($authenticate, $status);
           }
 
           // Prepare a transaction object to log the Webservice response.
@@ -87,7 +88,7 @@ function cielo_redirect_back($order) {
           $trans->currency_code = $transaction->currency_code;
           $trans->remote_id = $transaction->remote_id;
           $trans->remote_status = $remote_status;
-          $trans->status = commerce_cielo_getStatusState($authenticate, $status);
+          $trans->status = commerce_cielo_get_status_state($authenticate, $status);
           $trans->message = $message;
           $trans->payload[REQUEST_TIME] = $cielo->response;
 
@@ -105,7 +106,8 @@ function cielo_redirect_back($order) {
 
           // Capturing
 
-          if (isset($cielo->response['status']) && $cielo->response['status'] == 4 && $payment_method['settings']['auto_capture']) {
+          if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_AUTHORIZED
+              && $payment_method['settings']['auto_capture']) {
             // Authorization has been granted and auto capture is switched on, so we will try to capture.
             $cielo->capture();
 

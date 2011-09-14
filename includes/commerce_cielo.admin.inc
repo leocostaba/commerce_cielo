@@ -103,9 +103,9 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_setStatusMessage($cielo->response);
+  $message = commerce_cielo_set_status_message($cielo->response);
 
-  if (isset($cielo->response['status']) && $cielo->response['status'] == 6) {
+  if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_CAPTURED) {
     drupal_set_message(t('Prior authorization captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
@@ -177,7 +177,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_setStatusMessage($cielo->response);
+  $message = commerce_cielo_set_status_message($cielo->response);
 
 
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
@@ -191,7 +191,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
  * @param array $reponse
  *    The webservice response array.
  */
-function commerce_cielo_setStatusMessage($reponse) {
+function commerce_cielo_set_status_message($reponse) {
   $message = array(
     'status'  => '',
     'message' => '',
