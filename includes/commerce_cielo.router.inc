@@ -23,7 +23,6 @@ function commerce_cielo_redirect_back($order) {
   }
   // Making sure the PO belongs to the current logged in user.
   if ($user->uid == $order->uid) {
-
       // Load payment transactions that belongs to this order.
       foreach (commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $transaction) {
         if ($transaction->remote_status == 'redirected' && $order->status == 'checkout_review') {
@@ -31,7 +30,7 @@ function commerce_cielo_redirect_back($order) {
           $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
 
           // Prepare the arguments to pass to object instantiantion of the external library class.
-          $arguments = commerce_cielo_getArguments($payment_method, $order->order_number, $transaction->amount);
+          $arguments = commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
 
           // Instantiate a object from the external library.
           $cielo = new Cielo($arguments);

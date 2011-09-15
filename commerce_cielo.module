@@ -259,7 +259,7 @@ function commerce_cielo_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
-    'file' => 'includes/cielo_admin.inc',
+    'file' => 'includes/cielo.admin.inc',
   );
 
   return $items;
@@ -833,14 +833,14 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
 
   // Define whether or not the card holder ownership should be authenticated.
-  $authenticate = !isset($payment_method['settings']['authenticate'])?TRUE:$payment_method['settings']['authenticate'];
+  $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
   if ($pane_values['credit_card']['type'] == COMMERCE_CIELO_CARD_DEBIT) {
     $payment_method['settings']['authorization_type'] = COMMERCE_CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED;
   }
 
   // Prepare the arguments to pass to the object instantiantion of the external library class.
-  $arguments = commerce_cielo_getArguments($payment_method, $order->order_number, $charge['amount']);
+  $arguments = commerce_cielo_get_arguments($payment_method, $order->order_number, $charge['amount']);
 
   // Attach the payment details for the authorize request.
   $arguments['payment'] = array(
@@ -1135,7 +1135,7 @@ function commerce_cielo_saveTransaction($Cielo, $transaction, $authenticate, $re
  *     Array of commom arguments
  *
  */
-function commerce_cielo_getArguments($payment_method, $order_number, $order_amount) {
+function commerce_cielo_get_arguments($payment_method, $order_number, $order_amount) {
   // Include the external class file.
   include_once(drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php');
 
