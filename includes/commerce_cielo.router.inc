@@ -49,7 +49,7 @@ function commerce_cielo_redirect_back($order) {
           $cielo->followUp();
 
           // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-          commerce_cielo_logWatchDog($cielo);
+          commerce_cielo_log_watch_dog($cielo);
 
           $message = '';
           if (isset($cielo->response['status'])) {
@@ -111,7 +111,7 @@ function commerce_cielo_redirect_back($order) {
             $cielo->capture();
 
             // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-            commerce_cielo_logWatchDog($cielo);
+            commerce_cielo_log_watch_dog($cielo);
 
             // Save the capturing transaction.
             commerce_cielo_save_transaction($cielo, $trans, $authenticate);

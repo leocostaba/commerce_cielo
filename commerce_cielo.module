@@ -892,11 +892,11 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   $url = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
   $Cielo->setReturnUrl($url);
 
-  // Request Authorization
+  // Request Authorization.
   $Cielo->authorize();
 
   // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-  commerce_cielo_logWatchDog($Cielo);
+  commerce_cielo_log_watch_dog($Cielo);
 
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
@@ -939,7 +939,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     $Cielo->capture();
 
     // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-    commerce_cielo_logWatchDog($Cielo);
+    commerce_cielo_log_watch_dog($Cielo);
 
     // Save the transaction.
     commerce_cielo_save_transaction($Cielo, $transaction, $authenticate);
@@ -1171,7 +1171,7 @@ function commerce_cielo_get_arguments($payment_method, $order_number, $order_amo
  *    The instantiated object from the external library class
  *
  */
-function commerce_cielo_logWatchDog($Cielo) {
+function commerce_cielo_log_watch_dog($Cielo) {
   if (!empty($Cielo->warnings)) {
     // Record it in the watch dog log.
     watchdog('library_brazilcards', '<pre>' . $Cielo->warnings . '</pre>', array(), WATCHDOG_DEBUG);
