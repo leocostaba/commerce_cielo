@@ -98,7 +98,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $cielo->capturePreAuthorize($amount);
 
   // check for and save any warnings that might have been issued by the external library (Brazilcards).
-  commerce_cielo_logWatchDog($cielo);
+  commerce_cielo_log_watch_dog($cielo);
 
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
@@ -172,7 +172,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $cielo->voidTransaction();
 
   // check for and save any warnings that might have been issued by the external library (Brazilcards).
-  commerce_cielo_logWatchDog($cielo);
+  commerce_cielo_log_watch_dog($cielo);
 
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;

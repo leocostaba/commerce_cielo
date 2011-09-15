@@ -7,98 +7,98 @@
 
 /**
  * Authentication Type.
- * 
+ *
  * Authentication Only.
  */
 define('COMMERCE_CIELO_AUTHENTICATION_ONLY', 0);
 
 /**
  * Authentication Type.
- * 
+ *
  * Authorize Only If Athenticated.
  */
 define('COMMERCE_CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED', 1);
 
 /**
  * Authentication Type.
- * 
+ *
  * Authorize Either Authenticated Or Not.
  */
 define('COMMERCE_CIELO_AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT', 2);
 
 /**
  * Authentication Type.
- * 
+ *
  * Skip Authentication And Go Straight To Authorization.
  */
 define('COMMERCE_CIELO_SKIP_AUTHENTICATION', 3);
 
 /**
  * Used for installment payment terms.
- * 
+ *
  * A 3rd party (finantial institution) is the credit provider.
  */
 define('COMMERCE_CIELO_CREDITOR_ISSUER', 3);
 
 /**
  * Used for installment payment terms.
- * 
+ *
  * The merchant is the credit provider.
  */
 define('COMMERCE_CIELO_CREDITOR_MERCHANT', 2);
 
 /**
  * Defines the Cielo's languange interface.
- * 
+ *
  * Portuguese.
  */
 define('COMMERCE_CIELO_LANG_PT', 'PT');
 
 /**
  * Defines the Cielo's languange interface.
- * 
+ *
  * Spanish.
  */
 define('COMMERCE_CIELO_LANG_ES', 'ES');
 
 /**
  * Defines the Cielo's languange interface.
- * 
+ *
  * English.
  */
 define('COMMERCE_CIELO_LANG_EN', 'EN');
 
 /**
  * Defines the Card Mode, either Credit or Debit.
- * 
+ *
  * Debit.
  */
 define('COMMERCE_CIELO_CARD_DEBIT', 'A');
 
 /**
  * Defines the Card Mode, either Credit or Debit.
- * 
+ *
  * Credit.
  */
 define('COMMERCE_CIELO_CARD_CREDIT', 1);
 
 /**
  * Defines the Card Flag.
- * 
+ *
  * Master Card.
  */
 define('COMMERCE_CIELO_FLAG_MASTERCARD', 'mastercard');
 
 /**
  * Defines the Card Flag.
- * 
+ *
  * Visa.
  */
 define('COMMERCE_CIELO_FLAG_VISA', 'visa');
 
 /**
  * Defines the Card Flag.
- * 
+ *
  * Elo.
  */
 define('COMMERCE_CIELO_FLAG_ELO', 'elo');
@@ -116,7 +116,7 @@ define('COMMERCE_CIELO_TRANSACTION_CREATED', 0);
  */
 define('COMMERCE_CIELO_IN_PROGRESS', 1);
 
- 
+
 /**
  * Defines the Remote Status of the Transaction.
  *
@@ -138,7 +138,7 @@ define('COMMERCE_CIELO_AUTHORIZED', 4);
 /**
  * Defines the Remote Status of the Transaction.
  */
-define('COMMERCE_CIELO_BEING_AUTHENTICATED', 10); 
+define('COMMERCE_CIELO_BEING_AUTHENTICATED', 10);
 
 /**
  * Defines the Remote Status of the Transaction.
@@ -892,11 +892,11 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   $url = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
   $Cielo->setReturnUrl($url);
 
-  // Request Authorization
+  // Request Authorization.
   $Cielo->authorize();
 
   // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-  commerce_cielo_logWatchDog($Cielo);
+  commerce_cielo_log_watch_dog($Cielo);
 
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
@@ -939,7 +939,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     $Cielo->capture();
 
     // Check for and save any warnings that might have been issued by the external library (Brazilcards).
-    commerce_cielo_logWatchDog($Cielo);
+    commerce_cielo_log_watch_dog($Cielo);
 
     // Save the transaction.
     commerce_cielo_save_transaction($Cielo, $transaction, $authenticate);
@@ -1171,7 +1171,7 @@ function commerce_cielo_get_arguments($payment_method, $order_number, $order_amo
  *    The instantiated object from the external library class
  *
  */
-function commerce_cielo_logWatchDog($Cielo) {
+function commerce_cielo_log_watch_dog($Cielo) {
   if (!empty($Cielo->warnings)) {
     // Record it in the watch dog log.
     watchdog('library_brazilcards', '<pre>' . $Cielo->warnings . '</pre>', array(), WATCHDOG_DEBUG);
