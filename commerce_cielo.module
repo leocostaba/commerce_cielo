@@ -911,7 +911,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     $remote_status = 'authorization_only';
   }
   // Save the transaction.
-  commerce_cielo_saveTransaction($Cielo, $transaction, $authenticate, $remote_status);
+  commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $remote_status);
 
    // Rebuilds the form if autorize transaction fails.
   if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
@@ -942,7 +942,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     commerce_cielo_logWatchDog($Cielo);
 
     // Save the transaction.
-    commerce_cielo_saveTransaction($Cielo, $transaction, $authenticate);
+    commerce_cielo_save_transaction($Cielo, $transaction, $authenticate);
 
     // Rebuilds the form if capture transaction fails.
     if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
@@ -1072,7 +1072,7 @@ function commerce_cielo_get_status_state($authenticate, $status) {
  *                           manual capturing at the store backend.
  *
  */
-function commerce_cielo_saveTransaction($Cielo, $transaction, $authenticate, $remote_status = '') {
+function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $remote_status = '') {
   $remote_id = '';
   if (isset($Cielo->response['tid'])) {
     $remote_id = check_plain($Cielo->response['tid']);

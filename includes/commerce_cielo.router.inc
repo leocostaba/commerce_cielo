@@ -114,7 +114,7 @@ function commerce_cielo_redirect_back($order) {
             commerce_cielo_logWatchDog($cielo);
 
             // Save the capturing transaction.
-            commerce_cielo_saveTransaction($cielo, $trans, $authenticate);
+            commerce_cielo_save_transaction($cielo, $trans, $authenticate);
 
             // Rebuilds the checkout review form if follow up transaction fails.
             if ($trans->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
