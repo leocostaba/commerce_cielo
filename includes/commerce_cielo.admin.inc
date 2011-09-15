@@ -87,7 +87,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $amount      = $form_state['values']['amount'];
 
   // prepare the arguments to pass to object instantiantion of the external library class.
-  $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
+  $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
@@ -161,7 +161,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
 
 
   // prepare the arguments to pass to object instantiantion of the external library class.
-  $arguments = commerce_cielo_getArguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
+  $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
