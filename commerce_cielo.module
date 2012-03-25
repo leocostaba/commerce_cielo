@@ -656,7 +656,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       // installments on the installment field.
       $form['credit_card']['flag'] += array(
         '#ajax' => array(
-          'callback' => 'credit_card_flag_ajax_callback',
+          'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
           'wrapper' => 'credit-card_installments_wrapper',
         ),
       );
@@ -702,7 +702,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
  * AJAX callback for calculating the max number of installments for the
  * installment field.
  */
-function credit_card_flag_ajax_callback($form, $form_state) {
+function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
 
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
@@ -934,7 +934,6 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // At this point there was no redirection, so we try to capture.
   // We check if auto_capture is switched on and if there is a pending response
   // from the last call to the webservice.
-
   if ($payment_method['settings']['auto_capture'] && $transaction->status == COMMERCE_CIELO_AUTHORIZED) {
     // Try to capture.
     $Cielo->capture();
