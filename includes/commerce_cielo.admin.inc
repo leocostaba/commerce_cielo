@@ -174,7 +174,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
 
   $cielo->voidTransaction();
 
-  // check for and save any warnings that might have been issued by the external
+  // Check for and save any warnings that might have been issued by the external
   // library (Brazilcards).
   commerce_cielo_log_watch_dog($cielo);
 

@@ -40,7 +40,7 @@ function commerce_cielo_redirect_back($order) {
         // Set the tid assigned by Cielo.
         $cielo->setTid($transaction->remote_id);
 
-        // Only for testing enviroment
+        // Only for testing enviroment.
         if ($payment_method['settings']['is_test']) {
           // Make sure we use the same credentials previously used in the
           // checkout.
@@ -109,7 +109,6 @@ function commerce_cielo_redirect_back($order) {
         }
 
         // Capturing.
-
         if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_AUTHORIZED
             && $payment_method['settings']['auto_capture']) {
           // Authorization has been granted and auto capture is switched on, so
@@ -132,7 +131,7 @@ function commerce_cielo_redirect_back($order) {
             drupal_goto('checkout/' . $order->order_id . '/review');
           }
         }
-        // Stop looping
+        // Stop looping.
         break;
       }
     }

@@ -296,10 +296,12 @@ function commerce_cielo_settings_form($settings = NULL) {
   // Merge default settings into the stored settings array.
   $settings = (array) $settings + array(
     'is_test' => 0,
-      'credentials' => array(
-        'affiliation' => '', // filiacao.
-        'token' => '', // chave.
-      ),
+    'credentials' => array(
+      // filiacao.
+      'affiliation' => '',
+      // chave.
+      'token' => '',
+    ),
     'language' => 'EN',
     // Default == 2. Possible values are 0 == authentication only,
     // 1 == authorize only if authenticaded, 2 == authorize either authenticated
@@ -593,7 +595,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
 
     if ($type == COMMERCE_CIELO_CARD_CREDIT) {
       // CVC field shows up on the form.
-      $form = commerce_payment_credit_card_form(array('code' => '', ));
+      $form = commerce_payment_credit_card_form(array('code' => ''));
       // Attach a wrapper div to cvc field.
       $form['credit_card']['code']['#prefix'] = '<div id="credit-card_code_wrapper">';
       $form['credit_card']['code']['#suffix'] = '</div>';
@@ -611,7 +613,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     '#options' => array(
       COMMERCE_CIELO_FLAG_MASTERCARD => t('Mastercard'),
       COMMERCE_CIELO_FLAG_VISA => t('Visa'),
-      COMMERCE_CIELO_FLAG_ELO => t('Elo'), ),
+      COMMERCE_CIELO_FLAG_ELO => t('Elo'),),
     '#weight' => -3,
     '#default_value' => $flag,
   );
@@ -649,8 +651,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       ),
     );
     if ($type == 1) {
-    // Add the installment field.
-
+      // Add the installment field.
       // Attach ajax attributes to flag so it can update the max number of
       // installments on the installment field.
       $form['credit_card']['flag'] += array(
@@ -732,15 +733,13 @@ function credit_card_flag_ajax_callback($form, $form_state) {
  * Brazilian Real currency Only.
  */
 function commerce_cielo_installment_options($po_total, $max_installments) {
-  for ($i=1; $i <= $max_installments; $i++) {
+  for ($i = 1; $i <= $max_installments; $i++) {
     if ($i == 1) {
       $options[$i] = t('Single pay out');
     }
     else {
       // TODO: Create a hook of something or perhaps add some fine-grained
-      //       settings that allow interest rates to be applied on pre-set
-      //       conditions.
-
+      // settings that allow interest rates to be applied on pre-set conditions.
       $installment_amount = number_format(($po_total / 100) / $i, 2, ',', '.');
       $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $installment_amount));
     }
@@ -752,7 +751,7 @@ function commerce_cielo_installment_options($po_total, $max_installments) {
  * AJAX callback for CVC and Installment fields.
  */
 function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
-  // we need to send empty values to the BrazilCards library, so that is the why
+  // We need to send empty values to the BrazilCards library, so that is the why
   // these fields are being hidden instead of removed.
   $form['credit_card']['code'] = array(
     '#type' => 'hidden',
@@ -841,7 +840,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     $payment_method['settings']['authorization_type'] = COMMERCE_CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED;
   }
 
-  // Prepare the arguments to pass to the object instantiantion of the external library class.
+  // Prepare the arguments to pass to the object instantiantion of the external
+  // library class.
   $arguments = commerce_cielo_get_arguments($payment_method, $order->order_number, $charge['amount']);
 
   // Attach the payment details for the authorize request.
@@ -930,14 +930,11 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     drupal_goto($Cielo->response['url-autenticacao']);
   }
 
-  /**
-   * CAPTURING
-   *
-   * At this point there was no redirection, so we try to capture.
-   *
-   * We check if auto_capture is switched on and if there is a pending response
-   * from the last call to the webservice.
-   */
+  // CAPTURING.
+  // At this point there was no redirection, so we try to capture.
+  // We check if auto_capture is switched on and if there is a pending response
+  // from the last call to the webservice.
+
   if ($payment_method['settings']['auto_capture'] && $transaction->status == COMMERCE_CIELO_AUTHORIZED) {
     // Try to capture.
     $Cielo->capture();
@@ -967,7 +964,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
  *   ownership should had been authenticated.
  * @param string $status
  *   The status code returned from the remote server.
- * @return string $status_state
+ *
+ * @return string
  *   One of the order states defined by commerce.
  *
  * Status code descriptions are
@@ -1047,9 +1045,11 @@ function commerce_cielo_get_status_state($authenticate, $status) {
     case 'PENDING':
       $status_state = COMMERCE_PAYMENT_STATUS_PENDING;
       break;
+
     case 'SUCCESS':
       $status_state = COMMERCE_PAYMENT_STATUS_SUCCESS;
       break;
+
     case 'FAILURE':
       $status_state = COMMERCE_PAYMENT_STATUS_FAILURE;
       break;
@@ -1065,6 +1065,8 @@ function commerce_cielo_get_status_state($authenticate, $status) {
  *   The object from the external library class
  * @param object $transaction
  *   The payment transaction object
+ * @param Boolean $authenticate
+ *   Whether or not the card holder shold be authenticated.
  * @param string $remote_status
  *   When no value is passed (default == empty) it will be automatically
  *   determined.
@@ -1134,7 +1136,7 @@ function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $r
  *   The payment settings array
  * @param string $order_number
  *   The order number
- * @param string $order_amaount
+ * @param string $order_amount
  *   The order amount
  *
  * @return array
