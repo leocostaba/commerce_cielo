@@ -86,18 +86,20 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount      = $form_state['values']['amount'];
 
-  // prepare the arguments to pass to object instantiantion of the external library class.
+  // Prepare the arguments to pass to object instantiantion of the external
+  // library class.
   $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
-  // set the tid assigned by Cielo.
+  // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
 
   $cielo->capturePreAuthorize($amount);
 
-  // check for and save any warnings that might have been issued by the external library (Brazilcards).
+  // Check for and save any warnings that might have been issued by the external
+  // library (Brazilcards).
   commerce_cielo_log_watch_dog($cielo);
 
   // Update and save the transaction based on the response.
@@ -116,7 +118,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
     $transaction->remote_status = COMMERCE_PAYMENT_STATUS_SUCCESS;
 
   }
-  else{
+  else {
     // Display an error message but leave the transaction pending.
     drupal_set_message(t('Prior authorization capture failed, so the transaction will remain in a pending status.'), 'error');
     drupal_set_message(check_plain($message['message']), 'error');
@@ -160,18 +162,20 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
 
 
-  // prepare the arguments to pass to object instantiantion of the external library class.
+  // Prepare the arguments to pass to object instantiantion of the external
+  // library class.
   $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
 
-  // set the tid assigned by Cielo.
+  // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
 
   $cielo->voidTransaction();
 
-  // check for and save any warnings that might have been issued by the external library (Brazilcards).
+  // check for and save any warnings that might have been issued by the external
+  // library (Brazilcards).
   commerce_cielo_log_watch_dog($cielo);
 
   // Update and save the transaction based on the response.
@@ -189,7 +193,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
  * from the remote server.
  *
  * @param array $reponse
- *    The webservice response array.
+ *   The webservice response array.
  */
 function commerce_cielo_set_status_message($reponse) {
   $message = array(

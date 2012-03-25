@@ -7,10 +7,3 @@ dependencies[] = commerce_payment
 dependencies[] = commerce_order
 dependencies[] = libraries
 core = 7.x
-
-; Base module files
-files[] = commerce_cielo.module
-
-; Includes
-files[] = includes/cielo_redirect_back_router.inc
-files[] = includes/cielo_admin.inc

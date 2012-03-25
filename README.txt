@@ -5,17 +5,25 @@ Dependencies:
 * Brazilcards PHP Library | this is an external library also written by me.
 
 Installing Brazilcards PHP Library:
-* Download it from http://drupalista-br.github.com/BrazilCards and copy the folder brazilcards-lib in to either sites/all/libraries or sites/<yourDomain>/libraries
+* Download it from http://drupalista-br.github.com/BrazilCards and copy the
+  folder brazilcards-lib in to either sites/all/libraries or
+  sites/<yourDomain>/libraries
 
 Testing out on Cielo's Sandbox:
 
-* You might want to install Commerce Kickstart. It does all the tedious settings for Drupal Commerce and creates some dummy products.
+* You might want to install Commerce Kickstart. It does all the tedious settings
+  for Drupal Commerce and creates some dummy products.
 * Enable Commerce Cielo module normally as you would with any other module
 * Enable Cielo Payment Method at admin/commerce/config/payment-methods
-* Edit the configuration settings at admin/commerce/config/payment-methods/manage/commerce_payment_cielo (Click on the "Edit" operation under Actions)
-* Make sure "Cielo Sandbox - Test enviroment" is switched on. While in there, you can also play around with the other configuration settings.
-  Note: The external library (Brazilcards) takes care of assigning the test credentials.
-* You can use the following card numbers for testing on both credit and debit modes:
+* Edit the configuration settings at
+  admin/commerce/config/payment-methods/manage/commerce_payment_cielo
+  (Click on the "Edit" operation under Actions)
+* Make sure "Cielo Sandbox - Test enviroment" is switched on. While in there,
+  you can also play around with the other configuration settings.
+  Note: The external library (Brazilcards) takes care of assigning the test
+  credentials.
+* You can use the following card numbers for testing on both credit and debit
+  modes:
   (visa) 4012001037141112 (authenticates successfully when in debit mode)
   (visa) 4551870000000183
   (mastercard) 5453010000066167
