@@ -9,7 +9,7 @@
  */
 function commerce_cielo_init () {
   if (!libraries_get_path('brazilcards-lib')) {
-  drupal_set_message(t('Cielo library is not installed.'), 'error');
+    drupal_set_message(t('Cielo library is not installed.'), 'error');
   }
   else {
     $cielo_class_file = drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php';
