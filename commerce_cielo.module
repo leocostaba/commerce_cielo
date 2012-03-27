@@ -4,16 +4,23 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
-// Load libraries.module.
-module_load_include('module', 'libraries', 'libraries');
-// Set the file location of Cielo class.
-$cielo_class_file = drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php';
-// Check if Cielo library is installed.
-if (file_exists($cielo_class_file)) {
-  include_once $cielo_class_file;
-}
-else {
+/**
+ * Implements hook_init().
+ */
+function commerce_cielo_init () {
+  if (!libraries_get_path('brazilcards-lib')) {
   drupal_set_message(t('Cielo library is not installed.'), 'error');
+  }
+  else {
+    $cielo_class_file = drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php';
+    // Check if Cielo library is installed.
+    if (file_exists($cielo_class_file)) {
+      include_once $cielo_class_file;
+    }
+    else {
+      drupal_set_message(t('Cielo library is not properly installed. The file @file does not exist.', array('@file', $cielo_class_file)), 'error');
+    }
+  }
 }
 
 /**
