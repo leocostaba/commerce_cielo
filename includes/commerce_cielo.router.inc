@@ -75,7 +75,7 @@ function commerce_cielo_redirect_back($order) {
 
         $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
-        if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_AUTHORIZED
+        if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_AUTHORIZED
             && !$payment_method['settings']['auto_capture']) {
           // Authorization has been granted and capturing will be done later at
           // the store backend.
@@ -109,7 +109,7 @@ function commerce_cielo_redirect_back($order) {
         }
 
         // Capturing.
-        if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_AUTHORIZED
+        if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_AUTHORIZED
             && $payment_method['settings']['auto_capture']) {
           // Authorization has been granted and auto capture is switched on, so
           // we will try to capture.

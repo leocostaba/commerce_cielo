@@ -106,7 +106,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   $message = commerce_cielo_set_status_message($cielo->response);
 
-  if (isset($cielo->response['status']) && $cielo->response['status'] == COMMERCE_CIELO_CAPTURED) {
+  if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_CAPTURED) {
     drupal_set_message(t('Prior authorization captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
