@@ -334,37 +334,40 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#default_value' => $settings['is_test'],
   );
 
-  // Setting an empty element with a wrapper to be populated.
+  $credentials_required = FALSE;
+  $credentials_display = 'block';
+  if ($settings['is_test']) {
+    // If is test then hide the live credential fields from view.
+    $credentials_display = 'none';
+  }
+  else {
+    // If is live then make the live credential fields required.
+    $credentials_required = TRUE;
+  }
+
   $form['credentials'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<div id="credentials_wrapper">',
+    '#type' => 'fieldset',
+    '#title' => t('Webservice Credentials at CIELO'),
+    '#prefix' => "<div id='credentials_wrapper'>",
     '#suffix' => '</div>',
+    '#attributes' => array('style' => array("display:$credentials_display")),
   );
 
-  if (!$settings['is_test']) {
-    $form['credentials'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Webservice Credentials at CIELO'),
-      '#prefix' => '<div id="credentials_wrapper">',
-      '#suffix' => '</div>',
-    );
+  $form['credentials']['affiliation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Affiliation ID'),
+    '#description' => t('This value (filiacao) is provided by Cielo up on subscription.'),
+    '#default_value' => $settings['credentials']['affiliation'],
+    '#required' => $credentials_required,
+  );
 
-    $form['credentials']['affiliation'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Affiliation ID'),
-      '#description' => t('This value (filiacao) is provided by Cielo up on subscription.'),
-      '#default_value' => $settings['credentials']['affiliation'],
-      '#required' => TRUE,
-    );
-
-    $form['credentials']['token'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Token Key'),
-      '#description' => t('This value (chave) is provided by Cielo up on subscription.'),
-      '#default_value' => $settings['credentials']['token'],
-      '#required' => TRUE,
-    );
-  }
+  $form['credentials']['token'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Token Key'),
+    '#description' => t('This value (chave) is provided by Cielo up on subscription.'),
+    '#default_value' => $settings['credentials']['token'],
+    '#required' => $credentials_required,
+  );
 
   $form['language'] = array(
     '#type' => 'select',
@@ -480,7 +483,6 @@ function commerce_cielo_settings_form($settings = NULL) {
   return $form;
 }
 
-
 /**
  * AJAX callback for collect_card_details.
  */
@@ -494,18 +496,18 @@ function commerce_cielo_collect_card_details_ajax_callback($form, $form_state) {
   );
 
   if ($form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings']['collect_card_details']) {
-      // Replace markup.
-      $form['authenticate'] = array(
-        '#type' => 'select',
-        '#title' => t('Should the card holder be authenticated?'),
-        '#description' => t('Define whether or not the card holder (buyer) will be prompted for card ownership verification.'),
-        '#options' => array(
-          FALSE => t('No.'),
-          TRUE => t('Yes.'),
-        ),
-        '#prefix' => '<div id="authenticate_wrapper">',
-        '#suffix' => '</div>',
-      );
+    // Replace markup.
+    $form['authenticate'] = array(
+      '#type' => 'select',
+      '#title' => t('Should the card holder be authenticated?'),
+      '#description' => t('Define whether or not the card holder (buyer) will be prompted for card ownership verification.'),
+      '#options' => array(
+        FALSE => t('No.'),
+        TRUE => t('Yes.'),
+      ),
+      '#prefix' => '<div id="authenticate_wrapper">',
+      '#suffix' => '</div>',
+    );
   }
 
   return $form['authenticate'];
@@ -516,35 +518,42 @@ function commerce_cielo_collect_card_details_ajax_callback($form, $form_state) {
  */
 function commerce_cielo_credentials_ajax_callback($form, $form_state) {
 
-  // Reconstruct markup.
+  $settings = $form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings'];
+
+  $credentials_required = FALSE;
+  $credentials_display = 'block';
+  if ($settings['is_test']) {
+    // If is test then hide the live credential fields from view.
+    $credentials_display = 'none';
+  }
+  else {
+    // If is live then make the live credential fields required.
+    $credentials_required = TRUE;
+  }
+
   $form['credentials'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<div id="credentials_wrapper">',
+    '#type' => 'fieldset',
+    '#title' => t('Webservice Credentials at CIELO'),
+    '#prefix' => "<div id='credentials_wrapper'>",
     '#suffix' => '</div>',
+    '#attributes' => array('style' => array("display:$credentials_display")),
+  );
+  $form['credentials']['affiliation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Affiliation ID'),
+    '#description' => t('This value (filiacao) is provided by Cielo up on subscription.'),
+    '#value' => $settings['credentials']['affiliation'],
+    '#required' => $credentials_required,
   );
 
-  if (!$form_state['values']['parameter']['payment_method']['settings']['payment_method']['settings']['is_test']) {
-    // Reconstruct markup.
-    $form['credentials'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Webservice Credentials at CIELO'),
-      '#prefix' => '<div id="credentials_wrapper">',
-      '#suffix' => '</div>',
-    );
-    $form['credentials']['affiliation'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Affiliation ID'),
-      '#description' => t('This value (filiacao) is provided by Cielo up on subscription.'),
-      '#required' => TRUE,
-    );
+  $form['credentials']['token'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Token Key'),
+    '#description' => t('This value (chave) is provided by Cielo up on subscription.'),
+    '#value' => $settings['credentials']['token'],
+    '#required' => $credentials_required,
+  );
 
-    $form['credentials']['token'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Token Key'),
-      '#description' => t('This value (chave) is provided by Cielo up on subscription.'),
-      '#required' => TRUE,
-    );
-  }
   return $form['credentials'];
 }
 
@@ -1180,7 +1189,9 @@ function commerce_cielo_get_arguments($payment_method, $order_number, $order_amo
 function commerce_cielo_log_watch_dog($Cielo) {
   if (!empty($Cielo->warnings)) {
     // Record it in the watch dog log.
-    watchdog('library_brazilcards', '<pre>' . $Cielo->warnings . '</pre>', array(), WATCHDOG_DEBUG);
+    foreach ($Cielo->warnings as $error => $error_message) {
+      watchdog('library_brazilcards', $error . ': ' . $error_message, array(), WATCHDOG_DEBUG);    
+    }
     // Clear up the object property.
     $Cielo->warnings = array();
   }

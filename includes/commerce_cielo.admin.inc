@@ -5,7 +5,6 @@
  * Administrative forms for the Cielo module.
  */
 
-
 /**
  * Form callback: allows the user to capture a prior authorization.
  */
