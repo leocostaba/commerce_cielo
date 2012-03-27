@@ -13,7 +13,7 @@ if (file_exists($cielo_class_file)) {
   include_once $cielo_class_file;
 }
 else {
-  drupal_set_message(t('Cielo library is not installed.'));
+  drupal_set_message(t('Cielo library is not installed.'), 'error');
 }
 
 /**
@@ -44,7 +44,6 @@ function commerce_cielo_capture_access($order, $transaction) {
   return commerce_payment_transaction_access('update', $order, $transaction);
 }
 
-
 /**
  * Determines access to the payment cancelation form for Cielo Payment Method.
  *
@@ -71,7 +70,6 @@ function commerce_cielo_void_access($order, $transaction) {
   // Allow access if the user can update payments on this order.
   return commerce_payment_transaction_access('update', $order, $transaction);
 }
-
 
 /**
  * Implements hook_menu().
@@ -436,7 +434,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     drupal_goto('user', array('query' => array('destination' => $destination['destination'])));
   }
 
-
   // Possible values for type are 1 == Credit Card or A == Debit Card.
   $type = Cielo::CIELO_TYPE_CREDIT_CARD;
   if (isset($pane_values['payment_details']['credit_card']['type'])) {
@@ -465,7 +462,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       // CVC doesn't show up when Debit Card option is/was selected.
       $form = commerce_payment_credit_card_form();
     }
-
   }
 
   $form['credit_card']['flag'] = array(
