@@ -161,10 +161,26 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
+  // We need to send empty values to the BrazilCards library, so that is the why
+  // these fields are being hidden instead of removed.
+  $form['credit_card']['code'] = array(
+    '#type' => 'hidden',
+    '#prefix' => '<div id="credit-card_code_wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  $form['credit_card']['installments'] = array(
+    '#type' => 'hidden',
+    '#default_value' => 1,
+    '#prefix' => '<div id="credit-card_installments_wrapper">',
+    '#suffix' => '</div>',
+  );
+  
   // Set default.
   $flag_support_setting = 'debit_mode_flag_support';
  
-  if ($type == Cielo::CIELO_TYPE_CREDIT_CARD) {
+  if ($type === Cielo::CIELO_TYPE_CREDIT_CARD) {
+  
     $flag_support_setting = 'credit_mode_flag_support';
     
     // Reconstruct cvc field.
@@ -210,21 +226,6 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
       'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
     ),
     '#prefix' => '<div id="credit-card_flag_wrapper">',
-    '#suffix' => '</div>',
-  );
-
-  // We need to send empty values to the BrazilCards library, so that is the why
-  // these fields are being hidden instead of removed.
-  $form['credit_card']['code'] = array(
-    '#type' => 'hidden',
-    '#prefix' => '<div id="credit-card_code_wrapper">',
-    '#suffix' => '</div>',
-  );
-
-  $form['credit_card']['installments'] = array(
-    '#type' => 'hidden',
-    '#default_value' => 1,
-    '#prefix' => '<div id="credit-card_installments_wrapper">',
     '#suffix' => '</div>',
   );
 

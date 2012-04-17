@@ -33,6 +33,8 @@ function commerce_cielo_settings_form($settings = NULL) {
     'tuning' => array(
       'debit_mode_flag_support' => Cielo::get_card_flags(FALSE),
       'credit_mode_flag_support' => Cielo::get_card_flags(FALSE),
+      // @see commerce_cielo_bank_codes().
+      'debit_mode_suported_banks' => '237',
     ),
 
     'installments' => array(
@@ -175,7 +177,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#options' => Cielo::get_card_flags(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['tuning']['credit_mode_flag_support'],
   );
-
+  
   $form['installments'] = array(
     '#type' => 'fieldset',
     '#title' => t('INSTALLMENT SETTINGS'),
