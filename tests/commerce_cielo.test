@@ -1,0 +1,41 @@
+<?php
+/**
+ * @file
+ * Test the Cielo Payment method.
+ */
+
+/**
+ * Base class for testing Commerce Cielo module.
+ *
+ * TODO: Not yet implemented.
+ */
+class CommerceCieloWebTestCase extends CommerceBaseTestCase {
+  protected $site_admin;
+
+  /**
+   * getInfo() returns properties that are displayed in the test selection form.
+   */
+  public static function getInfo() {
+    // Note: getInfo() strings are not translated with t().
+    return array(
+      'name' => 'Commerce Cielo Simple Test',
+      'description' => 'Test the Cielo Payment method.',
+      'group' => 'Drupal Commerce',
+    );
+  }
+
+  /**
+   * setUp() performs any pre-requisite tasks that need to happen.
+   */
+  public function setUp() {
+
+    $modules = parent::setUpHelper('all', array('commerce_cielo'));
+    parent::setUp($modules);
+
+    $this->site_admin = $this->createSiteAdmin();
+    cache_clear_all(); // Just in case
+  }
+
+
+}
+
