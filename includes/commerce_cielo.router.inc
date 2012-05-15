@@ -11,13 +11,6 @@
  * from Cielo.
  */
 function commerce_cielo_redirect_back($order) {
-  // Check for permission.
-  if (!user_access('checkout with commerce cielo')) {
-    drupal_set_message(t('Sorry, you have no permission to continue. Please contact the administrator.'), 'warning');
-    // Send user back to the checkout page.
-    drupal_goto('checkout');
-  }
-
   // Load payment transactions that belongs to this order.
   foreach (commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $transaction) {
     if ($transaction->remote_status == 'redirected' && $order->status == 'checkout_review') {
