@@ -4,16 +4,76 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
-// Break down the file into file blocks for better maintanance.
+// Break down the into file blocks for better maintanance.
 include_once 'commerce_cielo.admin.inc';
 include_once 'commerce_cielo.checkout.form.inc';
+
+/**
+ * Implements hook_permission().
+ */
+function commerce_cielo_permission() {
+  return array(
+    'administer commerce cielo' => array(
+      'title' => t('Administer Commerce Cielo'),
+    ),
+    'checkout with commerce cielo' => array(
+      'title' => t('Checkout with Commerce Cielo'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_cielo_menu() {
+  $items = array();
+  // Add a page for concluding the payment process after returning from Cielo.
+  $items['checkout/%commerce_order/payment/cielo'] = array(
+    'page callback' => 'commerce_cielo_redirect_back',
+    'page arguments' => array(1),
+    'access arguments' => array('checkout with commerce cielo'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/commerce_cielo.router.inc',
+  );
+
+  // Add a menu item for capturing authorizations.
+  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/cielo-capture'] = array(
+    'title' => 'Capture',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_cielo_capture_form', 3, 5),
+    'access callback' => 'commerce_cielo_capture_access',
+    'access arguments' => array('administer commerce cielo'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'weight' => 2,
+    'file' => 'includes/commerce_cielo.admin.inc',
+  );
+
+  // Add a menu item for voiding captured transactions.
+  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/cielo-void'] = array(
+    'title' => 'Void',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_cielo_void_form', 3, 5),
+    'access callback' => 'commerce_cielo_void_access',
+    'access arguments' => array('administer commerce cielo'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'weight' => 2,
+    'file' => 'includes/cielo.admin.inc',
+  );
+
+  return $items;
+}
 
 /**
  * Implements hook_init().
  */
 function commerce_cielo_init () {
   if (!libraries_get_path('brazilcards-lib')) {
-    drupal_set_message(t('Cielo library is not installed.'), 'error');
+    // Log it to the system log.
+    watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
+    // Notify the administrator.
+    $notify_administrator = t('Cielo library is not installed.');
   }
   else {
     $cielo_class_file = drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php';
@@ -22,8 +82,38 @@ function commerce_cielo_init () {
       include_once $cielo_class_file;
     }
     else {
-      drupal_set_message(t('Cielo library is not properly installed. The file @file does not exist.', array('@file', $cielo_class_file)), 'error');
+      // Log it to the system log.
+      watchdog('commerce_cielo', 'Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file), WATCHDOG_DEBUG);
+      // Notify the administrator.
+      $notify_administrator = t('Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file));
     }
+  }
+
+  // Display the notification message if the user has the proper permissions.
+  if (user_access('administer commerce cielo') && !empty($notify_administrator)) {
+    drupal_set_message($notify_administrator, 'error');
+  }
+}
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function commerce_cielo_commerce_payment_method_info() {
+  if (user_access('checkout with commerce cielo')) {
+    $payment_methods = array();
+  
+    $payment_methods['cielo'] = array(
+      'base' => 'commerce_cielo',
+      'title' => t('Cielo'),
+      'short_title' => t('Cielo Webservices'),
+      'display_title' => t('By Credit or Debit Card.'),
+      'description' => t("Integration with Cielo's webservice."),
+    );
+    return $payment_methods;
+  }
+  else {
+    // User don't have permission to use Cielo payment method.
+    return array();
   }
 }
 
@@ -68,7 +158,7 @@ function commerce_cielo_capture_access($order, $transaction) {
  */
 function commerce_cielo_void_access($order, $transaction) {
   // Return FALSE if the transaction isn't for Cielo or isn't
-  // capture.
+  // captured.
   if ($transaction->payment_method != 'cielo' || $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
     return FALSE;
   }
@@ -83,69 +173,15 @@ function commerce_cielo_void_access($order, $transaction) {
 }
 
 /**
- * Implements hook_menu().
- */
-function commerce_cielo_menu() {
-  $items = array();
-  // Add a page for concluding the payment process after returning from Cielo.
-  $items['checkout/%commerce_order/payment/cielo'] = array(
-    'page callback' => 'commerce_cielo_redirect_back',
-    'page arguments' => array(1),
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-    'file' => 'includes/commerce_cielo.router.inc',
-  );
-
-  // Add a menu item for capturing authorizations.
-  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/cielo-capture'] = array(
-    'title' => 'Capture',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_cielo_capture_form', 3, 5),
-    'access callback' => 'commerce_cielo_capture_access',
-    'access arguments' => array(3, 5),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'context' => MENU_CONTEXT_INLINE,
-    'weight' => 2,
-    'file' => 'includes/commerce_cielo.admin.inc',
-  );
-
-  // Add a menu item for voiding captured transactions.
-  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/cielo-void'] = array(
-    'title' => 'Void',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_cielo_void_form', 3, 5),
-    'access callback' => 'commerce_cielo_void_access',
-    'access arguments' => array(3, 5),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'context' => MENU_CONTEXT_INLINE,
-    'weight' => 2,
-    'file' => 'includes/cielo.admin.inc',
-  );
-
-  return $items;
-}
-
-/**
- * Implements hook_commerce_payment_method_info().
- */
-function commerce_cielo_commerce_payment_method_info() {
-  $payment_methods = array();
-
-  $payment_methods['cielo'] = array(
-    'base' => 'commerce_cielo',
-    'title' => t('Cielo'),
-    'short_title' => t('Cielo Webservices'),
-    'display_title' => t('By Credit or Debit Card.'),
-    'description' => t("Integration with Cielo's webservice."),
-  );
-
-  return $payment_methods;
-}
-
-/**
- * Helper function for gerenating a list of options for Installment field.
+ * Helper function for gerenating the option range list for the Installment
+ * field.
  *
- * Brazilian Real currency Only.
+ * @param float $po_total
+ *   Total amount of the Purcharse Order.
+ * @param int $max_installments
+ *   The max number of installments.
+ * @return Array
+ *   The number range of installment options.
  */
 function commerce_cielo_installment_options($po_total, $max_installments) {
   for ($i = 1; $i <= $max_installments; $i++) {
@@ -153,7 +189,7 @@ function commerce_cielo_installment_options($po_total, $max_installments) {
       $options[$i] = t('Single pay out');
     }
     else {
-      // TODO: Create a hook of something or perhaps add some fine-grained
+      // TODO: Create a hook or something or perhaps add some fine-grained
       // settings that allow interest rates to be applied on pre-set conditions.
       $installment_amount = number_format(($po_total / 100) / $i, 2, ',', '.');
       $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $installment_amount));
@@ -378,6 +414,8 @@ function commerce_cielo_get_arguments($payment_method, $order_number, $order_amo
  *
  * @param Array $array
  *   The array that needs its values to be translatable.
+ * @return Array $array
+ *   The same array that came in but with its values wrapped in t().
  */
 function commerce_cielo_t($array) {
   foreach ($array as $key => $value) {

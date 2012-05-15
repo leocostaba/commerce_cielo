@@ -4,7 +4,14 @@
  * Payment method callback: settings form.
  */
 function commerce_cielo_settings_form($settings = NULL) {
+  // System permission.
+  if (!user_access('administer commerce cielo')) {
+    return FALSE;
+  }
+
   if (!libraries_get_path('brazilcards-lib')) {
+    // Log it to the system log.
+    watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
     // Notify the user.
     drupal_set_message(t('The Brazilcards Library could not be found or is not properly installed.'), 'error');
     return;
@@ -106,11 +113,11 @@ function commerce_cielo_settings_form($settings = NULL) {
 
   $form['auto_capture'] = array(
     '#type' => 'radios',
-    '#title' => t('Auto Capture'),
+    '#title' => t('Transaction Capturing'),
     '#description' => t('Define whether or not to automatically capture the order total amount up on authorization granting.'),
     '#options' => array(
-      FALSE => t('No, just request authorization. (requires manual or automated capture after checkout).'),
-      TRUE => t('Yes, take every penny.'),
+      FALSE => t('Authorization only (requires manual or automated capture after checkout'),
+      TRUE => t('Authorization and capture'),
     ),
     '#default_value' => $settings['auto_capture'],
   );
@@ -150,8 +157,8 @@ function commerce_cielo_settings_form($settings = NULL) {
     $form['authenticate']['#title'] = t('Should the card holder be authenticated?');
     $form['authenticate']['#description'] = t('This applies on for when Credit card mode type is selected. For Debit cards this will be always YES. Define whether or not the card holder (buyer) will be prompted for card ownership verification.');
     $form['authenticate']['#options'] = array(
-      FALSE => t('Nope.'),
-      TRUE => t('Yes.'),
+      FALSE => t('No'),
+      TRUE => t('Yes'),
     );
     $form['authenticate']['#default_value'] = $settings['authenticate'];
   }
@@ -230,11 +237,11 @@ function commerce_cielo_credentials_ajax_callback($form, $form_state) {
   $credentials_required = FALSE;
   $credentials_display = 'block';
   if ($settings['is_test']) {
-    // If is test then hide the live credential fields from view.
+    // If it is test then hide the live credential fields from view.
     $credentials_display = 'none';
   }
   else {
-    // If is live then make the live credential fields required.
+    // If it is live then make the live credential fields required.
     $credentials_required = TRUE;
   }
 

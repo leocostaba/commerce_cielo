@@ -18,7 +18,7 @@ Testing out on Cielo's Sandbox:
 * Edit the configuration settings at
   admin/commerce/config/payment-methods/manage/commerce_payment_cielo
   (Click on the "Edit" operation under Actions)
-* Make sure "Cielo Sandbox - Test enviroment" is switched on. While in there,
+* Make sure "Cielo Sandbox - Test environment" is switched on. While in there,
   you can also play around with the other configuration settings.
   Note: The external library (Brazilcards) takes care of assigning the test
   credentials.

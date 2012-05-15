@@ -4,7 +4,6 @@
  * Payment method callback: checkout form.
  */
 function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  // dprint_r($payment_method['settings']['tuning']);
 
   // Check if the external library (Brazilcards) is installed.
   if (!libraries_get_path('brazilcards-lib')) {
@@ -13,20 +12,14 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     // Notify the user.
     drupal_set_message(t('Sorry for this but the checkout system is misconfigured, please report this to the website administrator.'), 'error');
     // Send the user to the home page.
-    drupal_goto();
+    drupal_goto('checkout');
   }
 
-  global $user;
-
-  // Make sure the user is not anonymous.
-  if (!in_array('authenticated user', $user->roles)) {
-
-    drupal_set_message(t('Please, login to conclude your checkout payment process.'), 'warning');
-    // Get the current url for redirecting the user back to the checkout review
-    // page after he/she logs in.
-    $destination = drupal_get_destination();
-    // Send the user to the login page.
-    drupal_goto('user', array('query' => array('destination' => $destination['destination'])));
+  // Check for permission.
+  if (!user_access('checkout with commerce cielo')) {
+    drupal_set_message(t('Sorry, you have no permission to continue. Please contact the administrator.'), 'warning');
+    // Send user back to the checkout page.
+    drupal_goto('checkout');
   }
 
   // Possible values for type are 1 == Credit Card or A == Debit Card.
