@@ -16,9 +16,6 @@ function commerce_cielo_permission() {
     'administer commerce cielo' => array(
       'title' => t('Administer Commerce Cielo'),
     ),
-    'checkout with commerce cielo' => array(
-      'title' => t('Checkout with Commerce Cielo'),
-    ),
   );
 }
 
@@ -31,7 +28,7 @@ function commerce_cielo_menu() {
   $items['checkout/%commerce_order/payment/cielo'] = array(
     'page callback' => 'commerce_cielo_redirect_back',
     'page arguments' => array(1),
-    'access arguments' => array('checkout with commerce cielo'),
+    'access arguments' => array('access checkout'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/commerce_cielo.router.inc',
   );
@@ -99,22 +96,16 @@ function commerce_cielo_init () {
  * Implements hook_commerce_payment_method_info().
  */
 function commerce_cielo_commerce_payment_method_info() {
-  if (user_access('checkout with commerce cielo')) {
-    $payment_methods = array();
-  
-    $payment_methods['cielo'] = array(
-      'base' => 'commerce_cielo',
-      'title' => t('Cielo'),
-      'short_title' => t('Cielo Webservices'),
-      'display_title' => t('By Credit or Debit Card.'),
-      'description' => t("Integration with Cielo's webservice."),
-    );
-    return $payment_methods;
-  }
-  else {
-    // User don't have permission to use Cielo payment method.
-    return array();
-  }
+  $payment_methods = array();
+
+  $payment_methods['cielo'] = array(
+    'base' => 'commerce_cielo',
+    'title' => t('Cielo'),
+    'short_title' => t('Cielo Webservices'),
+    'display_title' => t('By Credit or Debit Card.'),
+    'description' => t("Integration with Cielo's webservice."),
+  );
+  return $payment_methods;
 }
 
 /**

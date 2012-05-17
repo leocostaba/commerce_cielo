@@ -14,13 +14,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     drupal_goto('checkout');
   }
 
-  // Check for permission.
-  if (!user_access('checkout with commerce cielo')) {
-    drupal_set_message(t('Sorry, you have no permission to continue. Please contact the administrator.'), 'warning');
-    // Send user back to the checkout page.
-    drupal_goto('checkout');
-  }
-
   // Possible values for type are 1 == Credit Card or A == Debit Card.
   $type = Cielo::CIELO_TYPE_CREDIT_CARD;
   if (isset($pane_values['payment_details']['credit_card']['type'])) {
