@@ -4,7 +4,6 @@
  * Payment method callback: checkout form.
  */
 function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-
   // Check if the external library (Brazilcards) is installed.
   if (!libraries_get_path('brazilcards-lib')) {
     // Log it to the system log.
@@ -35,6 +34,8 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     $flag = $pane_values['payment_details']['credit_card']['flag'];
   }
 
+  $form = array();
+
   if ($payment_method['settings']['collect_card_details']) {
     // The merchant is in charge of collecting the credit card details.
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
@@ -42,9 +43,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     if ($type == Cielo::CIELO_TYPE_CREDIT_CARD) {
       // CVC field shows up on the form.
       $form = commerce_payment_credit_card_form(array('code' => ''));
-      // Attach a wrapper div to cvc field.
-      $form['credit_card']['code']['#prefix'] = '<div id="credit-card_code_wrapper">';
-      $form['credit_card']['code']['#suffix'] = '</div>';
     }
     else {
       // CVC doesn't show up when Debit Card option is/was selected.
@@ -73,8 +71,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     '#ajax' => array(
       'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
     ),
-    '#prefix' => '<div id="credit-card_flag_wrapper">',
-    '#suffix' => '</div>',
     '#default_value' => $flag,
   );
 
@@ -84,20 +80,12 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     '#title' => t('Number of installments'),
     '#weight' => 0,
     '#default_value' => 1,
-    '#prefix' => '<div id="credit-card_installments_wrapper">',
-    '#suffix' => '</div>',
   );
 
   $currency_code = $order->commerce_order_total['und'][0]['currency_code'];
 
   if ($currency_code == 'BRL') {
-    // Attach ajax callback function to allow updating of installment field.
-    $form['credit_card']['type'] += array(
-      '#ajax' => array(
-        'callback' => 'commerce_cielo_credit_card_type_ajax_callback',
-      ),
-    );
-    if ($type == 1) {
+    if ($type == Cielo::CIELO_TYPE_CREDIT_CARD) {
       // Add the installment field.
       // Attach ajax attributes to flag so it can update the max number of
       // installments on the installment field.
@@ -118,8 +106,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
         '#options' => commerce_cielo_installment_options($po_total, $max_installments),
         '#weight' => -1,
         '#default_value' => 1,
-        '#prefix' => '<div id="credit-card_installments_wrapper">',
-        '#suffix' => '</div>',
       );
     }
   }
@@ -131,8 +117,6 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       '#title' => t('Security Code'),
       '#description' => t('Enter the 3 digits number located at the back of your card.'),
       '#size' => 3,
-      '#prefix' => '<div id="credit-card_code_wrapper">',
-      '#suffix' => '</div>',
     );
 
     if ($type == Cielo::CIELO_TYPE_DEBIT_CARD) {
@@ -153,81 +137,77 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
 
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
-
+  
   // We need to send empty values to the BrazilCards library, so that is the why
   // these fields are being hidden instead of removed.
-  $form['credit_card']['code'] = array(
-    '#type' => 'hidden',
-    '#prefix' => '<div id="credit-card_code_wrapper">',
-    '#suffix' => '</div>',
-  );
+  $card_cvs_code =  '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code" style="display:none">
+                      <label for="edit-commerce-payment-payment-details-credit-card-code">'. t('Security Code') . '</label>
+                        <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
+                        <div class="description">'. t('Enter the 3 digits number located at the back of your card.') . '</div>
+                    </div>';
 
-  $form['credit_card']['installments'] = array(
-    '#type' => 'hidden',
-    '#default_value' => 1,
-    '#prefix' => '<div id="credit-card_installments_wrapper">',
-    '#suffix' => '</div>',
-  );
-  
+  $installments_field = '<div class="form-item form-type-select form-item-commerce-payment-payment-details-credit-card-installments" style="display:none">
+                          <label for="edit-commerce-payment-payment-details-credit-card-installments">'. t('Number of installments') . '</label>
+                          <select id="edit-commerce-payment-payment-details-credit-card-installments" name="commerce_payment[payment_details][credit_card][installments]" class="form-select">
+                            <option value="1" selected="selected">'. t('Single pay out') . '</option>
+                          </select>
+                        </div>';
+ 
   // Set default.
   $flag_support_setting = 'debit_mode_flag_support';
- 
+  
+
   if ($type === Cielo::CIELO_TYPE_CREDIT_CARD) {
   
     $flag_support_setting = 'credit_mode_flag_support';
     
     // Reconstruct cvc field.
-    $form['credit_card']['code'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Security Code'),
-      '#description' => t('Enter the 3 digits number located at the back of your card.'),
-      '#size' => 3,
-      '#prefix' => '<div id="credit-card_code_wrapper">',
-      '#suffix' => '</div>',
-    );
+    $card_cvs_code =  '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code">
+                        <label for="edit-commerce-payment-payment-details-credit-card-code">'. t('Security Code') . '</label>
+                          <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
+                          <div class="description">'. t('Enter the 3 digits number located at the back of your card.') . '</div>
+                      </div>';
 
     if ($currency == 'BRL') {
-      // Brazilian Real.
-      $form['credit_card']['installments'] = array(
-        '#type' => 'select',
-        '#title' => t('Number of installments'),
-        '#options' => $form['commerce_payment']['payment_details']['credit_card']['installments']['#options'],
-        '#weight' => 0,
-        '#default_value' => 1,
-        '#prefix' => '<div id="credit-card_installments_wrapper">',
-        '#suffix' => '</div>',
-      );
+ 
+      $installments_field_array = $form['commerce_payment']['payment_details']['credit_card']['installments']['#options'];
+      $installments_field_options = '';
+      
+      foreach ($installments_field_array as $key => $value) {
+        $installments_field_options .= "<option value='$key'>$value</option>";
+      }
+
+      $installments_field = '<div class="form-item form-type-select form-item-commerce-payment-payment-details-credit-card-installments">
+                              <label for="edit-commerce-payment-payment-details-credit-card-installments">'. t('Number of installments') . '</label>
+                              <select id="edit-commerce-payment-payment-details-credit-card-installments" name="commerce_payment[payment_details][credit_card][installments]" class="form-select">' .
+                                $installments_field_options .
+                              '</select>
+                            </div>';
+      
     }
   }
  
-  $flag_options = Cielo::get_card_flags(TRUE, 'commerce_cielo_t');
-  
-  // Remove the flags that are not supported for the selected card type (either
-  // Credit or Debit).
-  foreach ($flag_options as $key => $value) {
-    if (!$settings['tuning'][$flag_support_setting][$key]) {
-      unset($flag_options[$key]);
+  $flag_options_array = Cielo::get_card_flags(TRUE, 'commerce_cielo_t');
+  $flag_options = '';
+  // Construct the html tag options for Card Flag field.
+  foreach ($flag_options_array as $key => $value) {
+    if ($settings['tuning'][$flag_support_setting][$key]) {
+      $flag_options .= "<option value='$key'>$value</option>";
     }
   }
-
-  $form['credit_card']['flag'] = array(
-    '#type' => 'select',
-    '#title' => t('Card Flag'),
-    '#options' => $flag_options,
-    '#weight' => -2,
-    '#ajax' => array(
-      'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
-    ),
-    '#prefix' => '<div id="credit-card_flag_wrapper">',
-    '#suffix' => '</div>',
-  );
+  
+  $card_flag_options = '<select id="edit-commerce-payment-payment-details-credit-card-flag" ' .
+                          'name="commerce_payment[payment_details][credit_card][flag]"' .
+                          'class="form-select">' .
+                          $flag_options .
+                        '</select>';
 
   return array(
     '#type' => 'ajax',
     '#commands' => array(
-      ajax_command_replace("#credit-card_flag_wrapper", render($form['credit_card']['flag'])),
-      ajax_command_replace("#credit-card_code_wrapper", render($form['credit_card']['code'])),
-      ajax_command_replace("#credit-card_installments_wrapper", render($form['credit_card']['installments'])),
+      ajax_command_replace("#edit-commerce-payment-payment-details-credit-card-flag", $card_flag_options),
+      ajax_command_replace(".form-item-commerce-payment-payment-details-credit-card-code", $card_cvs_code),
+      ajax_command_replace(".form-item-commerce-payment-payment-details-credit-card-installments", $installments_field),
     ),
   );
 }
@@ -247,17 +227,25 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
     $max_installments = $form_state['order']->payment_methods['cielo|commerce_payment_cielo']['settings']['installments'][$flag . '_max'];
     $po_total = $form_state['order']->commerce_order_total['und'][0]['amount'];
 
-    $form['credit_card']['installments'] = array(
-      '#type' => 'select',
-      '#title' => t('Number of installments'),
-      '#options' => commerce_cielo_installment_options($po_total, $max_installments),
-      '#weight' => -1,
-      '#default_value' => 1,
-      '#prefix' => '<div id="credit-card_installments_wrapper">',
-      '#suffix' => '</div>',
-    );
+    $installment_options_array = commerce_cielo_installment_options($po_total, $max_installments);
+    $installment_options = '';
+    // Construct the html tag options for Card Flag field.
+    foreach ($installment_options_array as $key => $value) {
+        $installment_options .= "<option value='$key'>$value</option>";
+    }
 
-    return $form['credit_card']['installments'];
+    $installment_options =  '<select id="edit-commerce-payment-payment-details-credit-card-installments" ' .
+                              'name="commerce_payment[payment_details][credit_card][installments]"' .
+                              'class="form-select">' .
+                               $installment_options .
+                            '</select>';
+   
+    return array(
+      '#type' => 'ajax',
+      '#commands' => array(
+        ajax_command_replace("#edit-commerce-payment-payment-details-credit-card-installments", $installment_options),
+      ),
+    );
   }
 }
 
