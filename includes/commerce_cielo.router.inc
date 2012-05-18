@@ -11,11 +11,16 @@
  * from Cielo.
  */
 function commerce_cielo_redirect_back($order) {
+  // Set authenticate default value.
+  $authenticate = TRUE;
+
   // Load payment transactions that belongs to this order.
   foreach (commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $transaction) {
     if ($transaction->remote_status == COMMERCE_CIELO_STATUS_REDIRECTED && $order->status == 'checkout_review') {
       // Load the payment method settings.
       $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
+      // Set auto capture.
+      $auto_capture = $payment_method['settings']['auto_capture'];
 
       // Prepare the arguments to pass to object instantiantion of the
       // external library class.
@@ -61,7 +66,7 @@ function commerce_cielo_redirect_back($order) {
 
       $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
-      $remote_status = _commerce_cielo_get_remote_status($cielo, $payment_method['settings']['auto_capture']);
+      $remote_status = _commerce_cielo_get_remote_status($cielo, $auto_capture);
 
       if (empty($remote_status)) {
         $remote_status = _commerce_cielo_get_status_state($authenticate, $status);
@@ -92,7 +97,7 @@ function commerce_cielo_redirect_back($order) {
 
       // Capturing.
       if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_AUTHORIZED
-          && $payment_method['settings']['auto_capture']) {
+          && $auto_capture) {
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
         $cielo->capture();
@@ -119,6 +124,78 @@ function commerce_cielo_redirect_back($order) {
   }
   // Update the order status to pending.
   commerce_order_status_update($order, 'pending');
+
+  // Set a message for the user.
+  $message = array(
+    'message' => t('Something unexpected happened. Please contact the store administrator.'),
+    'type'=> 'error',
+  );
+  if (isset($cielo->response['status'])) {
+
+    switch($cielo->response['status']) {
+      case Cielo::CIELO_IN_PROGRESS:
+      case Cielo::CIELO_AUTHENTICATED:
+      case Cielo::CIELO_BEING_AUTHENTICATED:
+        // The transaction hasn't been denied but either hasn't been
+        // approved, so the store manager must try to capture the money
+        // manually.
+        $message_type = 'under_clearance';
+      break;
+      case Cielo::CIELO_AUTHORIZED:
+        $message_type = 'waiting_capture';
+      break;
+      case Cielo::CIELO_AUTHORIZATION_DENIED:
+      case Cielo::CIELO_NOT_CAPTURED:
+      case Cielo::CIELO_VOIDED:
+        $message_type = 'failed';
+      break;
+      case Cielo::CIELO_CAPTURED:
+        $message_type = 'success';
+      break;
+      case Cielo::CIELO_NOT_AUTHENTICATED:
+        if ($authenticate) {
+          // Store only accepts transactions that pass by authentication,
+          // so we set it as failed.
+          $message_type = 'failed';
+        }
+        else {
+          // Although not authenticated, it might still be possible to capture
+          // this transaction manually in a later time.
+          $message_type = 'under_clearance';
+        }
+      break;
+    }
+
+    // Set the message appropriatly.
+    switch($message_type) {
+      case 'under_clearance':
+        $message = array(
+          'message' => t('Your payment is under a clearance checking by the card operator. A member of our staff will contact you as soon as it gets clearance.'),
+          'type'=> 'warning',
+        );
+      break;
+      case 'waiting_capture':
+        $message = array(
+          'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearence.'),
+          'type'=> 'warning',
+        );
+      break;
+      case 'failed':
+        $message = array(
+          'message' => t('Your payment was denied by the card operator. Please check with your bank or try a different card.'),
+          'type'=> 'error',
+        );
+      break;
+      case 'success':
+        $message = array(
+          'message' => t('Your payment has been approved.'),
+          'type'=> 'status',
+        );
+      break;
+    }
+  }
+
+  drupal_set_message($message['message'], $message['type']);
 
   // Send the buyer to the checkout complete page.
   drupal_goto('checkout/' . $order->order_id . '/complete');
