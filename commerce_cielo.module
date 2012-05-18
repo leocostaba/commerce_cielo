@@ -9,12 +9,42 @@ include_once 'commerce_cielo.admin.inc';
 include_once 'commerce_cielo.checkout.form.inc';
 
 /**
+ * Define the payment transaction remote status.
+ *
+ * The user has been redirected to Cielo and the checkout is waiting him/her
+ * to be redirected back for then concluding the checkout process.
+ */
+define('COMMERCE_CIELO_STATUS_REDIRECTED', 'redirected');
+
+/**
+ * Define the payment transaction remote status.
+ *
+ * The transaction was authorized but it is awaiting for the store administrator
+ * to performe the money capturing in later time.
+ */
+define('COMMERCE_CIELO_STATUS_AUTHORIZED', 'authorization_only');
+
+/**
+ * Define the payment transaction remote status.
+ *
+ * The transaction has been denied but either has been approved, so the store
+ * manager must try to capture the money manually.
+ */
+define('COMMERCE_CIELO_STATUS_NOT_CAPTURED', 'not_captured');
+
+/**
  * Implements hook_permission().
  */
 function commerce_cielo_permission() {
   return array(
     'administer commerce cielo' => array(
       'title' => t('Administer Commerce Cielo'),
+    ),
+    'capture commerce cielo' => array(
+      'title' => t('Capture Commerce Cielo Payments'),
+    ),
+    'void commerce cielo' => array(
+      'title' => t('Void Commerce Cielo Payments'),
     ),
   );
 }
@@ -39,7 +69,7 @@ function commerce_cielo_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('commerce_cielo_capture_form', 3, 5),
     'access callback' => 'commerce_cielo_capture_access',
-    'access arguments' => array('administer commerce cielo'),
+    'access arguments' => array(3, 5),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
@@ -52,7 +82,7 @@ function commerce_cielo_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('commerce_cielo_void_form', 3, 5),
     'access callback' => 'commerce_cielo_void_access',
-    'access arguments' => array('administer commerce cielo'),
+    'access arguments' => array(3, 5),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
@@ -121,19 +151,36 @@ function commerce_cielo_commerce_payment_method_info() {
  *   TRUE or FALSE indicating capture access.
  */
 function commerce_cielo_capture_access($order, $transaction) {
-  // Return FALSE if the transaction isn't for Cielo or isn't
-  // Awaiting capture.
-  if ($transaction->payment_method != 'cielo' || $transaction->remote_status != 'authorization_only') {
+
+  // Check if the transaction was done with Cielo and if it requires capturing.
+  if ($transaction->payment_method != 'cielo') {
     return FALSE;
   }
 
-  // Return FALSE if it is more than 5 days past the original authorization.
+  // Define whether or not this transaction needs to be captured.
+  switch($transaction->remote_status) {
+    case COMMERCE_CIELO_STATUS_AUTHORIZED:
+    case COMMERCE_CIELO_STATUS_NOT_CAPTURED:
+      $needs_to_be_captured = TRUE;
+    break;
+    default:
+      $needs_to_be_captured = FALSE;
+    break;
+  }
+
+  // Check if it was done more than 5 days past the original authorization.
   if (time() - $transaction->created > 86400 * 5) {
     return FALSE;
   }
 
-  // Allow access if the user can update payments on this order.
-  return commerce_payment_transaction_access('update', $order, $transaction);
+  // Check if user has permission to capture and update payments on this order.
+  if (user_access('capture commerce cielo')
+      && commerce_payment_transaction_access('update', $order, $transaction)
+      && $needs_to_be_captured) {
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 /**
@@ -143,9 +190,8 @@ function commerce_cielo_capture_access($order, $transaction) {
  *   The order the transaction is on.
  * @param Object $transaction
  *   The payment transaction object to be voided.
- *
  * @return boolean
- *   TRUE or FALSE indicating voiding access.
+ *   Whether or not the user is allowed to void the payment transaction.
  */
 function commerce_cielo_void_access($order, $transaction) {
   // Return FALSE if the transaction isn't for Cielo or isn't
@@ -159,8 +205,13 @@ function commerce_cielo_void_access($order, $transaction) {
     return FALSE;
   }
 
-  // Allow access if the user can update payments on this order.
-  return commerce_payment_transaction_access('update', $order, $transaction);
+  // Check if user has permission to void and update payments on this order.
+  if (user_access('void commerce cielo')
+      && commerce_payment_transaction_access('update', $order, $transaction)) {
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 /**
@@ -174,7 +225,7 @@ function commerce_cielo_void_access($order, $transaction) {
  * @return Array
  *   The number range of installment options.
  */
-function commerce_cielo_installment_options($po_total, $max_installments) {
+function _commerce_cielo_installment_options($po_total, $max_installments) {
   for ($i = 1; $i <= $max_installments; $i++) {
     if ($i == 1) {
       $options[$i] = t('Single pay out');
@@ -223,7 +274,7 @@ function commerce_cielo_installment_options($po_total, $max_installments) {
  * // wont happen in this context.
  * 9 == Voided
  */
-function commerce_cielo_get_status_state($authenticate, $status) {
+function _commerce_cielo_get_status_state($authenticate, $status) {
   if ($authenticate) {
     $pending = array(
       Cielo::CIELO_TRANSACTION_CREATED,
@@ -328,7 +379,7 @@ function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $r
 
     if (isset($Cielo->response['url-autenticacao'])) {
       $message .= t("<br />Waiting: Buyer was redirected to Cielo.");
-      $remote_status = 'redirected';
+      $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
     }
 
     foreach ($Cielo->response as $process => $values) {
@@ -349,8 +400,8 @@ function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $r
   }
 
   $transaction->remote_id = $remote_id;
-  $transaction->remote_status = empty($remote_status) ? commerce_cielo_get_status_state($authenticate, $status) : $remote_status;
-  $transaction->status = commerce_cielo_get_status_state($authenticate, $status);
+  $transaction->remote_status = empty($remote_status) ? _commerce_cielo_get_status_state($authenticate, $status) : $remote_status;
+  $transaction->status = _commerce_cielo_get_status_state($authenticate, $status);
   $transaction->message = $message;
   $transaction->payload[REQUEST_TIME] = $Cielo->response;
 
@@ -373,7 +424,7 @@ function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $r
  * @return array
  *   Array of commom arguments
  */
-function commerce_cielo_get_arguments($payment_method, $order_number, $order_amount) {
+function _commerce_cielo_get_arguments($payment_method, $order_number, $order_amount) {
 
   if ($payment_method['settings']['is_test']) {
     // This is a test enviroment so we set the credentials empty.
@@ -398,6 +449,44 @@ function commerce_cielo_get_arguments($payment_method, $order_number, $order_amo
   );
 
   return $arguments;
+}
+
+/**
+ * Define the remote status based on the status code sent by the remote service.
+ *
+ * @param Object $Cielo
+ *   The Cielo Webservice Object.
+ * @param Boolean $auto_capture
+ *   Whether or not the payment transaction was set to be captured right
+ *   after authorization or in a later time by the store manager.
+ * @return String $remote_status
+ *   The remote status which is either 'not captured' or 'authorized_only'.
+ */
+function _commerce_cielo_get_remote_status($Cielo, $auto_capture) {
+  // Default it to empty.
+  $remote_status = '';
+  if (isset($Cielo->response['status'])) {
+    if ($auto_capture) {
+      // Check if remote_status requires later capturing attempt.
+      switch($Cielo->response['status']) {
+        case Cielo::CIELO_IN_PROGRESS:
+        case Cielo::CIELO_BEING_AUTHENTICATED:
+        case Cielo::CIELO_AUTHENTICATED:
+          // The transaction hasn't been denied but either hasn't been
+          // approved, so the store manager must try to capture the money
+          // manually.
+          $remote_status = COMMERCE_CIELO_STATUS_NOT_CAPTURED;
+        break;
+      }
+    }
+    else {
+      if ($Cielo->response['status'] == Cielo::CIELO_AUTHORIZED) {
+        // auto_capture was set to FALSE and the transaction was authorized.
+        $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;  
+      }
+    }
+  }
+  return $remote_status;
 }
 
 /**

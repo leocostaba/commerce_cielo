@@ -36,7 +36,7 @@ function commerce_cielo_capture_form($form, &$form_state, $order, $transaction) 
   $form['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Capture amount'),
-    '#description' => filter_xss($description),
+    '#description' => $description,
     '#default_value' => $default_amount,
     '#field_suffix' => check_plain($transaction->currency_code),
     '#size' => 16,
@@ -87,7 +87,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   // Prepare the arguments to pass to object instantiantion of the external
   // library class.
-  $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
+  $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
@@ -104,10 +104,10 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_set_status_message($cielo->response);
+  $message = _commerce_cielo_set_status_message($cielo->response);
 
   if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_CAPTURED) {
-    drupal_set_message(t('Prior authorization captured successfully.'));
+    drupal_set_message(t('Transaction has been captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
     $transaction->amount = commerce_currency_decimal_to_amount($amount, $transaction->currency_code);
@@ -119,8 +119,8 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   }
   else {
     // Display an error message but leave the transaction pending.
-    drupal_set_message(t('Prior authorization capture failed, so the transaction will remain in a pending status.'), 'error');
-    drupal_set_message(check_plain($message['message']), 'error');
+    drupal_set_message(t('Capturing failed, so the transaction will remain in a pending status.'), 'error');
+    drupal_set_message($message['message'], 'error');
   }
 
   $transaction->message = $message['message'];
@@ -160,10 +160,9 @@ function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
 function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
 
-
   // Prepare the arguments to pass to object instantiantion of the external
   // library class.
-  $arguments = commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
+  $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
   $cielo = new Cielo($arguments);
@@ -180,7 +179,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   // Update and save the transaction based on the response.
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
-  $message = commerce_cielo_set_status_message($cielo->response);
+  $message = _commerce_cielo_set_status_message($cielo->response);
 
 
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
@@ -194,7 +193,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
  * @param array $reponse
  *   The webservice response array.
  */
-function commerce_cielo_set_status_message($reponse) {
+function _commerce_cielo_set_status_message($reponse) {
   $message = array(
     'status'  => '',
     'message' => '',
@@ -203,14 +202,16 @@ function commerce_cielo_set_status_message($reponse) {
   if (isset($reponse['status'])) {
     // No transaction errors have occured.
     $message['status']  = $reponse['status'];
-    $message['message'] = t('Status Code: %code', array('%code' => $message['status']));
+    $message['message'] = t('Status Code: %code', array('%code' => check_plain($message['status'])));
 
     foreach ($reponse as $process => $values) {
+      $process = check_plain($process);
+      
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
           // Assemble payment tab message.
-          $message['message'] .= '<br />' . t("$process:") . ' ' . $values['mensagem'];
+          $message['message'] .= '<br />' . t("$process:") . ' ' . check_plain($values['mensagem']);
         }
       }
     }
@@ -218,9 +219,9 @@ function commerce_cielo_set_status_message($reponse) {
   }
   elseif (isset($reponse['codigo'])) {
     // The remote server reported an error.
-    $message['status'] = $reponse['codigo'];
-    $message['message'] = t('Error Code: %code', array('%code' => $reponse['codigo']));
-    $message['message'] .= '<br />' . t('Error Message: %message', array('%message' => t($reponse['mensagem'])));
+    $message['status'] = check_plain($reponse['codigo']);
+    $message['message'] = t('Error Code: %code', array('%code' => check_plain($reponse['codigo'])));
+    $message['message'] .= '<br />' . t('Error Message: %message', array('%message' => t(check_plain($reponse['mensagem']))));
   }
 
   return $message;

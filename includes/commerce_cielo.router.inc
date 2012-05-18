@@ -13,13 +13,13 @@
 function commerce_cielo_redirect_back($order) {
   // Load payment transactions that belongs to this order.
   foreach (commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $transaction) {
-    if ($transaction->remote_status == 'redirected' && $order->status == 'checkout_review') {
+    if ($transaction->remote_status == COMMERCE_CIELO_STATUS_REDIRECTED && $order->status == 'checkout_review') {
       // Load the payment method settings.
       $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
 
       // Prepare the arguments to pass to object instantiantion of the
       // external library class.
-      $arguments = commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
+      $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
 
       // Instantiate a object from the external library.
       $cielo = new Cielo($arguments);
@@ -55,21 +55,16 @@ function commerce_cielo_redirect_back($order) {
               // Assemble payment tab message.
               $message .= '<br />' . check_plain(t("$process:")) . ' ' . check_plain($values['mensagem']);
             }
-
           }
         }
       }
 
       $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
-      if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_AUTHORIZED
-          && !$payment_method['settings']['auto_capture']) {
-        // Authorization has been granted and capturing will be done later at
-        // the store backend.
-        $remote_status = 'authorization_only';
-      }
-      else {
-        $remote_status = commerce_cielo_get_status_state($authenticate, $status);
+      $remote_status = _commerce_cielo_get_remote_status($cielo, $payment_method['settings']['auto_capture']);
+
+      if (empty($remote_status)) {
+        $remote_status = _commerce_cielo_get_status_state($authenticate, $status);
       }
 
       // Prepare a transaction object to log the Webservice response.
@@ -79,7 +74,7 @@ function commerce_cielo_redirect_back($order) {
       $trans->currency_code = $transaction->currency_code;
       $trans->remote_id = $transaction->remote_id;
       $trans->remote_status = $remote_status;
-      $trans->status = commerce_cielo_get_status_state($authenticate, $status);
+      $trans->status = _commerce_cielo_get_status_state($authenticate, $status);
       $trans->message = $message;
       $trans->payload[REQUEST_TIME] = $cielo->response;
 

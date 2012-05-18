@@ -96,7 +96,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
       $form['credit_card']['installments'] = array(
         '#type' => 'select',
         '#title' => t('Number of installments'),
-        '#options' => commerce_cielo_installment_options($po_total, $max_installments),
+        '#options' => _commerce_cielo_installment_options($po_total, $max_installments),
         '#weight' => -1,
         '#default_value' => 1,
       );
@@ -220,7 +220,7 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
     $max_installments = $form_state['order']->payment_methods['cielo|commerce_payment_cielo']['settings']['installments'][$flag . '_max'];
     $po_total = $form_state['order']->commerce_order_total['und'][0]['amount'];
 
-    $installment_options_array = commerce_cielo_installment_options($po_total, $max_installments);
+    $installment_options_array = _commerce_cielo_installment_options($po_total, $max_installments);
     $installment_options = '';
     // Construct the html tag options for Card Flag field.
     foreach ($installment_options_array as $key => $value) {
@@ -280,7 +280,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 
   // Prepare the arguments to pass to the object instantiantion of the external
   // library class.
-  $arguments = commerce_cielo_get_arguments($payment_method, $order->order_number, $charge['amount']);
+  $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $charge['amount']);
 
   // Attach the payment details for the authorize request.
   $arguments['payment'] = array(
@@ -345,13 +345,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   $transaction->amount = $charge['amount'];
   $transaction->currency_code = $charge['currency_code'];
 
-  $remote_status = '';
-  if (isset($Cielo->response['status']) && $Cielo->response['status'] == Cielo::CIELO_AUTHORIZED
-      && !$payment_method['settings']['auto_capture']) {
-    // Authorization has been granted and capturing will be done later at the
-    // store backend.
-    $remote_status = 'authorization_only';
-  }
+  $remote_status = _commerce_cielo_get_remote_status($Cielo, $payment_method['settings']['auto_capture']);
+
   // Save the transaction.
   commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $remote_status);
 
