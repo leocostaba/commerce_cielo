@@ -1,8 +1,9 @@
 # $Id$
 #
 # Portuguese, Brazil translation of Drupal (general)
-# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Copyright FRANCISCO LUZ <franciscoferreiraluz@yahoo.com.au>
 # Generated from files:
+#  commerce_cielo.admin.config.form.inc: n/a
 #  commerce_cielo.admin.inc: n/a
 #  commerce_cielo.checkout.form.inc: n/a
 #  commerce_cielo.module: n/a
@@ -13,203 +14,261 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2012-05-29 21:05-0300\n"
-"PO-Revision-Date: 2012-05-29 21:05-0300\n"
-"Last-Translator: NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Portuguese, Brazil <EMAIL@ADDRESS>\n"
+"Project-Id-Version: 7.x-1.x\n"
+"POT-Creation-Date: 2012-05-30 16:12-0300\n"
+"PO-Revision-Date: 2012-05-30 16:12-0300\n"
+"Last-Translator: FRANCISCO LUZ <franciscoferreiraluz@yahoo.com.au>\n"
+"Language-Team: Portuguese, Brazil <franciscoferreiraluz@yahoo.com.au>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: commerce_cielo.admin.inc:16
+#: commerce_cielo.admin.config.form.inc:16 commerce_cielo.admin.inc:16
 msgid "The Brazilcards Library could not be found or is not properly installed."
-msgstr "A biblioteca Brazilcards não pode ser encontrada ou não foi instalada corretamente."
+msgstr ""
+"A biblioteca Brazilcards não pode ser encontrada ou não foi "
+"instalada corretamente."
 
-#: commerce_cielo.admin.inc:58
+#: commerce_cielo.admin.config.form.inc:58 commerce_cielo.admin.inc:58
 msgid "Live / Sandbox"
 msgstr "Produção / Testes"
 
-#: commerce_cielo.admin.inc:59
+#: commerce_cielo.admin.config.form.inc:59 commerce_cielo.admin.inc:59
 msgid "Define either if this is a Sandbox enviroment for testing out the webservice or a Live Production Webservice."
-msgstr "Determina se as transações serão de teste, através do ambiente de teste da Cielo (Sandbox), ou se as transações serão para valer e, portanto, irão para o ambiente de produção da Cielo."
+msgstr ""
+"Determina se as transações serão de teste, através do ambiente de "
+"teste da Cielo (Sandbox), ou se as transações serão para valer e, "
+"portanto, irão para o ambiente de produção da Cielo."
 
-#: commerce_cielo.admin.inc:61
+#: commerce_cielo.admin.config.form.inc:61 commerce_cielo.admin.inc:61
 msgid "Live Webservice - Real Transactions"
 msgstr "Ambiente de Produção - Transações Reais"
 
-#: commerce_cielo.admin.inc:62
+#: commerce_cielo.admin.config.form.inc:62 commerce_cielo.admin.inc:62
 msgid "Cielo Sandbox - Test enviroment"
 msgstr "Ambiente de Testes - Servidor de Testes da Cielo"
 
-#: commerce_cielo.admin.inc:84;250
+#: commerce_cielo.admin.config.form.inc:84;250 commerce_cielo.admin.inc:84;250
 msgid "Webservice Credentials at CIELO"
 msgstr "Credenciais junto à CIELO"
 
-#: commerce_cielo.admin.inc:92;257
+#: commerce_cielo.admin.config.form.inc:92;257 commerce_cielo.admin.inc:92;257
 msgid "Affiliation ID"
 msgstr "Código de Filiação"
 
-#: commerce_cielo.admin.inc:93;258
+#: commerce_cielo.admin.config.form.inc:93;258 commerce_cielo.admin.inc:93;258
 msgid "This value (filiacao) is provided by Cielo up on subscription."
-msgstr "Esse código é fornecido pela Cielo após o vendedor submeter enviar o seu formulário de cadastro."
+msgstr ""
+"Esse código é fornecido pela Cielo após o vendedor submeter enviar "
+"o seu formulário de cadastro."
 
-#: commerce_cielo.admin.inc:100;265
+#: commerce_cielo.admin.config.form.inc:100;265 commerce_cielo.admin.inc:100;265
 msgid "Token Key"
 msgstr "Chave"
 
-#: commerce_cielo.admin.inc:101;266
+#: commerce_cielo.admin.config.form.inc:101;266 commerce_cielo.admin.inc:101;266
 msgid "This value (chave) is provided by Cielo up on subscription."
-msgstr "A chave é fornecido pela Cielo após o vendedor submeter enviar o seu formulário de cadastro."
+msgstr ""
+"A chave é fornecido pela Cielo após o vendedor submeter enviar o seu "
+"formulário de cadastro."
 
-#: commerce_cielo.admin.inc:108
+#: commerce_cielo.admin.config.form.inc:108
 msgid "Cielo's Language Interface"
 msgstr "Idioma da Interface Cielo"
 
-#: commerce_cielo.admin.inc:109
+#: commerce_cielo.admin.config.form.inc:109 commerce_cielo.admin.inc:109
 msgid "Set the language in which Cielo will provide its webservice responses as well as its user interface for when a client redirection to Cielo is required."
-msgstr "Determina o idioma o qual as respostas do webservice ou, quando for o caso, das telas de interação com o comprador quando este é redirecionado para o website da Cielo."
+msgstr ""
+"Determina o idioma o qual as respostas do webservice ou, quando for o "
+"caso, das telas de interação com o comprador quando este é "
+"redirecionado para o website da Cielo."
 
-#: commerce_cielo.admin.inc:116
+#: commerce_cielo.admin.config.form.inc:116
 msgid "Capturing Funds"
 msgstr "Captura de Fundos"
 
-#: commerce_cielo.admin.inc:117
+#: commerce_cielo.admin.config.form.inc:117 commerce_cielo.admin.inc:117
 msgid "Define whether or not to automatically capture the order total amount up on authorization granting."
-msgstr "Determina se o valor total do pedido deve ou não ser automaticamente capturado caso a transação seja autorizada."
+msgstr ""
+"Determina se o valor total do pedido deve ou não ser automaticamente "
+"capturado caso a transação seja autorizada."
 
-#: commerce_cielo.admin.inc:119
+#: commerce_cielo.admin.config.form.inc:119
 msgid "Authorization only (requires manual capturing after checkout)"
-msgstr "Somente Autorização (Requer captura manual após o fechamento do pedido)"
+msgstr ""
+"Somente Autorização (Requer captura manual após o fechamento do "
+"pedido)"
 
-#: commerce_cielo.admin.inc:120
+#: commerce_cielo.admin.config.form.inc:120 commerce_cielo.admin.inc:120
 msgid "Authorization and capture"
 msgstr "Autorização e captura"
 
-#: commerce_cielo.admin.inc:127
+#: commerce_cielo.admin.config.form.inc:127 commerce_cielo.admin.inc:127
 msgid "Authorization Mode"
 msgstr "Modo de Autorização"
 
-#: commerce_cielo.admin.inc:128
+#: commerce_cielo.admin.config.form.inc:128 commerce_cielo.admin.inc:128
 msgid "Define how the card holder authentication will be handled."
 msgstr "Determina como será feita a autenticação do titular do cartão."
 
-#: commerce_cielo.admin.inc:136
+#: commerce_cielo.admin.config.form.inc:136 commerce_cielo.admin.inc:136
 msgid "Where do buyers hand over their card details?"
 msgstr "Onde os compradores irão informar os dados do cartão?"
 
-#: commerce_cielo.admin.inc:138
+#: commerce_cielo.admin.config.form.inc:138 commerce_cielo.admin.inc:138
 msgid "At Cielo. Buyers are redirected to Cielo's Website."
 msgstr "No website da Cielo. Os compradores são redirecionados para a Cielo."
 
-#: commerce_cielo.admin.inc:139
+#: commerce_cielo.admin.config.form.inc:139 commerce_cielo.admin.inc:139
 msgid "At Merchant. Buyers enter their card details at the merchant's Website."
-msgstr "No website do vendedor. Os campos para coletar os dados do cartão serão apresentados aos compradores na tela do Fechamento do Pedido."
+msgstr ""
+"No website do vendedor. Os campos para coletar os dados do cartão "
+"serão apresentados aos compradores na tela do Fechamento do Pedido."
 
-#: commerce_cielo.admin.inc:157;290
+#: commerce_cielo.admin.config.form.inc:157;290 commerce_cielo.admin.inc:157;290
 msgid "Should the card holder be authenticated?"
 msgstr "Deseja que o titular do cartão seja autenticado?"
 
-#: commerce_cielo.admin.inc:158
+#: commerce_cielo.admin.config.form.inc:158 commerce_cielo.admin.inc:158
 msgid "This applies on for when Credit card mode type is selected. For Debit cards this will be always YES. Define whether or not the card holder (buyer) will be prompted for card ownership verification."
-msgstr "Essa opção se aplica ao modo 'Crédito'. Para o modo 'Débito' essa opção será sempre SIM. Determina se o titular do cartão (comprador) deverá ou não passar pelo processo de verificação de propriedade do cartão."
+msgstr ""
+"Essa opção se aplica ao modo 'Crédito'. Para o modo 'Débito' essa "
+"opção será sempre SIM. Determina se o titular do cartão "
+"(comprador) deverá ou não passar pelo processo de verificação de "
+"propriedade do cartão."
 
-#: commerce_cielo.admin.inc:160
+#: commerce_cielo.admin.config.form.inc:160 commerce_cielo.admin.inc:160
 msgid "No"
 msgstr "Não"
 
-#: commerce_cielo.admin.inc:161
+#: commerce_cielo.admin.config.form.inc:161 commerce_cielo.admin.inc:161
 msgid "Yes"
 msgstr "Sim"
 
-#: commerce_cielo.admin.inc:168
+#: commerce_cielo.admin.config.form.inc:168 commerce_cielo.admin.inc:168
 msgid "TUNING"
 msgstr "AJUSTES"
 
-#: commerce_cielo.admin.inc:169
+#: commerce_cielo.admin.config.form.inc:169 commerce_cielo.admin.inc:169
 msgid "Bank and card mode specific settings."
-msgstr "Configurações específicas relacionadas aos bancos e o tipo de transação (Débito ou Crédito)"
+msgstr ""
+"Configurações específicas relacionadas aos bancos e o tipo de "
+"transação (Débito ou Crédito)"
 
-#: commerce_cielo.admin.inc:174
+#: commerce_cielo.admin.config.form.inc:174 commerce_cielo.admin.inc:174
 msgid "Debit mode flag support"
 msgstr "Bandeiras suportadas pela transação de Débito."
 
-#: commerce_cielo.admin.inc:175
+#: commerce_cielo.admin.config.form.inc:175 commerce_cielo.admin.inc:175
 msgid "Define which flags the debit mode supports."
-msgstr "Determina quais são as bandeiras suportadas pela transação de Débito."
+msgstr ""
+"Determina quais são as bandeiras suportadas pela transação de "
+"Débito."
 
-#: commerce_cielo.admin.inc:182
+#: commerce_cielo.admin.config.form.inc:182 commerce_cielo.admin.inc:182
 msgid "Credit mode flag support"
 msgstr "Bandeiras suportadas pela transação de Crédito."
 
-#: commerce_cielo.admin.inc:183
+#: commerce_cielo.admin.config.form.inc:183 commerce_cielo.admin.inc:183
 msgid "Define which flags the credit mode supports."
-msgstr "Determina quais são as bandeiras suportadas pela transação de Crédito."
+msgstr ""
+"Determina quais são as bandeiras suportadas pela transação de "
+"Crédito."
 
-#: commerce_cielo.admin.inc:190
+#: commerce_cielo.admin.config.form.inc:190 commerce_cielo.admin.inc:190
 msgid "INSTALLMENT SETTINGS"
 msgstr "CONFIGURAÇÕES PARA PARCELAMENTO"
 
-#: commerce_cielo.admin.inc:191
+#: commerce_cielo.admin.config.form.inc:191 commerce_cielo.admin.inc:191
 msgid "These settings are ignored when the purchase order currency is other than BRL."
-msgstr "Essas configurações são ignoradas quando a moeda do pedido é diferente do Real (BRL)."
+msgstr ""
+"Essas configurações são ignoradas quando a moeda do pedido é "
+"diferente do Real (BRL)."
 
-#: commerce_cielo.admin.inc:196
+#: commerce_cielo.admin.config.form.inc:196 commerce_cielo.admin.inc:196
 msgid "Creditor"
 msgstr "Credor"
 
-#: commerce_cielo.admin.inc:197
+#: commerce_cielo.admin.config.form.inc:197 commerce_cielo.admin.inc:197
 msgid "Define who gives credit when payment term is based on installments."
 msgstr "Determina quem é o credor quando o pagamento é parcelado."
 
-#: commerce_cielo.admin.inc:205
+#: commerce_cielo.admin.config.form.inc:205 commerce_cielo.admin.inc:205
 msgid "Max number of installments for Visa"
 msgstr "Número máximo de parcelas permitidas para a Bandeira Visa"
 
-#: commerce_cielo.admin.inc:206
+#: commerce_cielo.admin.config.form.inc:206 commerce_cielo.admin.inc:206
 msgid "Defines the max number of installments that a buyer can select at the check out pane when paying with a Visa Credit Card."
-msgstr "Determina o número máximo de parcelas que o comprador poderá selecionar no painel do fechamento do pedido quando estiver pagando com um cartão Visa."
+msgstr ""
+"Determina o número máximo de parcelas que o comprador poderá "
+"selecionar no painel do fechamento do pedido quando estiver pagando "
+"com um cartão Visa."
 
-#: commerce_cielo.admin.inc:213
+#: commerce_cielo.admin.config.form.inc:213 commerce_cielo.admin.inc:213
 msgid "Max number of installments for Mastercard"
 msgstr "Número máximo de parcelas permitidas para a Bandeira Mastercard"
 
-#: commerce_cielo.admin.inc:214
+#: commerce_cielo.admin.config.form.inc:214 commerce_cielo.admin.inc:214
 msgid "Defines the max number of installments that a buyer can select at the check out pane  when paying with a Marstercard Credit Card."
-msgstr "Determina o número máximo de parcelas que o comprador poderá selecionar no painel do fechamento do pedido quando estiver pagando com um cartão Mastercard."
+msgstr ""
+"Determina o número máximo de parcelas que o comprador poderá "
+"selecionar no painel do fechamento do pedido quando estiver pagando "
+"com um cartão Mastercard."
 
-#: commerce_cielo.admin.inc:221
+#: commerce_cielo.admin.config.form.inc:221 commerce_cielo.admin.inc:221
 msgid "Max number of installments for Elo"
 msgstr "Número máximo de parcelas permitidas para a Bandeira Elo"
 
-#: commerce_cielo.admin.inc:222
+#: commerce_cielo.admin.config.form.inc:222 commerce_cielo.admin.inc:222
 msgid "Defines the max number of installments that a buyer can select at the check out pane when paying with a Elo Credit Card."
-msgstr "Determina o número máximo de parcelas que o comprador poderá selecionar no painel do fechamento do pedido quando estiver pagando com um cartão Elo."
+msgstr ""
+"Determina o número máximo de parcelas que o comprador poderá "
+"selecionar no painel do fechamento do pedido quando estiver pagando "
+"com um cartão Elo."
 
-#: commerce_cielo.admin.inc:291
+#: commerce_cielo.admin.config.form.inc:291 commerce_cielo.admin.inc:291
 msgid "Define whether or not the card holder (buyer) will be prompted for card ownership verification."
-msgstr "Determina se o titular do cartão (comprador) deverá ou não comprovar (autenticar) que é o proprietário do cartão."
+msgstr ""
+"Determina se o titular do cartão (comprador) deverá ou não "
+"comprovar (autenticar) que é o proprietário do cartão."
 
-#: commerce_cielo.admin.inc:293
+#: commerce_cielo.admin.config.form.inc:293 commerce_cielo.admin.inc:293
 msgid "No."
 msgstr "Não."
 
-#: commerce_cielo.admin.inc:294
+#: commerce_cielo.admin.config.form.inc:294 commerce_cielo.admin.inc:294
 msgid "Yes."
 msgstr "Sim."
 
-#: commerce_cielo.admin.inc:14 commerce_cielo.checkout.form.inc:10 commerce_cielo.module:101;113
+#: commerce_cielo.admin.config.form.inc:14 commerce_cielo.admin.inc:14 commerce_cielo.checkout.form.inc:10 commerce_cielo.module:101;113
 msgid "commerce_cielo"
 msgstr ""
 
-#: commerce_cielo.admin.inc:14 commerce_cielo.checkout.form.inc:10 commerce_cielo.module:101
+#: commerce_cielo.admin.config.form.inc:14 commerce_cielo.admin.inc:14 commerce_cielo.checkout.form.inc:10 commerce_cielo.module:101
 msgid "The BrazilCards Library could not be found or is not properly installed."
-msgstr "A biblioteca BrazilCards não pode ser encontrada ou foi instalada incorretamente."
+msgstr ""
+"A biblioteca BrazilCards não pode ser encontrada ou foi instalada "
+"incorretamente."
+
+#: commerce_cielo.admin.inc:108
+msgid "Language Interface"
+msgstr ""
+
+#: commerce_cielo.admin.inc:116
+msgid "Transaction Capturing"
+msgstr ""
+
+#: commerce_cielo.admin.inc:119
+msgid "Authorization only (requires manual or automated capture after checkout"
+msgstr ""
 
 #: commerce_cielo.checkout.form.inc:12
 msgid "Sorry for this but the checkout system is misconfigured, please report this to the website administrator."
-msgstr "Pedimos desculpas, aparentemente houve um problema na configuração do sistema de fechamento de pedidos. Por favor reporte este problema ao administrador do website."
+msgstr ""
+"Pedimos desculpas, aparentemente houve um problema na configuração "
+"do sistema de fechamento de pedidos. Por favor reporte este problema "
+"ao administrador do website."
 
 #: commerce_cielo.checkout.form.inc:48
 msgid "Card Type"
@@ -237,7 +296,9 @@ msgstr "Código de Segurança"
 
 #: commerce_cielo.checkout.form.inc:111;139;161
 msgid "Enter the 3 digits number located at the back of your card."
-msgstr "Informe o número com 3 dígitos localizado na parte de trás do seu cartão."
+msgstr ""
+"Informe o número com 3 dígitos localizado na parte de trás do seu "
+"cartão."
 
 #: commerce_cielo.checkout.form.inc:145 commerce_cielo.module:231
 msgid "Single pay out"
@@ -245,7 +306,10 @@ msgstr "À vista"
 
 #: commerce_cielo.checkout.form.inc:355;383 includes/commerce_cielo.router.inc:91;114
 msgid "We received the following error processing your card. Please enter you information again or try a different card."
-msgstr "A Cielo retornou o(s) seguinte(s) erro(s) ao processar o seu cartão. Por favor informe os dados do seu cartão novamente ou tente um cartão diferente."
+msgstr ""
+"A Cielo retornou o(s) seguinte(s) erro(s) ao processar o seu cartão. "
+"Por favor informe os dados do seu cartão novamente ou tente um "
+"cartão diferente."
 
 #: commerce_cielo.module:41
 msgid "Administer Commerce Cielo"
@@ -265,7 +329,9 @@ msgstr "A biblioteca Cielo não está instalada."
 
 #: commerce_cielo.module:115;113
 msgid "Cielo library is not properly installed. The file @file does not exist."
-msgstr "A biblioteca Cielo não está instalada corretamente. O arquivo @file não existe."
+msgstr ""
+"A biblioteca Cielo não está instalada corretamente. O arquivo @file "
+"não existe."
 
 #: commerce_cielo.module:133
 msgid "Cielo"
@@ -349,11 +415,15 @@ msgstr "O valor a ser capturado precisa ser numérico e positivo."
 
 #: includes/commerce_cielo.admin.inc:71
 msgid "You cannot capture more than it has been authorized at checkout."
-msgstr "Você não pode capturar um valor maior do que o foi previamente autorizado no fechamento do pedido."
+msgstr ""
+"Você não pode capturar um valor maior do que o foi previamente "
+"autorizado no fechamento do pedido."
 
 #: includes/commerce_cielo.admin.inc:76
 msgid "This authorization has passed its 5 days limit and cannot be captured."
-msgstr "Essa transação não pode ser capturada porque já expirou os 5 dias de sua criação."
+msgstr ""
+"Essa transação não pode ser capturada porque já expirou os 5 dias "
+"de sua criação."
 
 #: includes/commerce_cielo.admin.inc:110
 msgid "Transaction has been captured successfully."
@@ -361,11 +431,15 @@ msgstr "Os fundos para esta transação foram capturados com sucesso."
 
 #: includes/commerce_cielo.admin.inc:122
 msgid "Capturing failed, so the transaction will remain in a pending status."
-msgstr "A captura de fundos falhou. O status desta transação continuará como pendente."
+msgstr ""
+"A captura de fundos falhou. O status desta transação continuará "
+"como pendente."
 
 #: includes/commerce_cielo.admin.inc:146
 msgid "Are you sure you wanna void this transaction and refund the buyer?"
-msgstr "Tem certeza que você quer cancelar essa transação e reembolsar o comprador?"
+msgstr ""
+"Tem certeza que você quer cancelar essa transação e reembolsar o "
+"comprador?"
 
 #: includes/commerce_cielo.router.inc:54
 msgid "Status Code: %code (Follow Up)"
@@ -377,15 +451,24 @@ msgstr "Algo inexperado ocorreu. Por favor contate o administrador do website."
 
 #: includes/commerce_cielo.router.inc:173
 msgid "Your payment is under a clearance checking by the card operator. A member of our staff will contact you as soon as it gets clearance."
-msgstr "Seu pagamento está sendo processada pela operadora de cartões. Um membro de nossa equipe irá lhe contactar tão logo tenhamos uma resposta sobre esta transação."
+msgstr ""
+"Seu pagamento está sendo processada pela operadora de cartões. Um "
+"membro de nossa equipe irá lhe contactar tão logo tenhamos uma "
+"resposta sobre esta transação."
 
 #: includes/commerce_cielo.router.inc:179
 msgid "Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance."
-msgstr "Seu pagamento foi autorizado pela operadora de cartões entretanto um membro de nossa equipe deverá aprovar esta transação manualmente. Nós iremos lhe contactar tão logo tenhamos o resultado desta checagem."
+msgstr ""
+"Seu pagamento foi autorizado pela operadora de cartões entretanto um "
+"membro de nossa equipe deverá aprovar esta transação manualmente. "
+"Nós iremos lhe contactar tão logo tenhamos o resultado desta "
+"checagem."
 
 #: includes/commerce_cielo.router.inc:185
 msgid "Your payment was denied by the card operator. Please check with your bank or try a different card."
-msgstr "Seu pagamento foi rejeitado pela operadora do cartões. Por favor verifique junto ao seu banco ou tente um cartão diferente."
+msgstr ""
+"Seu pagamento foi rejeitado pela operadora do cartões. Por favor "
+"verifique junto ao seu banco ou tente um cartão diferente."
 
 #: includes/commerce_cielo.router.inc:191
 msgid "Your payment has been approved."
