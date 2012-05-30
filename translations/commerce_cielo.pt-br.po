@@ -459,15 +459,15 @@ msgstr ""
 #: includes/commerce_cielo.router.inc:179
 msgid "Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance."
 msgstr ""
-"Seu pagamento foi autorizado pela operadora de cartões entretanto um "
-"membro de nossa equipe deverá aprovar esta transação manualmente. "
+"Seu pagamento foi autorizado pela operadora de cartões, entretanto um "
+"membro de nossa equipe precisará aprovar esta transação manualmente. "
 "Nós iremos lhe contactar tão logo tenhamos o resultado desta "
 "checagem."
 
 #: includes/commerce_cielo.router.inc:185
 msgid "Your payment was denied by the card operator. Please check with your bank or try a different card."
 msgstr ""
-"Seu pagamento foi rejeitado pela operadora do cartões. Por favor "
+"Seu pagamento foi rejeitado pela operadora de cartões. Por favor "
 "verifique junto ao seu banco ou tente um cartão diferente."
 
 #: includes/commerce_cielo.router.inc:191

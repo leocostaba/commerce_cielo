@@ -367,7 +367,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // At this point there was no redirection, so we try to capture.
   // We check if auto_capture is switched on and if there is a pending response
   // from the last call to the webservice.
-  if ($payment_method['settings']['auto_capture'] && $transaction->status == Cielo::CIELO_AUTHORIZED) {
+  if ($payment_method['settings']['auto_capture'] == 'true' &&
+      $transaction->status == Cielo::CIELO_AUTHORIZED) {
     // Try to capture.
     $Cielo->capture();
 

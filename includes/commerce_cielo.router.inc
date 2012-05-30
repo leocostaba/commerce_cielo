@@ -96,8 +96,9 @@ function commerce_cielo_redirect_back($order) {
       }
 
       // Capturing.
-      if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_AUTHORIZED
-          && $auto_capture) {
+      if (isset($cielo->response['status']) &&
+          $cielo->response['status'] == Cielo::CIELO_AUTHORIZED &&
+          $auto_capture == 'true') {
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
         $cielo->capture();

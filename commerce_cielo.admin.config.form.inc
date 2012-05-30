@@ -50,7 +50,7 @@ function commerce_cielo_settings_form($settings = NULL) {
       'mastercard_max' => 18,
       'elo_max' => 18,
     ),
-    'auto_capture' => TRUE,
+    'auto_capture' => 'true',
   );
 
   $form['is_test'] = array(
@@ -116,8 +116,8 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#title' => t('Capturing Funds'),
     '#description' => t('Define whether or not to automatically capture the order total amount up on authorization granting.'),
     '#options' => array(
-      FALSE => t('Authorization only (requires manual capturing after checkout)'),
-      TRUE => t('Authorization and capture'),
+      'false' => t('Authorization only (requires manual capturing after checkout)'),
+      'true' => t('Authorization and capture'),
     ),
     '#default_value' => $settings['auto_capture'],
   );

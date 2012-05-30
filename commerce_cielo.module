@@ -466,7 +466,7 @@ function _commerce_cielo_get_remote_status($Cielo, $auto_capture) {
   // Default it to empty.
   $remote_status = '';
   if (isset($Cielo->response['status'])) {
-    if ($auto_capture) {
+    if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
       switch($Cielo->response['status']) {
         case Cielo::CIELO_IN_PROGRESS:
