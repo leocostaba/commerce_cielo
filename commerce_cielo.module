@@ -5,7 +5,7 @@
  */
 
 // Break down into file blocks for better maintanance.
-include_once 'commerce_cielo.admin.inc';
+include_once 'commerce_cielo.admin.config.form.inc';
 include_once 'commerce_cielo.checkout.form.inc';
 
 /**

@@ -176,7 +176,7 @@ function commerce_cielo_redirect_back($order) {
       break;
       case 'waiting_capture':
         $message = array(
-          'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearence.'),
+          'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance.'),
           'type'=> 'warning',
         );
       break;

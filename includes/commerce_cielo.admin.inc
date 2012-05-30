@@ -73,7 +73,7 @@ function commerce_cielo_capture_form_validate($form, &$form_state) {
 
   // If the authorization has expired, display an error message and redirect.
   if (time() - $transaction->created > 86400 * 5) {
-    drupal_set_message(t('This authorization has passed its 5 day limit and cannot be captured.'), 'error');
+    drupal_set_message(t('This authorization has passed its 5 days limit and cannot be captured.'), 'error');
     drupal_goto('admin/commerce/orders/' . $form_state['order']->order_id . '/payment');
   }
 }
