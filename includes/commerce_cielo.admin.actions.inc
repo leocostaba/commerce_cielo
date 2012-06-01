@@ -85,7 +85,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount      = $form_state['values']['amount'];
 
-  // Prepare the arguments to pass to object instantiantion of the external
+  // Prepare the arguments to pass to the object instantiantion of the external
   // library class.
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
@@ -141,7 +141,6 @@ function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
   $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
   $form_state['payment_method'] = $payment_method;
 
-
   $form = confirm_form($form,
     t('Are you sure you wanna void this transaction and refund the buyer?'),
     'admin/commerce/orders/' . $order->order_id . '/payment',
@@ -180,7 +179,6 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction->payload[REQUEST_TIME] = $cielo->response;
 
   $message = _commerce_cielo_set_status_message($cielo->response);
-
 
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
 }
@@ -225,5 +223,4 @@ function _commerce_cielo_set_status_message($reponse) {
   }
 
   return $message;
-
 }

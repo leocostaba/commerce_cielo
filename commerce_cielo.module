@@ -73,7 +73,7 @@ function commerce_cielo_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
-    'file' => 'includes/commerce_cielo.admin.inc',
+    'file' => 'includes/commerce_cielo.admin.actions.inc',
   );
 
   // Add a menu item for voiding captured transactions.
