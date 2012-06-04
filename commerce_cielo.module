@@ -95,7 +95,7 @@ function commerce_cielo_menu() {
 /**
  * Implements hook_init().
  */
-function commerce_cielo_init () {
+function commerce_cielo_init (){
   if (!libraries_get_path('brazilcards-lib')) {
     // Log it to the system log.
     watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
@@ -162,10 +162,10 @@ function commerce_cielo_capture_access($order, $transaction) {
     case COMMERCE_CIELO_STATUS_AUTHORIZED:
     case COMMERCE_CIELO_STATUS_NOT_CAPTURED:
       $needs_to_be_captured = TRUE;
-    break;
+      break;
     default:
       $needs_to_be_captured = FALSE;
-    break;
+      break;
   }
 
   // Check if it was done more than 5 days past the original authorization.
@@ -177,7 +177,7 @@ function commerce_cielo_capture_access($order, $transaction) {
   if (user_access('capture commerce cielo')
       && commerce_payment_transaction_access('update', $order, $transaction)
       && $needs_to_be_captured) {
-      return TRUE;
+    return TRUE;
   }
 
   return FALSE;
@@ -190,6 +190,7 @@ function commerce_cielo_capture_access($order, $transaction) {
  *   The order the transaction is on.
  * @param Object $transaction
  *   The payment transaction object to be voided.
+ *
  * @return boolean
  *   Whether or not the user is allowed to void the payment transaction.
  */
@@ -208,7 +209,7 @@ function commerce_cielo_void_access($order, $transaction) {
   // Check if user has permission to void and update payments on this order.
   if (user_access('void commerce cielo')
       && commerce_payment_transaction_access('update', $order, $transaction)) {
-      return TRUE;
+    return TRUE;
   }
 
   return FALSE;
@@ -222,6 +223,7 @@ function commerce_cielo_void_access($order, $transaction) {
  *   Total amount of the Purcharse Order.
  * @param int $max_installments
  *   The max number of installments.
+ *
  * @return Array
  *   The number range of installment options.
  */
@@ -346,7 +348,7 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
 /**
  * Saves the payment transaction after each call to the remote Webservice.
  *
- * @param object $Cielo
+ * @param object $cielo
  *   The object from the external library class
  * @param object $transaction
  *   The payment transaction object
@@ -363,26 +365,26 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
  *   authorization_only  - Transaction was successfully authorized and is
  *                         awaiting for manual capturing at the store backend.
  */
-function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $remote_status = '') {
+function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $remote_status = '') {
   $remote_id = '';
-  if (isset($Cielo->response['tid'])) {
-    $remote_id = check_plain($Cielo->response['tid']);
+  if (isset($cielo->response['tid'])) {
+    $remote_id = check_plain($cielo->response['tid']);
   }
 
   $status = '';
   $message = '';
 
-  if (isset($Cielo->response['status'])) {
+  if (isset($cielo->response['status'])) {
     // No transaction errors have occured.
-    $status = check_plain($Cielo->response['status']);
+    $status = check_plain($cielo->response['status']);
     $message = t('Status Code: %code', array('%code' => $status));
 
-    if (isset($Cielo->response['url-autenticacao'])) {
+    if (isset($cielo->response['url-autenticacao'])) {
       $message .= t("<br />Waiting: Buyer was redirected to Cielo.");
       $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
     }
 
-    foreach ($Cielo->response as $process => $values) {
+    foreach ($cielo->response as $process => $values) {
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
@@ -392,25 +394,25 @@ function commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $r
       }
     }
   }
-  elseif (isset($Cielo->response['codigo'])) {
+  elseif (isset($cielo->response['codigo'])) {
     // The remote server reported an error.
-    $status = check_plain($Cielo->response['codigo']);
+    $status = check_plain($cielo->response['codigo']);
     $message = t('Error Code: %code', array('%code' => $status));
-    $message .= '<br />' . t('Error Message: %message', array('%message' => check_plain(t($Cielo->response['mensagem']))));
+    $message .= '<br />' . t('Error Message: %message', array('%message' => check_plain(t($cielo->response['mensagem']))));
   }
 
   $transaction->remote_id = $remote_id;
   $transaction->remote_status = empty($remote_status) ? _commerce_cielo_get_status_state($authenticate, $status) : $remote_status;
   $transaction->status = _commerce_cielo_get_status_state($authenticate, $status);
   $transaction->message = $message;
-  $transaction->payload[REQUEST_TIME] = $Cielo->response;
+  $transaction->payload[REQUEST_TIME] = $cielo->response;
 
   // Save the transaction.
   commerce_payment_transaction_save($transaction);
 }
 
 /**
- * Helper function
+ * Helper function.
  * It includes the external library class file and set the commom
  * arguments used for instantiating the webservice object.
  *
@@ -454,21 +456,22 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
 /**
  * Define the remote status based on the status code sent by the remote service.
  *
- * @param Object $Cielo
+ * @param Object $cielo
  *   The Cielo Webservice Object.
  * @param Boolean $auto_capture
  *   Whether or not the payment transaction was set to be captured right
  *   after authorization or in a later time by the store manager.
+ *
  * @return String $remote_status
  *   The remote status which is either 'not captured' or 'authorized_only'.
  */
-function _commerce_cielo_get_remote_status($Cielo, $auto_capture) {
+function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
   // Default it to empty.
   $remote_status = '';
-  if (isset($Cielo->response['status'])) {
+  if (isset($cielo->response['status'])) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
-      switch($Cielo->response['status']) {
+      switch($cielo->response['status']) {
         case Cielo::CIELO_IN_PROGRESS:
         case Cielo::CIELO_BEING_AUTHENTICATED:
         case Cielo::CIELO_AUTHENTICATED:
@@ -476,13 +479,13 @@ function _commerce_cielo_get_remote_status($Cielo, $auto_capture) {
           // approved, so the store manager must try to capture the money
           // manually.
           $remote_status = COMMERCE_CIELO_STATUS_NOT_CAPTURED;
-        break;
+          break;
       }
     }
     else {
-      if ($Cielo->response['status'] == Cielo::CIELO_AUTHORIZED) {
+      if ($cielo->response['status'] == Cielo::CIELO_AUTHORIZED) {
         // auto_capture was set to FALSE and the transaction was authorized.
-        $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;  
+        $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;
       }
     }
   }
@@ -492,9 +495,10 @@ function _commerce_cielo_get_remote_status($Cielo, $auto_capture) {
 /**
  * Callback function for applying the t() function on the values of an array.
  *
- * @param Array $array
+ * @param array $array
  *   The array that needs its values to be translatable.
- * @return Array $array
+ *
+ * @return array $array
  *   The same array that came in but with its values wrapped in t().
  */
 function commerce_cielo_t($array) {
@@ -508,13 +512,13 @@ function commerce_cielo_t($array) {
  * Check for warnings that might have been issued by the external library
  * (Brazilcards) and save them in to the watchdog log.
  *
- * @param Object $Cielo
+ * @param Object $cielo
  *   The instantiated object from the external library class.
  */
-function commerce_cielo_log_watch_dog($Cielo) {
-  if (!empty($Cielo->warnings)) {
+function commerce_cielo_log_watch_dog($cielo) {
+  if (!empty($cielo->warnings)) {
     // Record it in the watch dog log.
-    foreach ($Cielo->warnings as $error => $error_message) {
+    foreach ($cielo->warnings as $error => $error_message) {
       if (is_array($error_message)) {
         foreach($error_message as $error_delta_message) {
           watchdog('library_brazilcards', $error . ': ' . $error_delta_message, array(), WATCHDOG_DEBUG);
@@ -525,6 +529,6 @@ function commerce_cielo_log_watch_dog($Cielo) {
       }
     }
     // Clear up the object property.
-    $Cielo->warnings = array();
+    $cielo->warnings = array();
   }
 }

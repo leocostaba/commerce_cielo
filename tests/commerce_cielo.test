@@ -33,9 +33,9 @@ class CommerceCieloWebTestCase extends CommerceBaseTestCase {
     parent::setUp($modules);
 
     $this->site_admin = $this->createSiteAdmin();
-    cache_clear_all(); // Just in case
+    // Just in case.
+    cache_clear_all();
   }
 
 
 }
-

@@ -141,18 +141,18 @@ function commerce_cielo_redirect_back($order) {
         // approved, so the store manager must try to capture the money
         // manually.
         $message_type = 'under_clearance';
-      break;
+        break;
       case Cielo::CIELO_AUTHORIZED:
         $message_type = 'waiting_capture';
-      break;
+        break;
       case Cielo::CIELO_AUTHORIZATION_DENIED:
       case Cielo::CIELO_NOT_CAPTURED:
       case Cielo::CIELO_VOIDED:
         $message_type = 'failed';
-      break;
+        break;
       case Cielo::CIELO_CAPTURED:
         $message_type = 'success';
-      break;
+        break;
       case Cielo::CIELO_NOT_AUTHENTICATED:
         if ($authenticate) {
           // Store only accepts transactions that pass by authentication,
@@ -164,7 +164,7 @@ function commerce_cielo_redirect_back($order) {
           // this transaction manually in a later time.
           $message_type = 'under_clearance';
         }
-      break;
+        break;
     }
 
     // Set the message appropriatly.
@@ -174,25 +174,25 @@ function commerce_cielo_redirect_back($order) {
           'message' => t('Your payment is under a clearance checking by the card operator. A member of our staff will contact you as soon as it gets clearance.'),
           'type'=> 'warning',
         );
-      break;
+        break;
       case 'waiting_capture':
         $message = array(
           'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance.'),
           'type'=> 'warning',
         );
-      break;
+        break;
       case 'failed':
         $message = array(
           'message' => t('Your payment was denied by the card operator. Please check with your bank or try a different card.'),
           'type'=> 'error',
         );
-      break;
+        break;
       case 'success':
         $message = array(
           'message' => t('Your payment has been approved.'),
           'type'=> 'status',
         );
-      break;
+        break;
     }
   }
 

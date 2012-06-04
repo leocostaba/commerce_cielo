@@ -28,15 +28,13 @@ function commerce_cielo_capture_form($form, &$form_state, $order, $transaction) 
   // Convert the price amount to a user friendly decimal value.
   $default_amount = commerce_currency_amount_to_decimal($default_amount, $transaction->currency_code);
 
-  $description = implode('<br />', array(
-    t('Authorization: @amount', array('@amount' => commerce_currency_format($transaction->amount, $transaction->currency_code))),
-    t('Order balance: @balance', array('@balance' => commerce_currency_format($balance['amount'], $balance['currency_code']))),
-  ));
-
   $form['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Capture amount'),
-    '#description' => $description,
+    '#description' => implode('<br />', array(
+      t('Authorization: @amount', array('@amount' => commerce_currency_format($transaction->amount, $transaction->currency_code))),
+      t('Order balance: @balance', array('@balance' => commerce_currency_format($balance['amount'], $balance['currency_code']))),
+    )),
     '#default_value' => $default_amount,
     '#field_suffix' => check_plain($transaction->currency_code),
     '#size' => 16,

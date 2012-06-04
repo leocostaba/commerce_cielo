@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Commerce Cielo payment method backend configuration form.
+ */
 
 /**
  * Payment method callback: settings form.
@@ -184,7 +188,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#options' => Cielo::get_card_flags(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['tuning']['credit_mode_flag_support'],
   );
-  
+
   $form['installments'] = array(
     '#type' => 'fieldset',
     '#title' => t('INSTALLMENT SETTINGS'),

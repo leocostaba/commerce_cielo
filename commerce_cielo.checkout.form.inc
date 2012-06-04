@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Commerce Cielo checkout pane payment form.
+ */
 
 /**
  * Payment method callback: checkout form.
@@ -125,61 +129,59 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
  * AJAX callback for CVC and Installment fields.
  */
 function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
-  // Set $settings. 
+  // Set $settings.
   $settings = $form_state['values']['commerce_payment']['payment_methods']['cielo|commerce_payment_cielo']['settings'];
 
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
-  
+
   // We need to send empty values to the BrazilCards library, so that is the why
   // these fields are being hidden instead of removed.
   $card_cvs_code =  '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code" style="display:none">
-                      <label for="edit-commerce-payment-payment-details-credit-card-code">'. t('Security Code') . '</label>
+                      <label for="edit-commerce-payment-payment-details-credit-card-code">' . t('Security Code') . '</label>
                         <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
-                        <div class="description">'. t('Enter the 3 digits number located at the back of your card.') . '</div>
+                        <div class="description">' . t('Enter the 3 digits number located at the back of your card.') . '</div>
                     </div>';
 
   $installments_field = '<div class="form-item form-type-select form-item-commerce-payment-payment-details-credit-card-installments" style="display:none">
-                          <label for="edit-commerce-payment-payment-details-credit-card-installments">'. t('Number of installments') . '</label>
+                          <label for="edit-commerce-payment-payment-details-credit-card-installments">' . t('Number of installments') . '</label>
                           <select id="edit-commerce-payment-payment-details-credit-card-installments" name="commerce_payment[payment_details][credit_card][installments]" class="form-select">
-                            <option value="1" selected="selected">'. t('Single pay out') . '</option>
+                            <option value="1" selected="selected">' . t('Single pay out') . '</option>
                           </select>
                         </div>';
- 
+
   // Set default.
   $flag_support_setting = 'debit_mode_flag_support';
-  
 
   if ($type === Cielo::CIELO_TYPE_CREDIT_CARD) {
-  
+
     $flag_support_setting = 'credit_mode_flag_support';
-    
+
     // Reconstruct cvc field.
-    $card_cvs_code =  '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code">
+    $card_cvs_code = '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code">
                         <label for="edit-commerce-payment-payment-details-credit-card-code">'. t('Security Code') . '</label>
                           <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
-                          <div class="description">'. t('Enter the 3 digits number located at the back of your card.') . '</div>
+                          <div class="description">' . t('Enter the 3 digits number located at the back of your card.') . '</div>
                       </div>';
 
     if ($currency == 'BRL') {
- 
+
       $installments_field_array = $form['commerce_payment']['payment_details']['credit_card']['installments']['#options'];
       $installments_field_options = '';
-      
+
       foreach ($installments_field_array as $key => $value) {
         $installments_field_options .= "<option value='$key'>$value</option>";
       }
 
       $installments_field = '<div class="form-item form-type-select form-item-commerce-payment-payment-details-credit-card-installments">
-                              <label for="edit-commerce-payment-payment-details-credit-card-installments">'. t('Number of installments') . '</label>
+                              <label for="edit-commerce-payment-payment-details-credit-card-installments">' . t('Number of installments') . '</label>
                               <select id="edit-commerce-payment-payment-details-credit-card-installments" name="commerce_payment[payment_details][credit_card][installments]" class="form-select">' .
                                 $installments_field_options .
                               '</select>
                             </div>';
-      
     }
   }
- 
+
   $flag_options_array = Cielo::get_card_flags(TRUE, 'commerce_cielo_t');
   $flag_options = '';
   // Construct the html tag options for Card Flag field.
@@ -188,7 +190,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
       $flag_options .= "<option value='$key'>$value</option>";
     }
   }
-  
+
   $card_flag_options = '<select id="edit-commerce-payment-payment-details-credit-card-flag" ' .
                           'name="commerce_payment[payment_details][credit_card][flag]"' .
                           'class="form-select">' .
@@ -206,8 +208,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
 }
 
 /**
- * AJAX callback for calculating the max number of installments for the
- * installment field.
+ * AJAX callback - Calculates the max number of installments.
  */
 function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
 
@@ -224,15 +225,15 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
     $installment_options = '';
     // Construct the html tag options for Card Flag field.
     foreach ($installment_options_array as $key => $value) {
-        $installment_options .= "<option value='$key'>$value</option>";
+      $installment_options .= "<option value='$key'>$value</option>";
     }
 
-    $installment_options =  '<select id="edit-commerce-payment-payment-details-credit-card-installments" ' .
+    $installment_options = '<select id="edit-commerce-payment-payment-details-credit-card-installments" ' .
                               'name="commerce_payment[payment_details][credit_card][installments]"' .
                               'class="form-select">' .
                                $installment_options .
                             '</select>';
-   
+
     return array(
       '#type' => 'ajax',
       '#commands' => array(
@@ -315,29 +316,29 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   }
 
   // Instantiate the external library.
-  $Cielo = new Cielo($arguments);
+  $cielo = new Cielo($arguments);
 
   if ($payment_method['settings']['is_test']) {
-    setcookie('filiacao', $Cielo->membership['filiacao']);
-    setcookie('chave', $Cielo->membership['chave']);
+    setcookie('filiacao', $cielo->membership['filiacao']);
+    setcookie('chave', $cielo->membership['chave']);
   }
 
   // Set the currency code.
-  $Cielo->setCurrency($currency_numeric_code);
+  $cielo->setCurrency($currency_numeric_code);
 
   // Set the language interface.
-  $Cielo->setLanguage($payment_method['settings']['language']);
+  $cielo->setLanguage($payment_method['settings']['language']);
 
   // Set the url for returning from Cielo.
   $url = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
-  $Cielo->setReturnUrl($url);
+  $cielo->setReturnUrl($url);
 
   // Request Authorization.
-  $Cielo->authorize();
+  $cielo->authorize();
 
   // Check for and save any warnings that might have been issued by the external
   // library (Brazilcards).
-  commerce_cielo_log_watch_dog($Cielo);
+  commerce_cielo_log_watch_dog($cielo);
 
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
@@ -345,22 +346,22 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   $transaction->amount = $charge['amount'];
   $transaction->currency_code = $charge['currency_code'];
 
-  $remote_status = _commerce_cielo_get_remote_status($Cielo, $payment_method['settings']['auto_capture']);
+  $remote_status = _commerce_cielo_get_remote_status($cielo, $payment_method['settings']['auto_capture']);
 
   // Save the transaction.
-  commerce_cielo_save_transaction($Cielo, $transaction, $authenticate, $remote_status);
+  commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $remote_status);
 
-   // Rebuilds the form if autorize transaction fails.
+  // Rebuilds the form if autorize transaction fails.
   if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
     drupal_set_message(t('We received the following error processing your card. Please enter you information again or try a different card.'), 'error');
     drupal_set_message($transaction->message, 'error');
     return FALSE;
   }
 
-  if (isset($Cielo->response['url-autenticacao'])) {
+  if (isset($cielo->response['url-autenticacao'])) {
     // Send browser to Cielo for collecting card details and/or performing
     // ownership authentication.
-    drupal_goto($Cielo->response['url-autenticacao']);
+    drupal_goto($cielo->response['url-autenticacao']);
   }
 
   // CAPTURING.
@@ -370,14 +371,14 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   if ($payment_method['settings']['auto_capture'] == 'true' &&
       $transaction->status == Cielo::CIELO_AUTHORIZED) {
     // Try to capture.
-    $Cielo->capture();
+    $cielo->capture();
 
     // Check for and save any warnings that might have been issued by the
     // external library (Brazilcards).
-    commerce_cielo_log_watch_dog($Cielo);
+    commerce_cielo_log_watch_dog($cielo);
 
     // Save the transaction.
-    commerce_cielo_save_transaction($Cielo, $transaction, $authenticate);
+    commerce_cielo_save_transaction($cielo, $transaction, $authenticate);
 
     // Rebuilds the form if capture transaction fails.
     if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
