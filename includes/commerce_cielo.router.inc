@@ -51,15 +51,15 @@ function commerce_cielo_redirect_back($order) {
       $message = '';
       if (isset($cielo->response['status'])) {
         // No transaction errors have occured.
-        $status = check_plain($cielo->response['status']);
-        $message = t('Status Code: %code (Follow Up)', array('%code' => $status));
+        $status = $cielo->response['status'];
+        $message = t('Status Code: @code (Follow Up)', array('@code' => $status));
 
         foreach ($cielo->response as $process => $values) {
           if (is_array($values)) {
             // Payment tab message.
             if (key_exists('mensagem', $values)) {
               // Assemble payment tab message.
-              $message .= '<br />' . check_plain(t("$process:")) . ' ' . check_plain($values['mensagem']);
+              $message .= '<br />' . t("@process: @message", array('@$process' => $process, '@message' => $values['mensagem']));
             }
           }
         }

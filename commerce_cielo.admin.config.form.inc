@@ -11,7 +11,7 @@ function commerce_cielo_settings_form($settings = NULL) {
   include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
   // System permission.
   if (!user_access('administer commerce cielo')) {
-    return FALSE;
+    return drupal_access_denied();
   }
 
   $form = array();
@@ -196,13 +196,13 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#default_value' => $settings['installments']['creditor'],
   );
 
-  // TODO: Validate input to make sure a numeric value has been entered.
   $form['installments']['visa_max'] = array(
     '#type' => 'textfield',
     '#title' => t('Max number of installments for Visa'),
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Visa Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['visa_max'],
+    '#element_validate' => 'element_validate_number',
   );
 
   $form['installments']['mastercard_max'] = array(
@@ -211,6 +211,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane  when paying with a Marstercard Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['mastercard_max'],
+    '#element_validate' => 'element_validate_number'
   );
 
   $form['installments']['elo_max'] = array(
@@ -219,6 +220,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Elo Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['elo_max'],
+    '#element_validate' => 'element_validate_number',
   );
 
   return $form;

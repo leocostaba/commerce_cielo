@@ -69,7 +69,7 @@ function commerce_cielo_capture_form_validate($form, &$form_state) {
   }
 
   // If the authorization has expired, display an error message and redirect.
-  if (time() - $transaction->created > 86400 * 5) {
+  if (REQUEST_TIME - $transaction->created > 86400 * 5) {
     drupal_set_message(t('This authorization has passed its 5 days limit and cannot be captured.'), 'error');
     drupal_goto('admin/commerce/orders/' . $form_state['order']->order_id . '/payment');
   }
@@ -201,16 +201,14 @@ function _commerce_cielo_set_status_message($reponse) {
   if (isset($reponse['status'])) {
     // No transaction errors have occured.
     $message['status']  = $reponse['status'];
-    $message['message'] = t('Status Code: %code', array('%code' => check_plain($message['status'])));
+    $message['message'] = t('Status Code: @code', array('@code' => $message['status']));
 
     foreach ($reponse as $process => $values) {
-      $process = check_plain($process);
-
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
           // Assemble payment tab message.
-          $message['message'] .= '<br />' . t("$process:") . ' ' . check_plain($values['mensagem']);
+          $message['message'] .= '<br />' . t("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
         }
       }
     }
@@ -219,8 +217,8 @@ function _commerce_cielo_set_status_message($reponse) {
   elseif (isset($reponse['codigo'])) {
     // The remote server reported an error.
     $message['status'] = check_plain($reponse['codigo']);
-    $message['message'] = t('Error Code: %code', array('%code' => check_plain($reponse['codigo'])));
-    $message['message'] .= '<br />' . t('Error Message: %message', array('%message' => t(check_plain($reponse['mensagem']))));
+    $message['message'] = t('Error Code: @code', array('@code' => $reponse['codigo']));
+    $message['message'] .= '<br />' . t('Error Message: @message', array('@message' => $reponse['mensagem']));
   }
 
   return $message;

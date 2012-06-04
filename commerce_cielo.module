@@ -140,7 +140,7 @@ function commerce_cielo_capture_access($order, $transaction) {
   }
 
   // Check if it was done more than 5 days past the original authorization.
-  if (time() - $transaction->created > 86400 * 5) {
+  if (REQUEST_TIME - $transaction->created > 86400 * 5) {
     return FALSE;
   }
 
@@ -175,7 +175,7 @@ function commerce_cielo_void_access($order, $transaction) {
   }
 
   // Return FALSE if it is not the same day as the transaction was captured.
-  if (time() - $transaction->created > 86400) {
+  if (REQUEST_TIME - $transaction->created > 86400) {
     return FALSE;
   }
 
@@ -201,15 +201,15 @@ function commerce_cielo_void_access($order, $transaction) {
  *   The number range of installment options.
  */
 function _commerce_cielo_installment_options($po_total, $max_installments) {
-  for ($i = 1; $i <= $max_installments; $i++) {
-    if ($i == 1) {
-      $options[$i] = t('Single pay out');
+  for ($option = 1; $option <= $max_installments; $option++) {
+    if ($option == 1) {
+      $options[$option] = t('Single pay out');
     }
     else {
       // TODO: Create a hook or something or perhaps add some fine-grained
       // settings that allow interest rates to be applied on pre-set conditions.
-      $installment_amount = number_format(($po_total / 100) / $i, 2, ',', '.');
-      $options[$i] = t('@parcelax @valor  |  with No interest', array('@parcela' => $i, '@valor' => $installment_amount));
+      $installment_amount = number_format(($po_total / 100) / $option, 2, ',', '.');
+      $options[$option] = t('@parcelax @valor  |  with No interest', array('@parcela' => $option, '@valor' => $installment_amount));
     }
   }
   return $options;
@@ -353,7 +353,7 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
     $message = t('Status Code: %code', array('%code' => $status));
 
     if (isset($cielo->response['url-autenticacao'])) {
-      $message .= t("<br />Waiting: Buyer was redirected to Cielo.");
+      $message .= '<br />' . t("Waiting: Buyer was redirected to Cielo.");
       $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
     }
 
@@ -362,7 +362,7 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
           // Assemble payment tab message.
-          $message .= '<br />' . check_plain(t("$process: @message", array('@message' => check_plain($values['mensagem']))));
+          $message .= '<br />' . format_string("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
         }
       }
     }
@@ -370,8 +370,8 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
   elseif (isset($cielo->response['codigo'])) {
     // The remote server reported an error.
     $status = check_plain($cielo->response['codigo']);
-    $message = t('Error Code: %code', array('%code' => $status));
-    $message .= '<br />' . t('Error Message: %message', array('%message' => check_plain(t($cielo->response['mensagem']))));
+    $message = t('Error Code: @code', array('@code' => $status));
+    $message .= '<br />' . t('Error Message: @message', array('@message' => $cielo->response['mensagem']));
   }
 
   $transaction->remote_id = $remote_id;
@@ -494,11 +494,11 @@ function commerce_cielo_log_watch_dog($cielo) {
     foreach ($cielo->warnings as $error => $error_message) {
       if (is_array($error_message)) {
         foreach($error_message as $error_delta_message) {
-          watchdog('library_brazilcards', $error . ': ' . $error_delta_message, array(), WATCHDOG_DEBUG);
+          watchdog('library_brazilcards', '@error: @error_delta_message', array('@error' => $error, '@error_delta_message' => $error_delta_message), WATCHDOG_DEBUG);
         }
       }
       else {
-        watchdog('library_brazilcards', $error . ': ' . $error_message, array(), WATCHDOG_DEBUG);
+        watchdog('library_brazilcards', '@error: @error_message', array('@error' => $error, '@error_message' => $error_message), WATCHDOG_DEBUG);
       }
     }
     // Clear up the object property.
