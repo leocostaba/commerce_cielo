@@ -1,12 +1,12 @@
 Dependencies:
 * Drupal Commerce and its dependencies.
 * Payment module shipped with Drupal Commerce
-* Libraries API 7.x-1.x
-* Brazilcards PHP Library | this is an external library also written by me.
+* Libraries API 7.x-1.x or greater
+* Cielo PHP Library | this is an external library also written by me.
 
-Installing Brazilcards PHP Library:
-* Download it from http://drupalista-br.github.com/BrazilCards and copy the
-  folder brazilcards-lib in to either sites/all/libraries or
+Installing Cielo PHP Library:
+* Download it from https://github.com/drupalista-br/Cielo-PHP-Library/tags and
+  copy the folder cielo-php-lib into either sites/all/libraries or
   sites/<yourDomain>/libraries
 
 Testing out on Cielo's Sandbox:

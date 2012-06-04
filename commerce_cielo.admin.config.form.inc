@@ -8,17 +8,10 @@
  * Payment method callback: settings form.
  */
 function commerce_cielo_settings_form($settings = NULL) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
   // System permission.
   if (!user_access('administer commerce cielo')) {
     return FALSE;
-  }
-
-  if (!libraries_get_path('brazilcards-lib')) {
-    // Log it to the system log.
-    watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
-    // Notify the user.
-    drupal_set_message(t('The Brazilcards Library could not be found or is not properly installed.'), 'error');
-    return;
   }
 
   $form = array();

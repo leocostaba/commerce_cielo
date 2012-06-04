@@ -11,6 +11,7 @@
  * from Cielo.
  */
 function commerce_cielo_redirect_back($order) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
   // Set authenticate default value.
   $authenticate = TRUE;
 

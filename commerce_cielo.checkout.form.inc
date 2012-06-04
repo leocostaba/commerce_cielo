@@ -8,15 +8,7 @@
  * Payment method callback: checkout form.
  */
 function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  // Check if the external library (Brazilcards) is installed.
-  if (!libraries_get_path('brazilcards-lib')) {
-    // Log it to the system log.
-    watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
-    // Notify the user.
-    drupal_set_message(t('Sorry for this but the checkout system is misconfigured, please report this to the website administrator.'), 'error');
-    // Send the user to the home page.
-    drupal_goto('checkout');
-  }
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 
   // Possible values for type are 1 == Credit Card or A == Debit Card.
   $type = Cielo::CIELO_TYPE_CREDIT_CARD;
@@ -271,6 +263,7 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
  * Payment method callback: checkout form submission.
  */
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 
   // Define whether or not the card holder ownership should be authenticated.
   $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];

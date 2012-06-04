@@ -1,0 +1,59 @@
+<?php
+/**
+ * @file
+ * Check if Cielo PHP Library is properly installed.
+ */
+
+function commerce_cielo_requirements($phase) {
+
+  // Make sure libraries.module is loaded.
+  if (!module_exists('libraries')) {
+    module_load_include('module', 'libraries', 'libraries');
+  }
+
+  $requirements = array();
+
+  $t = get_t();
+
+  if ($phase == 'runtime' || $phase == 'install') {
+    if (function_exists('libraries_get_path')) {
+      if (!libraries_get_path('cielo-php-lib')) {
+        $requirements['cielo_php_lib'] = array(
+          'value' => $t('Not installed'), 
+          'severity' => REQUIREMENT_ERROR, 
+          'description' => $t('The Cielo PHP Library could not be found or is not properly installed.'),
+        );
+      }
+      else {
+        $cielo_class_file = drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
+        // Check if Cielo class is installed.
+        if (file_exists($cielo_class_file)) {
+          $requirements['cielo_php_lib'] = array(
+            'value' => 'Cielo PHP Library',
+            'severity' => REQUIREMENT_OK, 
+          );
+        }
+        else {
+          // Main class is missing.
+          $requirements['cielo_php_lib'] = array(
+            'value' => $t('Missing class'), 
+            'severity' => REQUIREMENT_ERROR, 
+            'description' => $t('Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file)),
+          );
+        }
+      }
+    }
+    else {
+      // Libraries module couldn't be loaded.
+      $requirements['cielo_php_lib'] = array(
+        'value' => $t('Libraries Issue'), 
+        'severity' => REQUIREMENT_ERROR, 
+        'description' => $t('The Cielo PHP Library relies on Libraries module to function. It seems that there is something wrong with Libraries.'),
+      );
+    }
+
+    $requirements['cielo_php_lib']['title'] = $t("Cielo PHP Library");
+  }
+
+  return $requirements;
+}

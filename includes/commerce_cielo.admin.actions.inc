@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Administrative forms for the Cielo module.
@@ -80,6 +79,8 @@ function commerce_cielo_capture_form_validate($form, &$form_state) {
  * Submit handler: process a prior authorization capture.
  */
 function commerce_cielo_capture_form_submit($form, &$form_state) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
+
   $transaction = $form_state['transaction'];
   $amount      = $form_state['values']['amount'];
 
@@ -132,6 +133,8 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
  * Form callback: allows the user to void a captured transaction.
  */
 function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
+
   $form_state['order']       = $order;
   $form_state['transaction'] = $transaction;
 

@@ -93,36 +93,6 @@ function commerce_cielo_menu() {
 }
 
 /**
- * Implements hook_init().
- */
-function commerce_cielo_init () {
-  if (!libraries_get_path('brazilcards-lib')) {
-    // Log it to the system log.
-    watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
-    // Notify the administrator.
-    $notify_administrator = t('Cielo library is not installed.');
-  }
-  else {
-    $cielo_class_file = drupal_realpath(libraries_get_path('brazilcards-lib')) . '/Cielo.class.php';
-    // Check if Cielo library is installed.
-    if (file_exists($cielo_class_file)) {
-      include_once $cielo_class_file;
-    }
-    else {
-      // Log it to the system log.
-      watchdog('commerce_cielo', 'Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file), WATCHDOG_DEBUG);
-      // Notify the administrator.
-      $notify_administrator = t('Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file));
-    }
-  }
-
-  // Display the notification message if the user has the proper permissions.
-  if (user_access('administer commerce cielo') && !empty($notify_administrator)) {
-    drupal_set_message($notify_administrator, 'error');
-  }
-}
-
-/**
  * Implements hook_commerce_payment_method_info().
  */
 function commerce_cielo_commerce_payment_method_info() {
@@ -163,6 +133,7 @@ function commerce_cielo_capture_access($order, $transaction) {
     case COMMERCE_CIELO_STATUS_NOT_CAPTURED:
       $needs_to_be_captured = TRUE;
       break;
+
     default:
       $needs_to_be_captured = FALSE;
       break;
@@ -195,6 +166,8 @@ function commerce_cielo_capture_access($order, $transaction) {
  *   Whether or not the user is allowed to void the payment transaction.
  */
 function commerce_cielo_void_access($order, $transaction) {
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
+
   // Return FALSE if the transaction isn't for Cielo or isn't
   // captured.
   if ($transaction->payment_method != 'cielo' || $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
