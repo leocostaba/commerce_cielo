@@ -182,7 +182,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function
+ * Helper function.
  * Generates a user friendly status / error message fetched
  * from the remote server.
  *
@@ -202,7 +202,7 @@ function _commerce_cielo_set_status_message($reponse) {
 
     foreach ($reponse as $process => $values) {
       $process = check_plain($process);
-      
+
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {

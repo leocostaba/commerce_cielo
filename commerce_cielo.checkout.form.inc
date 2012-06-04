@@ -137,7 +137,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
 
   // We need to send empty values to the BrazilCards library, so that is the why
   // these fields are being hidden instead of removed.
-  $card_cvs_code =  '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code" style="display:none">
+  $card_cvs_code = '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code" style="display:none">
                       <label for="edit-commerce-payment-payment-details-credit-card-code">' . t('Security Code') . '</label>
                         <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
                         <div class="description">' . t('Enter the 3 digits number located at the back of your card.') . '</div>
@@ -159,7 +159,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
 
     // Reconstruct cvc field.
     $card_cvs_code = '<div class="form-item form-type-textfield form-item-commerce-payment-payment-details-credit-card-code">
-                        <label for="edit-commerce-payment-payment-details-credit-card-code">'. t('Security Code') . '</label>
+                        <label for="edit-commerce-payment-payment-details-credit-card-code">' . t('Security Code') . '</label>
                           <input type="text" id="edit-commerce-payment-payment-details-credit-card-code" name="commerce_payment[payment_details][credit_card][code]" value="" size="3" maxlength="128" class="form-text" />
                           <div class="description">' . t('Enter the 3 digits number located at the back of your card.') . '</div>
                       </div>';

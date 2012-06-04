@@ -86,7 +86,7 @@ function commerce_cielo_redirect_back($order) {
       // Save the follow up transaction.
       commerce_payment_transaction_save($trans);
 
-       // Rebuilds the checkout review form if follow up transaction fails.
+      // Rebuilds the checkout review form if follow up transaction fails.
       if ($trans->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
         drupal_set_message(t('We received the following error processing your card. Please enter you information again or try a different card.'), 'error');
         drupal_set_message($trans->message, 'error');
@@ -131,8 +131,8 @@ function commerce_cielo_redirect_back($order) {
     'message' => t('Something unexpected happened. Please contact the store administrator.'),
     'type'=> 'error',
   );
-  if (isset($cielo->response['status'])) {
 
+  if (isset($cielo->response['status'])) {
     switch($cielo->response['status']) {
       case Cielo::CIELO_IN_PROGRESS:
       case Cielo::CIELO_AUTHENTICATED:
@@ -142,17 +142,21 @@ function commerce_cielo_redirect_back($order) {
         // manually.
         $message_type = 'under_clearance';
         break;
+
       case Cielo::CIELO_AUTHORIZED:
         $message_type = 'waiting_capture';
         break;
+
       case Cielo::CIELO_AUTHORIZATION_DENIED:
       case Cielo::CIELO_NOT_CAPTURED:
       case Cielo::CIELO_VOIDED:
         $message_type = 'failed';
         break;
+
       case Cielo::CIELO_CAPTURED:
         $message_type = 'success';
         break;
+
       case Cielo::CIELO_NOT_AUTHENTICATED:
         if ($authenticate) {
           // Store only accepts transactions that pass by authentication,
@@ -175,18 +179,21 @@ function commerce_cielo_redirect_back($order) {
           'type'=> 'warning',
         );
         break;
+
       case 'waiting_capture':
         $message = array(
           'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance.'),
           'type'=> 'warning',
         );
         break;
+
       case 'failed':
         $message = array(
           'message' => t('Your payment was denied by the card operator. Please check with your bank or try a different card.'),
           'type'=> 'error',
         );
         break;
+
       case 'success':
         $message = array(
           'message' => t('Your payment has been approved.'),

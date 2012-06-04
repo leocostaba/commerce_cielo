@@ -95,7 +95,7 @@ function commerce_cielo_menu() {
 /**
  * Implements hook_init().
  */
-function commerce_cielo_init (){
+function commerce_cielo_init () {
   if (!libraries_get_path('brazilcards-lib')) {
     // Log it to the system log.
     watchdog('commerce_cielo', 'The BrazilCards Library could not be found or is not properly installed.', array(), WATCHDOG_DEBUG);
@@ -509,7 +509,7 @@ function commerce_cielo_t($array) {
 }
 
 /**
- * Check for warnings that might have been issued by the external library
+ * Check for warnings that might have been issued by the external library.
  * (Brazilcards) and save them in to the watchdog log.
  *
  * @param Object $cielo
