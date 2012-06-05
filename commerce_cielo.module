@@ -4,6 +4,9 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
+// Load the Cielo PHP Library.
+_commerce_cielo_include_library();
+
 // Break down into file blocks for better maintanance.
 include_once 'commerce_cielo.admin.config.form.inc';
 include_once 'commerce_cielo.checkout.form.inc';
@@ -166,7 +169,6 @@ function commerce_cielo_capture_access($order, $transaction) {
  *   Whether or not the user is allowed to void the payment transaction.
  */
 function commerce_cielo_void_access($order, $transaction) {
-  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 
   // Return FALSE if the transaction isn't for Cielo or isn't
   // captured.
@@ -479,6 +481,14 @@ function commerce_cielo_t($array) {
     $array[$key] = t($value);
   }
   return $array;
+}
+
+/**
+ * Includes the external library Cielo PHP Library.
+ */
+function _commerce_cielo_include_library() {
+  module_load_include('module', 'libraries', 'libraries');
+  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 }
 
 /**

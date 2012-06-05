@@ -4,12 +4,13 @@
  * Commerce Cielo checkout pane payment form.
  */
 
+// Load the Cielo PHP Library.
+_commerce_cielo_include_library();
+
 /**
  * Payment method callback: checkout form.
  */
 function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
-
   // Possible values for type are 1 == Credit Card or A == Debit Card.
   $type = Cielo::CIELO_TYPE_CREDIT_CARD;
   if (isset($pane_values['payment_details']['credit_card']['type'])) {
@@ -263,7 +264,6 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
  * Payment method callback: checkout form submission.
  */
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 
   // Define whether or not the card holder ownership should be authenticated.
   $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];

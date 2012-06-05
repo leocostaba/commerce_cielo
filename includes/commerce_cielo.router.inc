@@ -4,6 +4,9 @@
  * Concludes the payment process after returning from Cielo.
  */
 
+// Load the Cielo PHP Library.
+_commerce_cielo_include_library();
+
 /**
  * Callback Function for checkout/%commerce_order/payment/cielo.
  *
@@ -11,7 +14,7 @@
  * from Cielo.
  */
 function commerce_cielo_redirect_back($order) {
-  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
+
   // Set authenticate default value.
   $authenticate = TRUE;
 
