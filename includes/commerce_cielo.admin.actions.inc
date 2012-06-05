@@ -212,7 +212,6 @@ function _commerce_cielo_set_status_message($reponse) {
         }
       }
     }
-
   }
   elseif (isset($reponse['codigo'])) {
     // The remote server reported an error.

@@ -211,7 +211,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane  when paying with a Marstercard Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['mastercard_max'],
-    '#element_validate' => 'element_validate_number'
+    '#element_validate' => 'element_validate_number',
   );
 
   $form['installments']['elo_max'] = array(
