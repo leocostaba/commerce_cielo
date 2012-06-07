@@ -487,7 +487,9 @@ function commerce_cielo_t($array) {
  * Includes the external library Cielo PHP Library.
  */
 function _commerce_cielo_include_library() {
-  module_load_include('module', 'libraries', 'libraries');
+  if (!function_exists('libraries_get_path')) {
+    module_load_include('module', 'libraries', 'libraries');
+  }
   include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 }
 

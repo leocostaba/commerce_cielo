@@ -68,7 +68,7 @@ function commerce_cielo_capture_form_validate($form, &$form_state) {
 
   // Ensure the amount is less than or equal to the authorization amount.
   if ($amount > commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code)) {
-    form_set_error('amount', t('You cannot capture more than it has been authorized at checkout.'));
+    form_set_error('amount', t('You cannot capture more than it has been authorized at the checkout.'));
   }
 
   // If the authorization has expired, display an error message and redirect.
