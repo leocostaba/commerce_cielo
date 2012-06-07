@@ -8,4 +8,5 @@ dependencies[] = libraries
 core = 7.x
 configure = admin/commerce/config/payment-methods/manage/commerce_payment_cielo
 
+files[] = includes/commerce_cielo_external_class.inc
 files[] = tests/commerce_cielo.test

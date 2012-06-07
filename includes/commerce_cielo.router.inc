@@ -4,9 +4,6 @@
  * Concludes the payment process after returning from Cielo.
  */
 
-// Load the Cielo PHP Library.
-_commerce_cielo_include_library();
-
 /**
  * Callback Function for checkout/%commerce_order/payment/cielo.
  *
@@ -31,7 +28,7 @@ function commerce_cielo_redirect_back($order) {
       $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
 
       // Instantiate a object from the external library.
-      $cielo = new Cielo($arguments);
+      $cielo = new CommerceCieloCielo($arguments);
 
       // Set the tid assigned by Cielo.
       $cielo->setTid($transaction->remote_id);
@@ -101,7 +98,7 @@ function commerce_cielo_redirect_back($order) {
 
       // Capturing.
       if (isset($cielo->response['status']) &&
-          $cielo->response['status'] == Cielo::CIELO_AUTHORIZED &&
+          $cielo->response['status'] == CommerceCieloCielo::CIELO_AUTHORIZED &&
           $auto_capture == 'true') {
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
@@ -138,30 +135,30 @@ function commerce_cielo_redirect_back($order) {
 
   if (isset($cielo->response['status'])) {
     switch($cielo->response['status']) {
-      case Cielo::CIELO_IN_PROGRESS:
-      case Cielo::CIELO_AUTHENTICATED:
-      case Cielo::CIELO_BEING_AUTHENTICATED:
+      case CommerceCieloCielo::CIELO_IN_PROGRESS:
+      case CommerceCieloCielo::CIELO_AUTHENTICATED:
+      case CommerceCieloCielo::CIELO_BEING_AUTHENTICATED:
         // The transaction hasn't been denied but either hasn't been
         // approved, so the store manager must try to capture the money
         // manually.
         $message_type = 'under_clearance';
         break;
 
-      case Cielo::CIELO_AUTHORIZED:
+      case CommerceCieloCielo::CIELO_AUTHORIZED:
         $message_type = 'waiting_capture';
         break;
 
-      case Cielo::CIELO_AUTHORIZATION_DENIED:
-      case Cielo::CIELO_NOT_CAPTURED:
-      case Cielo::CIELO_VOIDED:
+      case CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED:
+      case CommerceCieloCielo::CIELO_NOT_CAPTURED:
+      case CommerceCieloCielo::CIELO_VOIDED:
         $message_type = 'failed';
         break;
 
-      case Cielo::CIELO_CAPTURED:
+      case CommerceCieloCielo::CIELO_CAPTURED:
         $message_type = 'success';
         break;
 
-      case Cielo::CIELO_NOT_AUTHENTICATED:
+      case CommerceCieloCielo::CIELO_NOT_AUTHENTICATED:
         if ($authenticate) {
           // Store only accepts transactions that pass by authentication,
           // so we set it as failed.

@@ -4,9 +4,6 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
-// Load the Cielo PHP Library.
-_commerce_cielo_include_library();
-
 // Break down into file blocks for better maintanance.
 include_once 'commerce_cielo.admin.config.form.inc';
 include_once 'commerce_cielo.checkout.form.inc';
@@ -254,39 +251,39 @@ function _commerce_cielo_installment_options($po_total, $max_installments) {
 function _commerce_cielo_get_status_state($authenticate, $status) {
   if ($authenticate) {
     $pending = array(
-      Cielo::CIELO_TRANSACTION_CREATED,
-      Cielo::CIELO_IN_PROGRESS,
-      Cielo::CIELO_AUTHENTICATED,
-      Cielo::CIELO_AUTHORIZED,
-      Cielo::CIELO_BEING_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_TRANSACTION_CREATED,
+      CommerceCieloCielo::CIELO_IN_PROGRESS,
+      CommerceCieloCielo::CIELO_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_AUTHORIZED,
+      CommerceCieloCielo::CIELO_BEING_AUTHENTICATED,
     );
     $failure = array(
       // It has been explicit set that card holder must be authenticated.
-      Cielo::CIELO_NOT_AUTHENTICATED,
-      Cielo::CIELO_AUTHORIZATION_DENIED,
-      Cielo::CIELO_NOT_CAPTURED,
+      CommerceCieloCielo::CIELO_NOT_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED,
+      CommerceCieloCielo::CIELO_NOT_CAPTURED,
     );
   }
   else {
     $pending = array(
-      Cielo::CIELO_TRANSACTION_CREATED,
-      Cielo::CIELO_IN_PROGRESS,
-      Cielo::CIELO_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_TRANSACTION_CREATED,
+      CommerceCieloCielo::CIELO_IN_PROGRESS,
+      CommerceCieloCielo::CIELO_AUTHENTICATED,
       // Even if authentication fails, it still might be possible to get an
       // authorization and thereafter a capturing.
-      Cielo::CIELO_NOT_AUTHENTICATED,
-      Cielo::CIELO_AUTHORIZED,
-      Cielo::CIELO_BEING_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_NOT_AUTHENTICATED,
+      CommerceCieloCielo::CIELO_AUTHORIZED,
+      CommerceCieloCielo::CIELO_BEING_AUTHENTICATED,
     );
     $failure = array(
-      Cielo::CIELO_AUTHORIZATION_DENIED,
-      Cielo::CIELO_NOT_CAPTURED,
+      CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED,
+      CommerceCieloCielo::CIELO_NOT_CAPTURED,
     );
   }
 
   $status_code = array(
     'PENDING' => $pending,
-    'SUCCESS' => array(Cielo::CIELO_CAPTURED),
+    'SUCCESS' => array(CommerceCieloCielo::CIELO_CAPTURED),
     'FAILURE' => $failure,
   );
 
@@ -447,9 +444,9 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
       switch($cielo->response['status']) {
-        case Cielo::CIELO_IN_PROGRESS:
-        case Cielo::CIELO_BEING_AUTHENTICATED:
-        case Cielo::CIELO_AUTHENTICATED:
+        case CommerceCieloCielo::CIELO_IN_PROGRESS:
+        case CommerceCieloCielo::CIELO_BEING_AUTHENTICATED:
+        case CommerceCieloCielo::CIELO_AUTHENTICATED:
           // The transaction hasn't been denied but either hasn't been
           // approved, so the store manager must try to capture the money
           // manually.
@@ -458,7 +455,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
       }
     }
     else {
-      if ($cielo->response['status'] == Cielo::CIELO_AUTHORIZED) {
+      if ($cielo->response['status'] == CommerceCieloCielo::CIELO_AUTHORIZED) {
         // auto_capture was set to FALSE and the transaction was authorized.
         $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;
       }
@@ -481,16 +478,6 @@ function commerce_cielo_t($array) {
     $array[$key] = t($value);
   }
   return $array;
-}
-
-/**
- * Includes the external library Cielo PHP Library.
- */
-function _commerce_cielo_include_library() {
-  if (!function_exists('libraries_get_path')) {
-    module_load_include('module', 'libraries', 'libraries');
-  }
-  include_once drupal_realpath(libraries_get_path('cielo-php-lib')) . '/Cielo.class.php';
 }
 
 /**

@@ -4,9 +4,6 @@
  * Administrative forms for the Cielo module.
  */
 
-// Load the Cielo PHP Library.
-_commerce_cielo_include_library();
-
 /**
  * Form callback: allows the user to capture a prior authorization.
  */
@@ -91,7 +88,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
-  $cielo = new Cielo($arguments);
+  $cielo = new CommerceCieloCielo($arguments);
 
   // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
@@ -107,7 +104,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   $message = _commerce_cielo_set_status_message($cielo->response);
 
-  if (isset($cielo->response['status']) && $cielo->response['status'] == Cielo::CIELO_CAPTURED) {
+  if (isset($cielo->response['status']) && $cielo->response['status'] == CommerceCieloCielo::CIELO_CAPTURED) {
     drupal_set_message(t('Transaction has been captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
@@ -166,7 +163,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
-  $cielo = new Cielo($arguments);
+  $cielo = new CommerceCieloCielo($arguments);
 
   // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
