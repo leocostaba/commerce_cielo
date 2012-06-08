@@ -482,7 +482,7 @@ function commerce_cielo_t($array) {
 
 /**
  * Check for warnings that might have been issued by the external library.
- * (Brazilcards) and save them in to the watchdog log.
+ * (Cielo PHP Library) and save them in to the watchdog log.
  *
  * @param Object $cielo
  *   The instantiated object from the external library class.

@@ -20,7 +20,7 @@ Testing out on Cielo's Sandbox:
   (Click on the "Edit" operation under Actions)
 * Make sure "Cielo Sandbox - Test environment" is switched on. While in there,
   you can also play around with the other configuration settings.
-  Note: The external library (Brazilcards) takes care of assigning the test
+  Note: The external library (Cielo PHP Library) takes care of assigning the test
   credentials.
 * You can use the following card numbers for testing on both credit and debit
   modes:
