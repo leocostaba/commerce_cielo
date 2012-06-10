@@ -25,24 +25,21 @@ function commerce_cielo_settings_form($settings = NULL) {
       // chave.
       'token' => '',
     ),
-    'language' => CommerceCieloCielo::CIELO_LANG_EN,
-    // Default == 2. Possible values are 0 == authentication only,
-    // 1 == authorize only if authenticaded, 2 == authorize either authenticated
-    // or not, 3 == skip authentication and go straight to authorization.
-    'authorization_type' => CommerceCieloCielo::CIELO_AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT,
+    'language' => CommerceCieloLib::LANG_EN,
+    'authorization_type' => CommerceCieloLib::AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT,
     'collect_card_details' => TRUE,
     'authenticate' => TRUE,
 
     // Bank and card mode specific settings.
     'tuning' => array(
-      'debit_mode_flag_support' => CommerceCieloCielo::get_card_flags(FALSE),
-      'credit_mode_flag_support' => CommerceCieloCielo::get_card_flags(FALSE),
+      'debit_mode_flag_support' => CommerceCieloLib::get_card_flags(FALSE),
+      'credit_mode_flag_support' => CommerceCieloLib::get_card_flags(FALSE),
       // @see commerce_cielo_bank_codes().
       'debit_mode_suported_banks' => '237',
     ),
 
     'installments' => array(
-      'creditor' => CommerceCieloCielo::CIELO_CARD_ISSUER_IS_CREDITOR,
+      'creditor' => CommerceCieloLib::CARD_ISSUER_IS_CREDITOR,
       'visa_max' => 18,
       'mastercard_max' => 18,
       'elo_max' => 18,
@@ -104,7 +101,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'select',
     '#title' => t("Cielo's Language Interface"),
     '#description' => t('Set the language in which Cielo will provide its webservice responses as well as its user interface for when a client redirection to Cielo is required.'),
-    '#options' => CommerceCieloCielo::get_languages(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_languages(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['language'],
   );
 
@@ -123,7 +120,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'radios',
     '#title' => t('Authorization Mode'),
     '#description' => t('Define how the card holder authentication will be handled.'),
-    '#options' => CommerceCieloCielo::get_authorization_options(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_authorization_options(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['authorization_type'],
   );
 
@@ -170,7 +167,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'checkboxes',
     '#title' => t('Debit mode flag support'),
     '#description' => t('Define which flags the debit mode supports.'),
-    '#options' => CommerceCieloCielo::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['tuning']['debit_mode_flag_support'],
   );
 
@@ -178,7 +175,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'checkboxes',
     '#title' => t('Credit mode flag support'),
     '#description' => t('Define which flags the credit mode supports.'),
-    '#options' => CommerceCieloCielo::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['tuning']['credit_mode_flag_support'],
   );
 
@@ -192,7 +189,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'radios',
     '#title' => t('Creditor'),
     '#description' => t('Define who gives credit when payment term is based on installments.'),
-    '#options' => CommerceCieloCielo::get_installment_creditor_options(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_installment_creditor_options(TRUE, 'commerce_cielo_t'),
     '#default_value' => $settings['installments']['creditor'],
   );
 

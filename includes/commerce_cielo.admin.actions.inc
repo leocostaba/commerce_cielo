@@ -55,8 +55,8 @@ function commerce_cielo_capture_form($form, &$form_state, $order, $transaction) 
  * Validate handler: ensure a valid amount is given.
  */
 function commerce_cielo_capture_form_validate($form, &$form_state) {
-  $transaction    = $form_state['transaction'];
-  $amount         = $form_state['values']['amount'];
+  $transaction = $form_state['transaction'];
+  $amount = $form_state['values']['amount'];
 
   // Ensure a positive numeric amount has been entered for capture.
   if (!is_numeric($amount) || $amount <= 0) {
@@ -81,14 +81,14 @@ function commerce_cielo_capture_form_validate($form, &$form_state) {
 function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   $transaction = $form_state['transaction'];
-  $amount      = $form_state['values']['amount'];
+  $amount = $form_state['values']['amount'];
 
   // Prepare the arguments to pass to the object instantiantion of the external
   // library class.
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
-  $cielo = new CommerceCieloCielo($arguments);
+  $cielo = new CommerceCieloLib($arguments);
 
   // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);
@@ -104,7 +104,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
 
   $message = _commerce_cielo_set_status_message($cielo->response);
 
-  if (isset($cielo->response['status']) && $cielo->response['status'] == CommerceCieloCielo::CIELO_CAPTURED) {
+  if (isset($cielo->response['status']) && $cielo->response['status'] == CommerceCieloLib::CAPTURED) {
     drupal_set_message(t('Transaction has been captured successfully.'));
 
     // Update the transaction amount to the actual capture amount.
@@ -163,7 +163,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
-  $cielo = new CommerceCieloCielo($arguments);
+  $cielo = new CommerceCieloLib($arguments);
 
   // Set the tid assigned by Cielo.
   $cielo->setTid($transaction->remote_id);

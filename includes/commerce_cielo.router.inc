@@ -28,7 +28,7 @@ function commerce_cielo_redirect_back($order) {
       $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
 
       // Instantiate a object from the external library.
-      $cielo = new CommerceCieloCielo($arguments);
+      $cielo = new CommerceCieloLib($arguments);
 
       // Set the tid assigned by Cielo.
       $cielo->setTid($transaction->remote_id);
@@ -59,7 +59,7 @@ function commerce_cielo_redirect_back($order) {
             // Payment tab message.
             if (key_exists('mensagem', $values)) {
               // Assemble payment tab message.
-              $message .= '<br />' . t("@process: @message", array('@$process' => $process, '@message' => $values['mensagem']));
+              $message .= '<br />' . t("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
             }
           }
         }
@@ -98,7 +98,7 @@ function commerce_cielo_redirect_back($order) {
 
       // Capturing.
       if (isset($cielo->response['status']) &&
-          $cielo->response['status'] == CommerceCieloCielo::CIELO_AUTHORIZED &&
+          $cielo->response['status'] == CommerceCieloLib::AUTHORIZED &&
           $auto_capture == 'true') {
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
@@ -132,74 +132,59 @@ function commerce_cielo_redirect_back($order) {
     'message' => t('Something unexpected happened. Please contact the store administrator.'),
     'type'=> 'error',
   );
+  $under_clearance = array(
+    'message' => t('Your payment is under a clearance checking by the card operator. A member of our staff will contact you as soon as it gets clearance.'),
+    'type'=> 'warning',
+  );
+  $waiting_capture = array(
+    'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance.'),
+    'type'=> 'warning',
+  );
+  $failed = array(
+    'message' => t('Your payment was denied by the card operator. Please check with your bank or try a different card.'),
+    'type'=> 'error',
+  );
+  $success = array(
+    'message' => t('Your payment has been approved.'),
+    'type'=> 'status',
+  );
 
   if (isset($cielo->response['status'])) {
     switch($cielo->response['status']) {
-      case CommerceCieloCielo::CIELO_IN_PROGRESS:
-      case CommerceCieloCielo::CIELO_AUTHENTICATED:
-      case CommerceCieloCielo::CIELO_BEING_AUTHENTICATED:
-        // The transaction hasn't been denied but either hasn't been
-        // approved, so the store manager must try to capture the money
+      case CommerceCieloLib::IN_PROGRESS:
+      case CommerceCieloLib::AUTHENTICATED:
+      case CommerceCieloLib::BEING_AUTHENTICATED:
+        // The transaction hasn't been denied but hasn't been
+        // approved either, so the store manager must try to capture the money
         // manually.
-        $message_type = 'under_clearance';
+        $message = $under_clearance;
         break;
 
-      case CommerceCieloCielo::CIELO_AUTHORIZED:
-        $message_type = 'waiting_capture';
+      case CommerceCieloLib::AUTHORIZED:
+        $message = $waiting_capture;
         break;
 
-      case CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED:
-      case CommerceCieloCielo::CIELO_NOT_CAPTURED:
-      case CommerceCieloCielo::CIELO_VOIDED:
-        $message_type = 'failed';
+      case CommerceCieloLib::AUTHORIZATION_DENIED:
+      case CommerceCieloLib::NOT_CAPTURED:
+      case CommerceCieloLib::VOIDED:
+        $message = $failed;
         break;
 
-      case CommerceCieloCielo::CIELO_CAPTURED:
-        $message_type = 'success';
+      case CommerceCieloLib::CAPTURED:
+        $message = $success;
         break;
 
-      case CommerceCieloCielo::CIELO_NOT_AUTHENTICATED:
+      case CommerceCieloLib::NOT_AUTHENTICATED:
         if ($authenticate) {
           // Store only accepts transactions that pass by authentication,
           // so we set it as failed.
-          $message_type = 'failed';
+          $message = $failed;
         }
         else {
           // Although not authenticated, it might still be possible to capture
           // this transaction manually in a later time.
-          $message_type = 'under_clearance';
+          $message = $under_clearance;
         }
-        break;
-    }
-
-    // Set the message appropriatly.
-    switch($message_type) {
-      case 'under_clearance':
-        $message = array(
-          'message' => t('Your payment is under a clearance checking by the card operator. A member of our staff will contact you as soon as it gets clearance.'),
-          'type'=> 'warning',
-        );
-        break;
-
-      case 'waiting_capture':
-        $message = array(
-          'message' => t('Your payment has been authorized by the card operator but a member of our staff has to manually analyze this transaction. We will contact you as soon as this transaction gets clearance.'),
-          'type'=> 'warning',
-        );
-        break;
-
-      case 'failed':
-        $message = array(
-          'message' => t('Your payment was denied by the card operator. Please check with your bank or try a different card.'),
-          'type'=> 'error',
-        );
-        break;
-
-      case 'success':
-        $message = array(
-          'message' => t('Your payment has been approved.'),
-          'type'=> 'status',
-        );
         break;
     }
   }

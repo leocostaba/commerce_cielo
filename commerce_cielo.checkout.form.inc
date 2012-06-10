@@ -8,14 +8,14 @@
  * Payment method callback: checkout form.
  */
 function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  // Possible values for type are 1 == Credit Card or A == Debit Card.
-  $type = CommerceCieloCielo::CIELO_TYPE_CREDIT_CARD;
+  // Set the transaction type ( Credit or Debit ).
+  $type = CommerceCieloLib::TYPE_CREDIT_CARD;
   if (isset($pane_values['payment_details']['credit_card']['type'])) {
     $type = $pane_values['payment_details']['credit_card']['type'];
   }
 
   // Default flag.
-  $flag = CommerceCieloCielo::CIELO_FLAG_MASTERCARD;
+  $flag = CommerceCieloLib::FLAG_MASTERCARD;
 
   if (isset($pane_values['payment_details']['credit_card']['flag'])) {
     $flag = $pane_values['payment_details']['credit_card']['flag'];
@@ -33,7 +33,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     $form['credit_card']['code']['#prefix'] = '<div id="credit-card_code_wrapper">';
     $form['credit_card']['code']['#suffix'] = '</div>';
 
-    if ($type == CommerceCieloCielo::CIELO_TYPE_DEBIT_CARD) {
+    if ($type == CommerceCieloLib::TYPE_DEBIT_CARD) {
       // Hides the CVC field.
       $form['credit_card']['code']['#type'] = 'hidden';
       $form['credit_card']['code']['#required'] = FALSE;
@@ -44,8 +44,8 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
     '#type' => 'radios',
     '#title' => t('Card Type'),
     '#options' => array(
-      CommerceCieloCielo::CIELO_TYPE_CREDIT_CARD => t('Credit'),
-      CommerceCieloCielo::CIELO_TYPE_DEBIT_CARD => t('Debit')),
+      CommerceCieloLib::TYPE_CREDIT_CARD => t('Credit'),
+      CommerceCieloLib::TYPE_DEBIT_CARD => t('Debit')),
     '#weight' => -3,
     '#ajax' => array(
       'callback' => 'commerce_cielo_credit_card_type_ajax_callback',
@@ -56,7 +56,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   $form['credit_card']['flag'] = array(
     '#type' => 'select',
     '#title' => t('Card Flag'),
-    '#options' => CommerceCieloCielo::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
     '#weight' => -2,
     '#ajax' => array(
       'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
@@ -79,7 +79,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   $currency_code = $order->commerce_order_total['und'][0]['currency_code'];
 
   if ($currency_code == 'BRL') {
-    if ($type == CommerceCieloCielo::CIELO_TYPE_CREDIT_CARD) {
+    if ($type == CommerceCieloLib::TYPE_CREDIT_CARD) {
       // Get settings to build the options list.
       $max_installments = $payment_method['settings']['installments'][$flag . '_max'];
       $po_total = $order->commerce_order_total['und'][0]['amount'];
@@ -97,15 +97,15 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
  * AJAX callback for CVC and Installment fields.
  */
 function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
-  
+
   // Set $settings.
   $settings = $form_state['values']['commerce_payment']['payment_methods']['cielo|commerce_payment_cielo']['settings'];
 
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
-  // We need to send empty values to the Cielo PHP Library library, so that is the why
-  // these fields are being hidden instead of removed.
+  // We need to send empty values to the Cielo PHP Library library, so that is
+  // the why these fields are being hidden instead of removed.
   $form['commerce_payment']['payment_details']['credit_card']['code']['#type'] = 'hidden';
   $form['commerce_payment']['payment_details']['credit_card']['code']['#required'] = FALSE;
   $form['commerce_payment']['payment_details']['credit_card']['installments']['#type'] = 'hidden';
@@ -113,7 +113,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
   // Set default.
   $flag_support_setting = 'debit_mode_flag_support';
 
-  if ($type === CommerceCieloCielo::CIELO_TYPE_CREDIT_CARD) {
+  if ($type === CommerceCieloLib::TYPE_CREDIT_CARD) {
 
     $flag_support_setting = 'credit_mode_flag_support';
 
@@ -126,7 +126,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
     }
   }
 
-  $flag_options = CommerceCieloCielo::get_card_flags(TRUE, 'commerce_cielo_t');
+  $flag_options = CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t');
 
   // Remove the flags that are not supported for the current selected card type.
   foreach ($flag_options as $key => $value) {
@@ -156,8 +156,8 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
-  if ($currency == 'BRL' && $type == CommerceCieloCielo::CIELO_TYPE_CREDIT_CARD) {
-    // Get this flag's installment settings.
+  if ($currency == 'BRL' && $type == CommerceCieloLib::TYPE_CREDIT_CARD) {
+    // Get the current flag installment settings.
     $flag = $form_state['values']['commerce_payment']['payment_details']['credit_card']['flag'];
     $max_installments = $form_state['order']->payment_methods['cielo|commerce_payment_cielo']['settings']['installments'][$flag . '_max'];
     $po_total = $form_state['order']->commerce_order_total['und'][0]['amount'];
@@ -167,11 +167,11 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
   }
 
   return array(
-   '#type' => 'ajax',
-   '#commands' => array(
+    '#type' => 'ajax',
+    '#commands' => array(
       ajax_command_replace("#credit-card_installments_wrapper", render($form['commerce_payment']['payment_details']['credit_card']['installments'])),
     ),
-  ); 
+  );
 }
 
 /**
@@ -200,8 +200,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // Define whether or not the card holder ownership should be authenticated.
   $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
-  if ($pane_values['credit_card']['type'] == CommerceCieloCielo::CIELO_TYPE_DEBIT_CARD) {
-    $payment_method['settings']['authorization_type'] = CommerceCieloCielo::CIELO_AUTHORIZE_ONLY_IF_AUTHENTICATED;
+  if ($pane_values['credit_card']['type'] == CommerceCieloLib::TYPE_DEBIT_CARD) {
+    $payment_method['settings']['authorization_type'] = CommerceCieloLib::AUTHORIZE_ONLY_IF_AUTHENTICATED;
   }
 
   // Prepare the arguments to pass to the object instantiantion of the external
@@ -241,8 +241,8 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   }
 
   // Instantiate the external library.
-  $cielo = new CommerceCieloCielo($arguments);
-  
+  $cielo = new CommerceCieloLib($arguments);
+
   // This is done because there are 2 different sets of credentials that might
   // be assigned by the external library to the transaction depending on the
   // admin configurations.
@@ -299,7 +299,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // We check if auto_capture is switched on and if there is a pending response
   // from the last call to the webservice.
   if ($payment_method['settings']['auto_capture'] == 'true' &&
-      $transaction->status == CommerceCieloCielo::CIELO_AUTHORIZED) {
+      $transaction->status == CommerceCieloLib::AUTHORIZED) {
     // Try to capture.
     $cielo->capture();
 

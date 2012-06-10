@@ -251,39 +251,39 @@ function _commerce_cielo_installment_options($po_total, $max_installments) {
 function _commerce_cielo_get_status_state($authenticate, $status) {
   if ($authenticate) {
     $pending = array(
-      CommerceCieloCielo::CIELO_TRANSACTION_CREATED,
-      CommerceCieloCielo::CIELO_IN_PROGRESS,
-      CommerceCieloCielo::CIELO_AUTHENTICATED,
-      CommerceCieloCielo::CIELO_AUTHORIZED,
-      CommerceCieloCielo::CIELO_BEING_AUTHENTICATED,
+      CommerceCieloLib::TRANSACTION_CREATED,
+      CommerceCieloLib::IN_PROGRESS,
+      CommerceCieloLib::AUTHENTICATED,
+      CommerceCieloLib::AUTHORIZED,
+      CommerceCieloLib::BEING_AUTHENTICATED,
     );
     $failure = array(
       // It has been explicit set that card holder must be authenticated.
-      CommerceCieloCielo::CIELO_NOT_AUTHENTICATED,
-      CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED,
-      CommerceCieloCielo::CIELO_NOT_CAPTURED,
+      CommerceCieloLib::NOT_AUTHENTICATED,
+      CommerceCieloLib::AUTHORIZATION_DENIED,
+      CommerceCieloLib::NOT_CAPTURED,
     );
   }
   else {
     $pending = array(
-      CommerceCieloCielo::CIELO_TRANSACTION_CREATED,
-      CommerceCieloCielo::CIELO_IN_PROGRESS,
-      CommerceCieloCielo::CIELO_AUTHENTICATED,
+      CommerceCieloLib::TRANSACTION_CREATED,
+      CommerceCieloLib::IN_PROGRESS,
+      CommerceCieloLib::AUTHENTICATED,
       // Even if authentication fails, it still might be possible to get an
       // authorization and thereafter a capturing.
-      CommerceCieloCielo::CIELO_NOT_AUTHENTICATED,
-      CommerceCieloCielo::CIELO_AUTHORIZED,
-      CommerceCieloCielo::CIELO_BEING_AUTHENTICATED,
+      CommerceCieloLib::NOT_AUTHENTICATED,
+      CommerceCieloLib::AUTHORIZED,
+      CommerceCieloLib::BEING_AUTHENTICATED,
     );
     $failure = array(
-      CommerceCieloCielo::CIELO_AUTHORIZATION_DENIED,
-      CommerceCieloCielo::CIELO_NOT_CAPTURED,
+      CommerceCieloLib::AUTHORIZATION_DENIED,
+      CommerceCieloLib::NOT_CAPTURED,
     );
   }
 
   $status_code = array(
     'PENDING' => $pending,
-    'SUCCESS' => array(CommerceCieloCielo::CIELO_CAPTURED),
+    'SUCCESS' => array(CommerceCieloLib::CAPTURED),
     'FAILURE' => $failure,
   );
 
@@ -353,7 +353,7 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
 
     if (isset($cielo->response['url-autenticacao'])) {
       $message .= '<br />' . t("Waiting: Buyer was redirected to Cielo.");
-      $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
+      $remote_status = COMMERCE_STATUS_REDIRECTED;
     }
 
     foreach ($cielo->response as $process => $values) {
@@ -444,9 +444,9 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
       switch($cielo->response['status']) {
-        case CommerceCieloCielo::CIELO_IN_PROGRESS:
-        case CommerceCieloCielo::CIELO_BEING_AUTHENTICATED:
-        case CommerceCieloCielo::CIELO_AUTHENTICATED:
+        case CommerceCieloLib::IN_PROGRESS:
+        case CommerceCieloLib::BEING_AUTHENTICATED:
+        case CommerceCieloLib::AUTHENTICATED:
           // The transaction hasn't been denied but either hasn't been
           // approved, so the store manager must try to capture the money
           // manually.
@@ -455,7 +455,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
       }
     }
     else {
-      if ($cielo->response['status'] == CommerceCieloCielo::CIELO_AUTHORIZED) {
+      if ($cielo->response['status'] == CommerceCieloLib::AUTHORIZED) {
         // auto_capture was set to FALSE and the transaction was authorized.
         $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;
       }
@@ -482,7 +482,6 @@ function commerce_cielo_t($array) {
 
 /**
  * Check for warnings that might have been issued by the external library.
- * (Cielo PHP Library) and save them in to the watchdog log.
  *
  * @param Object $cielo
  *   The instantiated object from the external library class.
