@@ -127,7 +127,7 @@ function commerce_cielo_capture_access($order, $transaction) {
   }
 
   // Define whether or not this transaction needs to be captured.
-  switch($transaction->remote_status) {
+  switch ($transaction->remote_status) {
     case COMMERCE_CIELO_STATUS_AUTHORIZED:
     case COMMERCE_CIELO_STATUS_NOT_CAPTURED:
       $needs_to_be_captured = TRUE;
@@ -429,8 +429,8 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
  *   Whether or not the payment transaction was set to be captured right
  *   after authorization or in a later time by the store manager.
  *
- * @return String $remote_status The remote status which is either
- * 'not captured' or 'authorized_only'.
+ * @return String $remote_status
+ * The remote status which is either 'not captured' or 'authorized_only'.
  */
 function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
   // Default it to empty.
@@ -438,7 +438,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
   if (isset($cielo->response['status'])) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
-      switch($cielo->response['status']) {
+      switch ($cielo->response['status']) {
         case CommerceCieloLib::IN_PROGRESS:
         case CommerceCieloLib::BEING_AUTHENTICATED:
         case CommerceCieloLib::AUTHENTICATED:
@@ -465,8 +465,8 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
  * @param array $array
  *   The array that needs its values to be translatable.
  *
- * @return array $array The same array that came in but with its values wrapped
- * in t().
+ * @return array $array
+ * The same array that came in but with its values wrapped in t().
  */
 function commerce_cielo_t($array) {
   foreach ($array as $key => $value) {
@@ -486,7 +486,7 @@ function commerce_cielo_log_watch_dog($cielo) {
     // Record it in the watch dog log.
     foreach ($cielo->warnings as $error => $error_message) {
       if (is_array($error_message)) {
-        foreach($error_message as $error_delta_message) {
+        foreach ($error_message as $error_delta_message) {
           watchdog('cielo_php_lib', '@error: @error_delta_message', array('@error' => $error, '@error_delta_message' => $error_delta_message), WATCHDOG_DEBUG);
         }
       }

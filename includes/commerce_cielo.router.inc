@@ -150,7 +150,7 @@ function commerce_cielo_redirect_back($order) {
   );
 
   if (isset($cielo->response['status'])) {
-    switch($cielo->response['status']) {
+    switch ($cielo->response['status']) {
       case CommerceCieloLib::IN_PROGRESS:
       case CommerceCieloLib::AUTHENTICATED:
       case CommerceCieloLib::BEING_AUTHENTICATED:
