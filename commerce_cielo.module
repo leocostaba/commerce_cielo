@@ -109,8 +109,7 @@ function commerce_cielo_commerce_payment_method_info() {
 }
 
 /**
- * Determines access to the prior authorization capture form for Cielo Payment
- * Method.
+ * Grants access to the prior authorization in order to capture it.
  *
  * @param Object $order
  *   The order the transaction is on.
@@ -188,8 +187,7 @@ function commerce_cielo_void_access($order, $transaction) {
 }
 
 /**
- * Helper function for gerenating the option range list for the Installment
- * field.
+ * Generates the option range list for the installment field.
  *
  * @param float $po_total
  *   Total amount of the Purcharse Order.
@@ -215,8 +213,7 @@ function _commerce_cielo_installment_options($po_total, $max_installments) {
 }
 
 /**
- * Define a status state based on the status code returned from de remote
- * webservice.
+ * Define a status state based on the status code returned the webservice.
  *
  * @param boolean $authenticate
  *   A admin setting option for whether or not the card holder
@@ -384,9 +381,7 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
 }
 
 /**
- * Helper function.
- * It includes the external library class file and set the commom
- * arguments used for instantiating the webservice object.
+ * Includes external class and set the commom arguments used on instantiation.
  *
  * @param array $payment_method
  *   The payment settings array
@@ -434,8 +429,8 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
  *   Whether or not the payment transaction was set to be captured right
  *   after authorization or in a later time by the store manager.
  *
- * @return String $remote_status
- *   The remote status which is either 'not captured' or 'authorized_only'.
+ * @return String $remote_status The remote status which is either
+ * 'not captured' or 'authorized_only'.
  */
 function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
   // Default it to empty.
@@ -470,8 +465,8 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
  * @param array $array
  *   The array that needs its values to be translatable.
  *
- * @return array $array
- *   The same array that came in but with its values wrapped in t().
+ * @return array $array The same array that came in but with its values wrapped
+ * in t().
  */
 function commerce_cielo_t($array) {
   foreach ($array as $key => $value) {

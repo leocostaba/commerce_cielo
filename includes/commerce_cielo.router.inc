@@ -155,7 +155,7 @@ function commerce_cielo_redirect_back($order) {
       case CommerceCieloLib::AUTHENTICATED:
       case CommerceCieloLib::BEING_AUTHENTICATED:
         // The transaction hasn't been denied but hasn't been
-        // approved either, so the store manager must try to capture the money
+        // approved either, so the store manager must try to capture the funds
         // manually.
         $message = $under_clearance;
         break;
@@ -176,8 +176,8 @@ function commerce_cielo_redirect_back($order) {
 
       case CommerceCieloLib::NOT_AUTHENTICATED:
         if ($authenticate) {
-          // Store only accepts transactions that pass by authentication,
-          // so we set it as failed.
+          // Store only accepts transactions that has passed by authentication,
+          // so we set it as failare.
           $message = $failed;
         }
         else {

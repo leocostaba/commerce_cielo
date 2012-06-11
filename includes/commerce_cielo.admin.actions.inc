@@ -127,7 +127,6 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
 }
 
-
 /**
  * Form callback: allows the user to void a captured transaction.
  */
@@ -183,9 +182,7 @@ function commerce_cielo_void_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function.
- * Generates a user friendly status / error message fetched
- * from the remote server.
+ * Processes status / error message fetched from the remote server.
  *
  * @param array $reponse
  *   The webservice response array.
