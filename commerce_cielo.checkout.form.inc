@@ -271,7 +271,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   commerce_cielo_log_watch_dog($cielo);
 
   // Prepare a transaction object to log the Webservice response.
-  $transaction = commerce_payment_transaction_new('cielo', $order->order_id);
+  $transaction = commerce_payment_transaction_new('commerce_cielo', $order->order_id);
   $transaction->instance_id = $payment_method['instance_id'];
   $transaction->amount = $charge['amount'];
   $transaction->currency_code = $charge['currency_code'];

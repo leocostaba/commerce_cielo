@@ -74,7 +74,7 @@ function commerce_cielo_redirect_back($order) {
       }
 
       // Prepare a transaction object to log the Webservice response.
-      $trans = commerce_payment_transaction_new('cielo', $order->order_id);
+      $trans = commerce_payment_transaction_new('commerce_cielo', $order->order_id);
       $trans->instance_id = $payment_method['instance_id'];
       $trans->amount = $transaction->amount;
       $trans->currency_code = $transaction->currency_code;

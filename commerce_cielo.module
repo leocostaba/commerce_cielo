@@ -98,7 +98,7 @@ function commerce_cielo_menu() {
 function commerce_cielo_commerce_payment_method_info() {
   $payment_methods = array();
 
-  $payment_methods['cielo'] = array(
+  $payment_methods['commerce_cielo'] = array(
     'base' => 'commerce_cielo',
     'title' => t('Cielo'),
     'short_title' => t('Cielo Webservices'),
@@ -122,7 +122,7 @@ function commerce_cielo_commerce_payment_method_info() {
 function commerce_cielo_capture_access($order, $transaction) {
 
   // Check if the transaction was done with Cielo and if it requires capturing.
-  if ($transaction->payment_method != 'cielo') {
+  if ($transaction->payment_method != 'commerce_cielo') {
     return FALSE;
   }
 
@@ -168,7 +168,7 @@ function commerce_cielo_void_access($order, $transaction) {
 
   // Return FALSE if the transaction isn't for Cielo or isn't
   // captured.
-  if ($transaction->payment_method != 'cielo' || $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
+  if ($transaction->payment_method != 'commerce_cielo' || $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
     return FALSE;
   }
 
@@ -255,7 +255,7 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
       CommerceCieloLib::BEING_AUTHENTICATED,
     );
     $failure = array(
-      // It has been explicit set that card holder must be authenticated.
+      // It has been explicit set that the card holder must be authenticated.
       CommerceCieloLib::NOT_AUTHENTICATED,
       CommerceCieloLib::AUTHORIZATION_DENIED,
       CommerceCieloLib::NOT_CAPTURED,
@@ -430,7 +430,7 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
  *   after authorization or in a later time by the store manager.
  *
  * @return String $remote_status
- * The remote status which is either 'not captured' or 'authorized_only'.
+ *   The remote status which is either 'not captured' or 'authorized_only'.
  */
 function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
   // Default it to empty.
@@ -466,7 +466,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
  *   The array that needs its values to be translatable.
  *
  * @return array $array
- * The same array that came in but with its values wrapped in t().
+ *   The same array that came in but with its values wrapped in t().
  */
 function commerce_cielo_t($array) {
   foreach ($array as $key => $value) {
