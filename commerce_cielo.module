@@ -429,7 +429,7 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
  *   Whether or not the payment transaction was set to be captured right
  *   after authorization or in a later time by the store manager.
  *
- * @return String $remote_status
+ * @return String
  *   The remote status which is either 'not captured' or 'authorized_only'.
  */
 function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
@@ -465,7 +465,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
  * @param array $array
  *   The array that needs its values to be translatable.
  *
- * @return array $array
+ * @return array
  *   The same array that came in but with its values wrapped in t().
  */
 function commerce_cielo_t($array) {
