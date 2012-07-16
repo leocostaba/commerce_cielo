@@ -199,7 +199,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Visa Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['visa_max'],
-    '#element_validate' => 'element_validate_number',
+    '#element_validate' => array('element_validate_integer_positive'),
   );
 
   $form['installments']['mastercard_max'] = array(
@@ -208,7 +208,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane  when paying with a Marstercard Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['mastercard_max'],
-    '#element_validate' => 'element_validate_number',
+    '#element_validate' => array('element_validate_integer_positive'),
   );
 
   $form['installments']['elo_max'] = array(
@@ -217,7 +217,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Elo Credit Card.'),
     '#size' => 2,
     '#default_value' => $settings['installments']['elo_max'],
-    '#element_validate' => 'element_validate_number',
+    '#element_validate' => array('element_validate_integer_positive'),
   );
 
   return $form;

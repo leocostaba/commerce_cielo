@@ -104,7 +104,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
-  // We need to send empty values to the Cielo PHP Library library, so that is
+  // We need to send empty values to the Cielo PHP Library, so that is
   // the why these fields are being hidden instead of removed.
   $form['commerce_payment']['payment_details']['credit_card']['code']['#type'] = 'hidden';
   $form['commerce_payment']['payment_details']['credit_card']['code']['#required'] = FALSE;
@@ -256,7 +256,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // Set the currency code.
   $cielo->setCurrency($currency_numeric_code);
 
-  // Set the language interface.
+  // Set the interface language.
   $cielo->setLanguage($payment_method['settings']['language']);
 
   // Set the landing page url for when returning from Cielo.
@@ -281,7 +281,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // Save the transaction.
   commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $remote_status);
 
-  // Rebuilds the form if autorize transaction fails.
+  // Rebuilds the form if authorize transaction fails.
   if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
     drupal_set_message(t('We received the following error processing your card. Please enter you information again or try a different card.'), 'error');
     drupal_set_message($transaction->message, 'error');

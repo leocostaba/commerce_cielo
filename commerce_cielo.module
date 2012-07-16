@@ -4,7 +4,7 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
-// Break down into file blocks for better maintanance.
+// Break it down into file blocks for better maintanance.
 include_once 'commerce_cielo.admin.config.form.inc';
 include_once 'commerce_cielo.checkout.form.inc';
 
@@ -20,7 +20,7 @@ define('COMMERCE_CIELO_STATUS_REDIRECTED', 'redirected');
  * Define the payment transaction remote status.
  *
  * The transaction was authorized but it is awaiting for the store administrator
- * to performe the money capturing in later time.
+ * to performe the funds capturing in a later time.
  */
 define('COMMERCE_CIELO_STATUS_AUTHORIZED', 'authorization_only');
 
@@ -168,7 +168,8 @@ function commerce_cielo_void_access($order, $transaction) {
 
   // Return FALSE if the transaction isn't for Cielo or isn't
   // captured.
-  if ($transaction->payment_method != 'commerce_cielo' || $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
+  if ($transaction->payment_method != 'commerce_cielo' ||
+      $transaction->remote_status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
     return FALSE;
   }
 
