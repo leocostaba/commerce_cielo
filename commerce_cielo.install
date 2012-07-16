@@ -31,8 +31,17 @@ function commerce_cielo_requirements($phase) {
         $cielo_class_file = drupal_realpath(libraries_get_path('cielo-php-lib')) . DIRECTORY_SEPARATOR . 'Cielo.class.php';
         // Check if Cielo class is installed.
         if (file_exists($cielo_class_file)) {
+          // Not present during 'install' phase.
+          // http://drupal-br.org/geral/anuncios/modulo-cielo-para-drupal-commerce
+          if ($phase == 'install') {
+            include_once $cielo_class_file;
+            $sz_manual = Cielo::DEV_MANUAL;
+          }
+          else {
+            $sz_manual = CommerceCieloLib::DEV_MANUAL;
+          }
           $requirements['cielo_php_lib'] = array(
-            'value' => $t("Cielo Developer's Manual: %manual_ver", array('%manual_ver' => CommerceCieloLib::DEV_MANUAL)),
+            'value' => $t("Cielo Developer's Manual: %manual_ver", array('%manual_ver' => $sz_manual)),
             'severity' => REQUIREMENT_OK,
           );
         }
