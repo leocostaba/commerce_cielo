@@ -18,54 +18,64 @@ function commerce_cielo_requirements($phase) {
 
   $t = get_t();
 
-  if ($phase == 'runtime' || $phase == 'install') {
-    if (function_exists('libraries_get_path')) {
-      if (!libraries_get_path('cielo-php-lib')) {
+  $has_curl = function_exists('curl_init');
+  $has_libraries_get_path = function_exists('libraries_get_path');
+
+  $requirements['curl'] = array(
+    'title' => $t('cURL'),
+    'value' => $has_curl ? $t('Enabled') : $t('Not found'),
+  );
+  if (!$has_curl) {
+    $requirements['curl']['severity'] = REQUIREMENT_ERROR;
+    $requirements['curl']['description'] = $t('The Commerce Cielo module could not be installed because the PHP <a href="@curl_url">cURL</a> library is not available.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+  }
+
+  if ($has_libraries_get_path) {
+    if (!libraries_get_path('cielo-php-lib')) {
+      $requirements['cielo_php_lib'] = array(
+        'value' => $t('Not installed'),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('The Cielo PHP Library could not be found or is not properly installed.'),
+      );
+    }
+    else {
+      $cielo_class_file = drupal_realpath(libraries_get_path('cielo-php-lib')) . DIRECTORY_SEPARATOR . 'Cielo.class.php';
+      // Check if Cielo class is installed.
+      if (file_exists($cielo_class_file)) {
+        // Not present during 'install' phase.
+        // http://drupal-br.org/geral/anuncios/modulo-cielo-para-drupal-commerce
+        if ($phase == 'install') {
+          include_once $cielo_class_file;
+          $sz_manual = Cielo::DEV_MANUAL;
+        }
+        else {
+          $sz_manual = CommerceCieloLib::DEV_MANUAL;
+        }
         $requirements['cielo_php_lib'] = array(
-          'value' => $t('Not installed'),
-          'severity' => REQUIREMENT_ERROR,
-          'description' => $t('The Cielo PHP Library could not be found or is not properly installed.'),
+          'value' => $t("Cielo Developer's Manual: %manual_ver", array('%manual_ver' => $sz_manual)),
+          'severity' => REQUIREMENT_OK,
         );
       }
       else {
-        $cielo_class_file = drupal_realpath(libraries_get_path('cielo-php-lib')) . DIRECTORY_SEPARATOR . 'Cielo.class.php';
-        // Check if Cielo class is installed.
-        if (file_exists($cielo_class_file)) {
-          // Not present during 'install' phase.
-          // http://drupal-br.org/geral/anuncios/modulo-cielo-para-drupal-commerce
-          if ($phase == 'install') {
-            include_once $cielo_class_file;
-            $sz_manual = Cielo::DEV_MANUAL;
-          }
-          else {
-            $sz_manual = CommerceCieloLib::DEV_MANUAL;
-          }
-          $requirements['cielo_php_lib'] = array(
-            'value' => $t("Cielo Developer's Manual: %manual_ver", array('%manual_ver' => $sz_manual)),
-            'severity' => REQUIREMENT_OK,
-          );
-        }
-        else {
-          // Main class is missing.
-          $requirements['cielo_php_lib'] = array(
-            'value' => $t('Missing class'),
-            'severity' => REQUIREMENT_ERROR,
-            'description' => $t('Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file)),
-          );
-        }
+        // Main class is missing.
+        $requirements['cielo_php_lib'] = array(
+          'value' => $t('Missing class'),
+          'severity' => REQUIREMENT_ERROR,
+          'description' => $t('Cielo library is not properly installed. The file @file does not exist.', array('@file' => $cielo_class_file)),
+        );
       }
     }
-    else {
-      // Libraries module couldn't be loaded.
-      $requirements['cielo_php_lib'] = array(
-        'value' => $t('Libraries Issue'),
-        'severity' => REQUIREMENT_ERROR,
-        'description' => $t('The Cielo PHP Library relies on Libraries module to function. It seems that there is something wrong with Libraries.'),
-      );
-    }
-
-    $requirements['cielo_php_lib']['title'] = $t("Cielo PHP Library");
   }
+  else {
+    // Libraries module couldn't be loaded.
+    $requirements['cielo_php_lib'] = array(
+      'value' => $t('Libraries Issue'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('The Cielo PHP Library relies on Libraries module to function. It seems that there is something wrong with Libraries.'),
+    );
+  }
+
+  $requirements['cielo_php_lib']['title'] = $t("Cielo PHP Library");
 
   return $requirements;
 }
