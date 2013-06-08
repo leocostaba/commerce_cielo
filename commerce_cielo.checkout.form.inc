@@ -56,7 +56,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
   $form['credit_card']['flag'] = array(
     '#type' => 'select',
     '#title' => t('Card Flag'),
-    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => _commerce_cielo_flags_by_type($type, $payment_method['settings']),
     '#weight' => -2,
     '#ajax' => array(
       'callback' => 'commerce_cielo_credit_card_flag_ajax_callback',
@@ -99,7 +99,7 @@ function commerce_cielo_submit_form($payment_method, $pane_values, $checkout_pan
 function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
 
   // Set $settings.
-  $settings = $form_state['values']['commerce_payment']['payment_methods']['cielo|commerce_payment_cielo']['settings'];
+  $settings = $form_state['values']['commerce_payment']['payment_methods']['commerce_cielo|commerce_payment_commerce_cielo']['settings'];
 
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
@@ -110,13 +110,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
   $form['commerce_payment']['payment_details']['credit_card']['code']['#required'] = FALSE;
   $form['commerce_payment']['payment_details']['credit_card']['installments']['#type'] = 'hidden';
 
-  // Set default.
-  $flag_support_setting = 'debit_mode_flag_support';
-
   if ($type === CommerceCieloLib::TYPE_CREDIT_CARD) {
-
-    $flag_support_setting = 'credit_mode_flag_support';
-
     // Show CVC field.
     $form['commerce_payment']['payment_details']['credit_card']['code']['#type'] = 'textfield';
     $form['commerce_payment']['payment_details']['credit_card']['code']['#required'] = TRUE;
@@ -126,17 +120,8 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
     }
   }
 
-  $flag_options = CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t');
-
-  // Remove the flags that are not supported for the current selected card type.
-  foreach ($flag_options as $key => $value) {
-    if (!$settings['tuning'][$flag_support_setting][$key]) {
-      unset($flag_options[$key]);
-    }
-  }
-
   // Repĺace the form element options.
-  $form['commerce_payment']['payment_details']['credit_card']['flag']['#options'] = $flag_options;
+  $form['commerce_payment']['payment_details']['credit_card']['flag']['#options'] = _commerce_cielo_flags_by_type($type, $settings);
 
   return array(
     '#type' => 'ajax',
@@ -159,7 +144,7 @@ function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
   if ($currency == 'BRL' && $type == CommerceCieloLib::TYPE_CREDIT_CARD) {
     // Get the current flag installment settings.
     $flag = $form_state['values']['commerce_payment']['payment_details']['credit_card']['flag'];
-    $max_installments = $form_state['order']->payment_methods['cielo|commerce_payment_cielo']['settings']['installments'][$flag . '_max'];
+    $max_installments = $form_state['order']->payment_methods['commerce_cielo|commerce_payment_commerce_cielo']['settings']['installments'][$flag . '_max'];
     $po_total = $form_state['order']->commerce_order_total['und'][0]['amount'];
 
     // Rebuilt the list of options.
@@ -317,4 +302,27 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
       return FALSE;
     }
   }
+}
+
+/**
+ * Helper function to filter enabled flags by type.
+ */
+function _commerce_cielo_flags_by_type($type, $settings = array()) {
+  if ($type == CommerceCieloLib::TYPE_CREDIT_CARD) {
+    $flag_support_setting = 'credit_mode_flag_support';
+  } elseif ($type == CommerceCieloLib::TYPE_DEBIT_CARD) {
+    $flag_support_setting = 'debit_mode_flag_support';
+  } else {
+    return array();
+  }
+  $flag_options = CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t');
+
+  // Remove the flags that are not supported for the current selected card type.
+  foreach ($flag_options as $key => $value) {
+    if (!$settings['tuning'][$flag_support_setting][$key]) {
+      unset($flag_options[$key]);
+    }
+  }
+
+  return $flag_options;
 }
