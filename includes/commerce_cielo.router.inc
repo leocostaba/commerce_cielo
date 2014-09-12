@@ -17,7 +17,7 @@ function commerce_cielo_redirect_back($order) {
 
   // Load payment transactions that belongs to this order.
   foreach (commerce_payment_transaction_load_multiple(array(), array('order_id' => $order->order_id)) as $transaction) {
-    if ($transaction->remote_status == COMMERCE_CIELO_STATUS_REDIRECTED && $order->status == 'checkout_review') {
+    if ($transaction->remote_status == COMMERCE_CIELO_STATUS_REDIRECTED) {
       // Load the payment method settings.
       $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
       // Set auto capture.
