@@ -120,6 +120,7 @@ function commerce_cielo_commerce_payment_method_info() {
  *   TRUE or FALSE indicating capture access.
  */
 function commerce_cielo_capture_access($order, $transaction) {
+  global $user;
 
   // Check if the transaction was done with Cielo and if it requires capturing.
   if ($transaction->payment_method != 'commerce_cielo') {
@@ -145,7 +146,7 @@ function commerce_cielo_capture_access($order, $transaction) {
 
   // Check if user has permission to capture and update payments on this order.
   if (user_access('capture commerce cielo')
-      && commerce_payment_transaction_access('update', $order, $transaction)
+      && commerce_payment_transaction_access('update', $transaction, $user)
       && $needs_to_be_captured) {
     return TRUE;
   }
@@ -165,6 +166,7 @@ function commerce_cielo_capture_access($order, $transaction) {
  *   Whether or not the user is allowed to void the payment transaction.
  */
 function commerce_cielo_void_access($order, $transaction) {
+  global $user;
 
   // Return FALSE if the transaction isn't for Cielo or isn't
   // captured.
@@ -180,7 +182,7 @@ function commerce_cielo_void_access($order, $transaction) {
 
   // Check if user has permission to void and update payments on this order.
   if (user_access('void commerce cielo')
-      && commerce_payment_transaction_access('update', $order, $transaction)) {
+      && commerce_payment_transaction_access('update', $transaction, $user)) {
     return TRUE;
   }
 

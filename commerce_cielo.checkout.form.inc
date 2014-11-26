@@ -181,6 +181,8 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
  * Payment method callback: checkout form submission.
  */
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  $order->data['commerce_cielo'] = $pane_values;
+  commerce_order_save($order);
 
   // Define whether or not the card holder ownership should be authenticated.
   $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
