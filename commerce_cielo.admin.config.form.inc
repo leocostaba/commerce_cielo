@@ -25,27 +25,30 @@ function commerce_cielo_settings_form($settings = NULL) {
       // chave.
       'token' => '',
     ),
-    'language' => CommerceCieloLib::LANG_EN,
-    'authorization_type' => CommerceCieloLib::AUTHORIZE_EITHER_AUTHENTICATED_OR_NOT,
+    'language' => COMMERCE_CIELO_LANG_EN,
+    'authorization_type' => COMMERCE_CIELO_AUTHORIZATION_AUTHORIZE,
     'collect_card_details' => TRUE,
     'authenticate' => TRUE,
 
     // Bank and card mode specific settings.
     'tuning' => array(
-      'debit_mode_flag_support' => CommerceCieloLib::get_card_flags(FALSE),
-      'credit_mode_flag_support' => CommerceCieloLib::get_card_flags(FALSE),
+      'debit_mode_flag_support' => array_keys(commerce_cielo_card_types(TRUE)),
+      'credit_mode_flag_support' => array_keys(commerce_cielo_card_types()),
       // @see commerce_cielo_bank_codes().
       'debit_mode_suported_banks' => '237',
     ),
 
-    'installments' => array(
-      'creditor' => CommerceCieloLib::CARD_ISSUER_IS_CREDITOR,
-      'visa_max' => 18,
-      'mastercard_max' => 18,
-      'elo_max' => 18,
-    ),
+    'installments' => array(),
     'auto_capture' => 'true',
   );
+
+  // Set default max number of installments for each card type.
+  foreach(array_keys(commerce_cielo_card_types()) as $type_name) {
+    // Discover doesn't support installments.
+    if ($type_name != COMMERCE_CIELO_CARD_DISCOVER && empty($settings['installments'][$type_name . '_max']))  {
+      $settings['installments'][$type_name . '_max'] = 18;
+    }
+  }
 
   $form['is_test'] = array(
     '#type' => 'radios',
@@ -101,7 +104,11 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'select',
     '#title' => t("Cielo's Language Interface"),
     '#description' => t('Set the language in which Cielo will provide its webservice responses as well as its user interface for when a client redirection to Cielo is required.'),
-    '#options' => CommerceCieloLib::get_languages(TRUE, 'commerce_cielo_t'),
+    '#options' => array(
+      COMMERCE_CIELO_LANG_PT => t('Portuguese'),
+      COMMERCE_CIELO_LANG_ES => t('Spanish'),
+      COMMERCE_CIELO_LANG_EN => t('English'),
+    ),
     '#default_value' => $settings['language'],
   );
 
@@ -120,7 +127,14 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'radios',
     '#title' => t('Authorization Mode'),
     '#description' => t('Define how the card holder authentication will be handled.'),
-    '#options' => CommerceCieloLib::get_authorization_options(TRUE, 'commerce_cielo_t'),
+    '#options' => array(
+      // @todo: we might not need all transactions types.
+      COMMERCE_CIELO_AUTHORIZATION_AUTHENTICATION_ONLY => t("Don't authorize (only authenticate)"),
+      COMMERCE_CIELO_AUTHORIZATION_AUTHORIZE_AUTHENTICATED => t('Authorize only if authenticated'),
+      COMMERCE_CIELO_AUTHORIZATION_AUTHORIZE => t('Authorize if authenticated or not'),
+      COMMERCE_CIELO_AUTHORIZATION_AUTHORIZE_SKIP_AUTHENTICATION => t('Authorize skiping authentication'),
+      COMMERCE_CIELO_AUTHORIZATION_RECURRING => t('Recurring transaction'),
+    ),
     '#default_value' => $settings['authorization_type'],
   );
 
@@ -167,7 +181,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'checkboxes',
     '#title' => t('Debit mode flag support'),
     '#description' => t('Define which flags the debit mode supports.'),
-    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => commerce_cielo_card_types(TRUE),
     '#default_value' => $settings['tuning']['debit_mode_flag_support'],
   );
 
@@ -175,7 +189,7 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#type' => 'checkboxes',
     '#title' => t('Credit mode flag support'),
     '#description' => t('Define which flags the credit mode supports.'),
-    '#options' => CommerceCieloLib::get_card_flags(TRUE, 'commerce_cielo_t'),
+    '#options' => commerce_cielo_card_types(),
     '#default_value' => $settings['tuning']['credit_mode_flag_support'],
   );
 
@@ -185,40 +199,21 @@ function commerce_cielo_settings_form($settings = NULL) {
     '#description' => t('These settings are ignored when the purchase order currency is other than BRL.'),
   );
 
-  $form['installments']['creditor'] = array(
-    '#type' => 'radios',
-    '#title' => t('Creditor'),
-    '#description' => t('Define who gives credit when payment term is based on installments.'),
-    '#options' => CommerceCieloLib::get_installment_creditor_options(TRUE, 'commerce_cielo_t'),
-    '#default_value' => $settings['installments']['creditor'],
-  );
+  foreach(commerce_cielo_card_types() as $type_name => $type) {
+    // Discover doesn't support installments.
+    if ($type_name == COMMERCE_CIELO_CARD_DISCOVER) {
+      continue;
+    }
 
-  $form['installments']['visa_max'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Max number of installments for Visa'),
-    '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Visa Credit Card.'),
-    '#size' => 2,
-    '#default_value' => $settings['installments']['visa_max'],
-    '#element_validate' => array('element_validate_integer_positive'),
-  );
-
-  $form['installments']['mastercard_max'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Max number of installments for Mastercard'),
-    '#description' => t('Defines the max number of installments that a buyer can select at the check out pane  when paying with a Marstercard Credit Card.'),
-    '#size' => 2,
-    '#default_value' => $settings['installments']['mastercard_max'],
-    '#element_validate' => array('element_validate_integer_positive'),
-  );
-
-  $form['installments']['elo_max'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Max number of installments for Elo'),
-    '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a Elo Credit Card.'),
-    '#size' => 2,
-    '#default_value' => $settings['installments']['elo_max'],
-    '#element_validate' => array('element_validate_integer_positive'),
-  );
+    $form['installments'][$type_name . '_max'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Max number of installments for @card_type', array('@card_type' => $type)),
+      '#description' => t('Defines the max number of installments that a buyer can select at the check out pane when paying with a @card_type Card.', array('@card_type' => $type)),
+      '#size' => 2,
+      '#default_value' => $settings['installments'][$type_name . '_max'],
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+  }
 
   return $form;
 }
@@ -295,4 +290,25 @@ function commerce_cielo_collect_card_details_ajax_callback($form, $form_state) {
   }
 
   return $form['authenticate'];
+}
+
+function commerce_cielo_card_types($debit = FALSE) {
+  if ($debit) {
+    // Only Visa and MasterCard support debit.
+    return array(
+      COMMERCE_CIELO_CARD_VISA => t('Visa'),
+      COMMERCE_CIELO_CARD_MASTERCARD => t('MasterCard'),
+    );
+  }
+
+  return array(
+    COMMERCE_CIELO_CARD_VISA => t('Visa'),
+    COMMERCE_CIELO_CARD_MASTERCARD => t('MasterCard'),
+    COMMERCE_CIELO_CARD_DINERS => t('Diners Club'),
+    COMMERCE_CIELO_CARD_DISCOVER => t('discover'),
+    COMMERCE_CIELO_CARD_ELO => t('Elo'),
+    COMMERCE_CIELO_CARD_AMEX => t('American Express'),
+    COMMERCE_CIELO_CARD_JCB => t('JCB'),
+    COMMERCE_CIELO_CARD_AURA => t('Aura'),
+  );
 }
