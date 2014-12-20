@@ -1,13 +1,6 @@
 Dependencies:
 * Drupal Commerce and its dependencies.
 * Payment module shipped with Drupal Commerce
-* Libraries API 7.x-1.x or greater
-* Cielo PHP Library | this is an external library also written by me.
-
-Installing Cielo PHP Library:
-* Download it from https://github.com/drupalista-br/Cielo-PHP-Library/tags and
-  copy the folder cielo-php-lib into either sites/all/libraries or
-  sites/<yourDomain>/libraries
 
 Testing out on Cielo's Sandbox:
 
@@ -20,8 +13,6 @@ Testing out on Cielo's Sandbox:
   (Click on the "Edit" operation under Actions)
 * Make sure "Cielo Sandbox - Test environment" is switched on. While in there,
   you can also play around with the other configuration settings.
-  Note: The external library (Cielo PHP Library) takes care of assigning the
-  test credentials.
 * You can use the following card numbers for testing on both credit and debit
   modes:
   (visa) 4012001037141112 (authenticates successfully when in debit mode)
