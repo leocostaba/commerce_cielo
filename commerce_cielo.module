@@ -4,6 +4,8 @@
  * Implements Cielo's payment web service for use with Drupal Commerce.
  */
 
+include_once 'includes/commerce_cielo.inc';
+
 // Break it down into file blocks for better maintanance.
 include_once 'commerce_cielo.admin.config.form.inc';
 include_once 'commerce_cielo.checkout.form.inc';
@@ -251,39 +253,39 @@ function _commerce_cielo_installment_options($po_total, $max_installments) {
 function _commerce_cielo_get_status_state($authenticate, $status) {
   if ($authenticate) {
     $pending = array(
-      CommerceCieloLib::TRANSACTION_CREATED,
-      CommerceCieloLib::IN_PROGRESS,
-      CommerceCieloLib::AUTHENTICATED,
-      CommerceCieloLib::AUTHORIZED,
-      CommerceCieloLib::BEING_AUTHENTICATED,
+      COMMERCE_CIELO_CREATED,
+      COMMERCE_CIELO_IN_PROGRESS,
+      COMMERCE_CIELO_AUTHENTICATED,
+      COMMERCE_CIELO_AUTHORIZED,
+      COMMERCE_CIELO_AUTHENTICATING,
     );
     $failure = array(
       // It has been explicit set that the card holder must be authenticated.
-      CommerceCieloLib::NOT_AUTHENTICATED,
-      CommerceCieloLib::AUTHORIZATION_DENIED,
-      CommerceCieloLib::NOT_CAPTURED,
+      COMMERCE_CIELO_NOT_AUTHENTICATED,
+      COMMERCE_CIELO_NOT_AUTHORIZED,
+      COMMERCE_CIELO_NOT_CAPTURED,
     );
   }
   else {
     $pending = array(
-      CommerceCieloLib::TRANSACTION_CREATED,
-      CommerceCieloLib::IN_PROGRESS,
-      CommerceCieloLib::AUTHENTICATED,
+      COMMERCE_CIELO_CREATED,
+      COMMERCE_CIELO_IN_PROGRESS,
+      COMMERCE_CIELO_AUTHENTICATED,
       // Even if authentication fails, it still might be possible to get an
       // authorization and thereafter a capturing.
-      CommerceCieloLib::NOT_AUTHENTICATED,
-      CommerceCieloLib::AUTHORIZED,
-      CommerceCieloLib::BEING_AUTHENTICATED,
+      COMMERCE_CIELO_NOT_AUTHENTICATED,
+      COMMERCE_CIELO_AUTHORIZED,
+      COMMERCE_CIELO_AUTHENTICATING,
     );
     $failure = array(
-      CommerceCieloLib::AUTHORIZATION_DENIED,
-      CommerceCieloLib::NOT_CAPTURED,
+      COMMERCE_CIELO_NOT_AUTHORIZED,
+      COMMERCE_CIELO_NOT_CAPTURED,
     );
   }
 
   $status_code = array(
     'PENDING' => $pending,
-    'SUCCESS' => array(CommerceCieloLib::CAPTURED),
+    'SUCCESS' => array(COMMERCE_CIELO_CAPTURED),
     'FAILURE' => $failure,
   );
 
@@ -320,8 +322,8 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
 /**
  * Saves the payment transaction after each call to the remote Webservice.
  *
- * @param object $cielo
- *   The object from the external library class
+ * @param object $response
+ *   The response from Cielo webservice request
  * @param object $transaction
  *   The payment transaction object
  * @param Boolean $authenticate
@@ -337,26 +339,26 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
  *   authorization_only  - Transaction was successfully authorized and is
  *                         awaiting for manual capturing at the store backend.
  */
-function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $remote_status = '') {
+function commerce_cielo_save_transaction($response, $transaction, $authenticate, $remote_status = '') {
   $remote_id = '';
-  if (isset($cielo->response['tid'])) {
-    $remote_id = check_plain($cielo->response['tid']);
+  if (isset($response['tid'])) {
+    $remote_id = check_plain($response['tid']);
   }
 
   $status = '';
   $message = '';
 
-  if (isset($cielo->response['status'])) {
+  if (isset($response['status'])) {
     // No transaction errors have occured.
-    $status = check_plain($cielo->response['status']);
+    $status = check_plain($response['status']);
     $message = t('Status Code: %code', array('%code' => $status));
 
-    if (isset($cielo->response['url-autenticacao'])) {
+    if (isset($response['url-autenticacao'])) {
       $message .= '<br />' . t("Waiting: Buyer was redirected to Cielo.");
       $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
     }
 
-    foreach ($cielo->response as $process => $values) {
+    foreach ($response as $process => $values) {
       if (is_array($values)) {
         // Payment tab message.
         if (key_exists('mensagem', $values)) {
@@ -366,18 +368,18 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
       }
     }
   }
-  elseif (isset($cielo->response['codigo'])) {
+  elseif (isset($response['codigo'])) {
     // The remote server reported an error.
-    $status = check_plain($cielo->response['codigo']);
+    $status = check_plain($response['codigo']);
     $message = t('Error Code: @code', array('@code' => $status));
-    $message .= '<br />' . t('Error Message: @message', array('@message' => $cielo->response['mensagem']));
+    $message .= '<br />' . t('Error Message: @message', array('@message' => $response['mensagem']));
   }
 
   $transaction->remote_id = $remote_id;
   $transaction->remote_status = empty($remote_status) ? _commerce_cielo_get_status_state($authenticate, $status) : $remote_status;
   $transaction->status = _commerce_cielo_get_status_state($authenticate, $status);
   $transaction->message = $message;
-  $transaction->payload[REQUEST_TIME] = $cielo->response;
+  $transaction->payload[REQUEST_TIME] = $response;
 
   // Save the transaction.
   commerce_payment_transaction_save($transaction);
@@ -397,7 +399,6 @@ function commerce_cielo_save_transaction($cielo, $transaction, $authenticate, $r
  *   Array of commom arguments
  */
 function _commerce_cielo_get_arguments($payment_method, $order_number, $order_amount) {
-
   if ($payment_method['settings']['is_test']) {
     // This is a test enviroment so we set the credentials empty.
     $payment_method['settings']['credentials']['affiliation'] = '';
@@ -426,7 +427,7 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
 /**
  * Define the remote status based on the status code sent by the remote service.
  *
- * @param Object $cielo
+ * @param Object $response
  *   The Cielo Webservice Object.
  * @param Boolean $auto_capture
  *   Whether or not the payment transaction was set to be captured right
@@ -435,16 +436,16 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
  * @return String
  *   The remote status which is either 'not captured' or 'authorized_only'.
  */
-function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
+function _commerce_cielo_get_remote_status($response, $auto_capture) {
   // Default it to empty.
   $remote_status = '';
-  if (isset($cielo->response['status'])) {
+  if (isset($response['status'])) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
-      switch ($cielo->response['status']) {
-        case CommerceCieloLib::IN_PROGRESS:
-        case CommerceCieloLib::BEING_AUTHENTICATED:
-        case CommerceCieloLib::AUTHENTICATED:
+      switch ($response['status']) {
+        case COMMERCE_CIELO_IN_PROGRESS:
+        case COMMERCE_CIELO_AUTHENTICATING:
+        case COMMERCE_CIELO_AUTHENTICATED:
           // The transaction hasn't been denied but either hasn't been
           // approved, so the store manager must try to capture the money
           // manually.
@@ -453,7 +454,7 @@ function _commerce_cielo_get_remote_status($cielo, $auto_capture) {
       }
     }
     else {
-      if ($cielo->response['status'] == CommerceCieloLib::AUTHORIZED) {
+      if ($response['status'] == COMMERCE_CIELO_AUTHORIZED) {
         // auto_capture was set to FALSE and the transaction was authorized.
         $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;
       }

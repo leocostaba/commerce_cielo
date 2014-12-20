@@ -38,7 +38,7 @@ define('COMMERCE_CIELO_SANDBOX_OFF_SITE_MERCHANT_TOKEN', 'e84827130b9837473681c2
 /**
  * Cielo status: transaction created.
  */
-define('COMMERCE_CIELO_TRANSACTION_CREATED', 0);
+define('COMMERCE_CIELO_CREATED', 0);
 
 /**
  * Cielo status: transaction in progress.
