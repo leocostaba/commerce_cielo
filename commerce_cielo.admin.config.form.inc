@@ -291,24 +291,3 @@ function commerce_cielo_collect_card_details_ajax_callback($form, $form_state) {
 
   return $form['authenticate'];
 }
-
-function commerce_cielo_card_types($debit = FALSE) {
-  if ($debit) {
-    // Only Visa and MasterCard support debit.
-    return array(
-      COMMERCE_CIELO_CARD_VISA => t('Visa'),
-      COMMERCE_CIELO_CARD_MASTERCARD => t('MasterCard'),
-    );
-  }
-
-  return array(
-    COMMERCE_CIELO_CARD_VISA => t('Visa'),
-    COMMERCE_CIELO_CARD_MASTERCARD => t('MasterCard'),
-    COMMERCE_CIELO_CARD_DINERS => t('Diners Club'),
-    COMMERCE_CIELO_CARD_DISCOVER => t('discover'),
-    COMMERCE_CIELO_CARD_ELO => t('Elo'),
-    COMMERCE_CIELO_CARD_AMEX => t('American Express'),
-    COMMERCE_CIELO_CARD_JCB => t('JCB'),
-    COMMERCE_CIELO_CARD_AURA => t('Aura'),
-  );
-}
