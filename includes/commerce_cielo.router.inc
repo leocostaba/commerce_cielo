@@ -63,7 +63,7 @@ function commerce_cielo_redirect_back($order) {
 
       $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
 
-      $remote_status = _commerce_cielo_get_remote_status($cielo, $auto_capture);
+      $remote_status = _commerce_cielo_get_remote_status($response, $auto_capture);
 
       if (empty($remote_status)) {
         $remote_status = _commerce_cielo_get_status_state($authenticate, $status);
@@ -101,7 +101,7 @@ function commerce_cielo_redirect_back($order) {
         $cielo->capture();
 
         // Save the capturing transaction.
-        commerce_cielo_save_transaction($cielo, $trans, $authenticate);
+        commerce_cielo_save_transaction($response, $trans, $authenticate);
 
         // Rebuilds the checkout review form if follow up transaction fails.
         if ($trans->status == COMMERCE_PAYMENT_STATUS_FAILURE) {

@@ -83,8 +83,7 @@ function commerce_cielo_capture_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount = $form_state['values']['amount'];
 
-  // Prepare the arguments to pass to the object instantiantion of the external
-  // library class.
+  // Prepare the arguments to pass to the Cielo webservice request.
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
@@ -153,8 +152,7 @@ function commerce_cielo_void_form($form, &$form_state, $order, $transaction) {
 function commerce_cielo_void_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
 
-  // Prepare the arguments to pass to object instantiantion of the external
-  // library class.
+  // Prepare the arguments to pass to the Cielo webservice request.
   $arguments = _commerce_cielo_get_arguments($form_state['payment_method'], $form_state['order']->order_number, $transaction->amount);
 
   // Instantiate a object from the external library.
