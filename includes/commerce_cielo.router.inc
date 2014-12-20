@@ -44,10 +44,6 @@ function commerce_cielo_redirect_back($order) {
       // Look up on the transaction created while away at Cielo.
       $cielo->followUp();
 
-      // Check for and save any warnings that might have been issued by the
-      // external library (Cielo PHP Library).
-      commerce_cielo_log_watch_dog($cielo);
-
       $message = '';
       if (isset($cielo->response['status'])) {
         // No transaction errors have occured.
@@ -103,10 +99,6 @@ function commerce_cielo_redirect_back($order) {
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
         $cielo->capture();
-
-        // Check for and save any warnings that might have been issued by the
-        // external library (Cielo PHP Library).
-        commerce_cielo_log_watch_dog($cielo);
 
         // Save the capturing transaction.
         commerce_cielo_save_transaction($cielo, $trans, $authenticate);

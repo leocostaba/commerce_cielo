@@ -253,10 +253,6 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // Request Authorization.
   $cielo->authorize();
 
-  // Check for and save any warnings that might have been issued by the external
-  // library (Cielo PHP Library).
-  commerce_cielo_log_watch_dog($cielo);
-
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('commerce_cielo', $order->order_id);
   $transaction->instance_id = $payment_method['instance_id'];
@@ -289,10 +285,6 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
       $transaction->status == CommerceCieloLib::AUTHORIZED) {
     // Try to capture.
     $cielo->capture();
-
-    // Check for and save any warnings that might have been issued by the
-    // external library (Cielo PHP Library).
-    commerce_cielo_log_watch_dog($cielo);
 
     // Save the transaction.
     commerce_cielo_save_transaction($cielo, $transaction, $authenticate);

@@ -477,27 +477,3 @@ function commerce_cielo_t($array) {
   }
   return $array;
 }
-
-/**
- * Check for warnings that might have been issued by the external library.
- *
- * @param Object $cielo
- *   The instantiated object from the external library class.
- */
-function commerce_cielo_log_watch_dog($cielo) {
-  if (!empty($cielo->warnings)) {
-    // Record it in the watch dog log.
-    foreach ($cielo->warnings as $error => $error_message) {
-      if (is_array($error_message)) {
-        foreach ($error_message as $error_delta_message) {
-          watchdog('cielo_php_lib', '@error: @error_delta_message', array('@error' => $error, '@error_delta_message' => $error_delta_message), WATCHDOG_DEBUG);
-        }
-      }
-      else {
-        watchdog('cielo_php_lib', '@error: @error_message', array('@error' => $error, '@error_message' => $error_message), WATCHDOG_DEBUG);
-      }
-    }
-    // Clear up the object property.
-    $cielo->warnings = array();
-  }
-}
