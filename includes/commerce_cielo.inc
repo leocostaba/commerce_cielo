@@ -183,6 +183,38 @@ define('COMMERCE_CIELO_METHOD_CREDIT_INSTALLMENTS', 2);
  * Authorize a payment.
  */
 function commerce_cielo_authorize($settings, $values, $order, $charge) {
+  watchdog('commerce_cielo', 'Settings: ' . print_r($settings, TRUE));
+  watchdog('commerce_cielo', 'Values: ' . print_r($values, TRUE));
+  watchdog('commerce_cielo', 'Charge: ' . print_r($charge, TRUE));
+
+  $credentials = commerce_cielo_credentials($settings);
+  $xml = commerce_cielo_create_envelope('requisicao-transacao', $credentials['affiliation'], $credentials['token']);
+
+  // Transaction options.
+  $xml->{'url-retorno'} = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
+  $xml->autorizar = $settings['authorization_type'];
+  $xml->capturar = $settings['auto_capture'];
+
+  // Order information.
+  $order_info =& $xml->{'dados-pedido'};
+  $order_info->numero = $order->order_id;
+  $order_info->valor = $charge['amount'];
+  $order_info->moeda = commerce_cielo_currency_code($charge['currency_code']);
+  $order_info->{'data-hora'} = date("Y-m-d\TH:i:s", REQUEST_TIME);
+  $order_info->idioma = $settings['language'];
+
+  if ($settings['collect_card_details']) {
+    // @TODO
+  }
+
+  watchdog('commerce_cielo', 'Envelope: ' . $xml->saveXML());
+  return FALSE;
+}
+
+/**
+ * Capture a payment.
+ */
+function commerce_cielo_capture($settings, $transaction) {
   // @TODO: Build XML envelope and call Cielo webservice.
 }
 
@@ -198,10 +230,35 @@ function commerce_cielo_create_envelope($type, $affiliation, $token) {
 }
 
 /**
- * Capture a payment.
+ * Convert currency code to the ISO 4217 (numeric code).
  */
-function commerce_cielo_capture($settings, $transaction) {
-  // @TODO: Build XML envelope and call Cielo webservice.
+function commerce_cielo_currency_code($code) {
+  // Get the ISO 4217 info about all the enabled currencies.
+  $currencies = commerce_currencies(TRUE);
+
+  // Get the currency code formatted as 3 digits number. ie. 840 for USD.
+  foreach ($currencies as $tree_letter_code => $value) {
+    if ($tree_letter_code == $code) {
+      $currency_numeric_code = $value['numeric_code'];
+      break;
+    }
+  }
+
+  return $currency_numeric_code;
+}
+
+/**
+ * Get credentials for authenticating the webservice request.
+ */
+function commerce_cielo_credentials($settings) {
+  if ($settings['is_test']) {
+    return array(
+      'affiliation' => $settings['collect_card_details'] ? COMMERCE_CIELO_SANDBOX_ON_SITE_MERCHANT_ID : COMMERCE_CIELO_SANDBOX_OFF_SITE_MERCHANT_ID,
+      'token' => $settings['collect_card_details'] ? COMMERCE_CIELO_SANDBOX_ON_SITE_MERCHANT_TOKEN : COMMERCE_CIELO_SANDBOX_OFF_SITE_MERCHANT_TOKEN,
+    );
+  }
+
+  return $settings['credentials'];
 }
 
 /**

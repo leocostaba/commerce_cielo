@@ -183,6 +183,10 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   $response = commerce_cielo_authorize($payment_method['settings'], $pane_values, $order, $charge);
 
+  if (empty($response)) {
+    return FALSE;
+  }
+
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('commerce_cielo', $order->order_id);
   $transaction->instance_id = $payment_method['instance_id'];
