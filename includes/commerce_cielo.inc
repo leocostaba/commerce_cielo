@@ -34,6 +34,10 @@ define('COMMERCE_CIELO_SANDBOX_OFF_SITE_MERCHANT_ID', '1001734898');
  */
 define('COMMERCE_CIELO_SANDBOX_OFF_SITE_MERCHANT_TOKEN', 'e84827130b9837473681c2787007da5914d6359947015a5cdb2b8843db0fa832');
 
+/**
+ * Cielo message version.
+ */
+define('COMMERCE_CIELO_MESSAGE_VERSION', '1.4.0');
 
 /**
  * Cielo status: transaction created.
@@ -180,6 +184,17 @@ define('COMMERCE_CIELO_METHOD_CREDIT_INSTALLMENTS', 2);
  */
 function commerce_cielo_authorize($settings, $values, $order, $charge) {
   // @TODO: Build XML envelope and call Cielo webservice.
+}
+
+function commerce_cielo_create_envelope($type, $affiliation, $token) {
+  $xml = new SimpleXMLElement('<?xml version="1.0" encoding="ISO-8859-1"?><' . $type . ' id="' . uuid_generate() . '" versao="' . COMMERCE_CIELO_MESSAGE_VERSION . '" />');
+
+  // Request authenticating node.
+  $auth =& $xml->{'dados-ec'};
+  $auth->numero = $affiliation;
+  $auth->chave = $token;
+
+  return $xml;
 }
 
 /**
