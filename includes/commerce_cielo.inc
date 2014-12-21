@@ -174,3 +174,17 @@ define('COMMERCE_CIELO_METHOD_CREDIT', 1);
  * Payment method: credit.
  */
 define('COMMERCE_CIELO_METHOD_CREDIT_INSTALLMENTS', 2);
+
+/**
+ * Authorize a payment.
+ */
+function commerce_cielo_authorize($settings, $values, $order, $charge) {
+  // @TODO: Build XML envelope and call Cielo webservice.
+}
+
+/**
+ * Capture a payment.
+ */
+function commerce_cielo_capture($settings, $transaction) {
+  // @TODO: Build XML envelope and call Cielo webservice.
+}

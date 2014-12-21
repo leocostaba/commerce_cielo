@@ -181,76 +181,7 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
  * Payment method callback: checkout form submission.
  */
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  $order->data['commerce_cielo'] = $pane_values;
-  commerce_order_save($order);
-
-  // Define whether or not the card holder ownership should be authenticated.
-  $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
-
-  if ($pane_values['credit_card']['type'] == COMMERCE_CIELO_METHOD_DEBIT) {
-    $payment_method['settings']['authorization_type'] = COMMERCE_CIELO_AUTHORIZATION_AUTHORIZE_AUTHENTICATED;
-  }
-
-  // Prepare the arguments to pass to the Cielo request.
-  $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $charge['amount']);
-
-  // Attach the payment details for the authorize request.
-  $arguments['payment'] = array(
-    'CardFlag' => $pane_values['credit_card']['flag'],
-    'Installments' => $pane_values['credit_card']['installments'],
-    'Creditor' => $payment_method['settings']['installments']['creditor'],
-    'CardType' => $pane_values['credit_card']['type'],
-    'Authenticate' => $authenticate,
-    'AuthorizationType' => $payment_method['settings']['authorization_type'],
-    'AutoCapturer' => $payment_method['settings']['auto_capture'],
-  );
-
-  if ($payment_method['settings']['collect_card_details']) {
-    // Attach the card details to the argument's array.
-    $arguments['payment'] += array(
-      'CardNumber' => $pane_values['credit_card']['number'],
-      'ExpirationYear' => $pane_values['credit_card']['exp_year'],
-      'ExpirationMonth' => $pane_values['credit_card']['exp_month'],
-      'CVC' => $pane_values['credit_card']['code'],
-    );
-  }
-
-  // Get the ISO 4217 info about all the enabled currencies.
-  $currencies = commerce_currencies(TRUE);
-
-  // Get the currency code formatted as 3 digits number. ie. 840 for USD.
-  foreach ($currencies as $tree_letter_code => $value) {
-    if ($tree_letter_code == $charge['currency_code']) {
-      $currency_numeric_code = $value['numeric_code'];
-      break;
-    }
-  }
-
-  // Instantiate the external library.
-  $cielo = new CommerceCieloLib($arguments);
-
-  // This is done because there are 2 different sets of credentials that might
-  // be assigned by the external library to the transaction depending on the
-  // admin configurations.
-  // In real production enviroment only one set of credentials is in play and
-  // stored in the module setting values.
-  if ($payment_method['settings']['is_test']) {
-    setcookie('filiacao', $cielo->membership['filiacao']);
-    setcookie('chave', $cielo->membership['chave']);
-  }
-
-  // Set the currency code.
-  $cielo->setCurrency($currency_numeric_code);
-
-  // Set the interface language.
-  $cielo->setLanguage($payment_method['settings']['language']);
-
-  // Set the landing page url for when returning from Cielo.
-  $url = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
-  $cielo->setReturnUrl($url);
-
-  // Request Authorization.
-  $cielo->authorize();
+  $response = commerce_cielo_authorize($payment_method['settings'], $pane_values, $order, $charge);
 
   // Prepare a transaction object to log the Webservice response.
   $transaction = commerce_payment_transaction_new('commerce_cielo', $order->order_id);
@@ -270,10 +201,10 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     return FALSE;
   }
 
-  if (isset($cielo->response['url-autenticacao'])) {
+  if (isset($response['url-autenticacao'])) {
     // Send browser to Cielo for collecting card details and/or performing
     // ownership authentication.
-    drupal_goto($cielo->response['url-autenticacao']);
+    drupal_goto($response['url-autenticacao']);
   }
 
   // CAPTURING.
@@ -282,8 +213,9 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   // from the last call to the webservice.
   if ($payment_method['settings']['auto_capture'] == 'true' &&
       $transaction->status == COMMERCE_CIELO_AUTHORIZED) {
+
     // Try to capture.
-    $cielo->capture();
+    $response = commerce_cielo_capture($payment_method['settings'], $transaction);
 
     // Save the transaction.
     commerce_cielo_save_transaction($response, $transaction, $authenticate);
@@ -303,9 +235,11 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 function _commerce_cielo_flags_by_type($type, $settings = array()) {
   if ($type == COMMERCE_CIELO_METHOD_CREDIT) {
     $flag_support_setting = 'credit_mode_flag_support';
-  } elseif ($type == COMMERCE_CIELO_METHOD_DEBIT) {
+  }
+  elseif ($type == COMMERCE_CIELO_METHOD_DEBIT) {
     $flag_support_setting = 'debit_mode_flag_support';
-  } else {
+  }
+  else {
     return array();
   }
   $flag_options = commerce_cielo_card_types();
