@@ -183,6 +183,8 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   $response = commerce_cielo_authorize($payment_method['settings'], $pane_values, $order, $charge);
 
+  watchdog('commerce_cielo', 'Response: ' . $response->saveXML());
+
   if (empty($response)) {
     return FALSE;
   }
@@ -205,10 +207,12 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     return FALSE;
   }
 
-  if (isset($response['url-autenticacao'])) {
+  watchdog('commerce_cielo', 'Response redirect: ' . $response->{'url-autenticacao'});
+
+  if (!empty($response->{'url-autenticacao'})) {
     // Send browser to Cielo for collecting card details and/or performing
     // ownership authentication.
-    drupal_goto($response['url-autenticacao']);
+    drupal_goto($response->{'url-autenticacao'});
   }
 
   // CAPTURING.

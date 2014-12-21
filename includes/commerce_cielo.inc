@@ -190,11 +190,6 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
   $credentials = commerce_cielo_credentials($settings);
   $xml = commerce_cielo_create_envelope('requisicao-transacao', $credentials['affiliation'], $credentials['token']);
 
-  // Transaction options.
-  $xml->{'url-retorno'} = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
-  $xml->autorizar = $settings['authorization_type'];
-  $xml->capturar = $settings['auto_capture'];
-
   // Order information.
   $order_info =& $xml->{'dados-pedido'};
   $order_info->numero = $order->order_id;
@@ -203,12 +198,24 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
   $order_info->{'data-hora'} = date("Y-m-d\TH:i:s", REQUEST_TIME);
   $order_info->idioma = $settings['language'];
 
+  // Payment information.
+  $payment_info =& $xml->{'forma-pagamento'};
+  $payment_info->bandeira = $values['credit_card']['flag'];
+  $payment_info->produto = $values['credit_card']['type'];
+  $payment_info->parcelas = $values['credit_card']['installments'];
+
+  // Transaction options.
+  $xml->{'url-retorno'} = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
+  $xml->autorizar = $settings['authorization_type'];
+  $xml->capturar = $settings['auto_capture'];
+
   if ($settings['collect_card_details']) {
     // @TODO
   }
 
   watchdog('commerce_cielo', 'Envelope: ' . $xml->saveXML());
-  return FALSE;
+
+  return commerce_cielo_request($xml->saveXML(), $settings['is_test']);
 }
 
 /**
@@ -264,19 +271,20 @@ function commerce_cielo_credentials($settings) {
 /**
  * Call Cielo XML webservice.
  */
-function commerce_cielo_request($server, $xml) {
+function commerce_cielo_request($xml, $test = FALSE) {
+  watchdog('commerce_cielo', 'Test: ' . $test);
   $curl = curl_init();
 
-  curl_setopt($curl, CURLOPT_URL, $server == COMMERCE_CIELO_LIVE ? COMMERCE_CIELO_LIVE_URL : COMMERCE_CIELO_SANDBOX_URL);
+  curl_setopt($curl, CURLOPT_URL, $test ? COMMERCE_CIELO_SANDBOX_URL : COMMERCE_CIELO_LIVE_URL);
   curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
-  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, ($server == COMMERCE_CIELO_LIVE));
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, !$test);
   curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
 
-  if ($server == COMMERCE_CIELO_LIVE) {
+  if (!$test) {
     curl_setopt($curl, CURLOPT_CAINFO, drupal_get_path('module', 'commerce_cielo') . '/VeriSignClass3PublicPrimaryCertificationAuthority-G5.crt');
   }
 
-  curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_SSLv3);
+  curl_setopt($curl, CURLOPT_SSLVERSION, 3);
   curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
   curl_setopt($curl, CURLOPT_TIMEOUT, 40);
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
@@ -284,6 +292,8 @@ function commerce_cielo_request($server, $xml) {
   curl_setopt($curl, CURLOPT_POSTFIELDS, 'mensagem=' . $xml);
 
   $result = curl_exec($curl);
+
+  watchdog('commerce_cielo', 'Result: ' . print_r($result, TRUE));
 
   if (!$result) {
     // TODO: log CURL errors.

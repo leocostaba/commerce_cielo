@@ -104,7 +104,7 @@ function commerce_cielo_commerce_payment_method_info() {
     'base' => 'commerce_cielo',
     'title' => t('Cielo'),
     'short_title' => t('Cielo Webservices'),
-    'display_title' => t('By Credit or Debit Card.'),
+    'display_title' => t('Credit or Debit Card'),
     'description' => t("Integration with Cielo's webservice."),
   );
   return $payment_methods;
@@ -262,8 +262,7 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
     $failure = array(
       // It has been explicit set that the card holder must be authenticated.
       COMMERCE_CIELO_NOT_AUTHENTICATED,
-      COMMERCE_CIELO_NOT_AUTHORIZED,
-      COMMERCE_CIELO_NOT_CAPTURED,
+      COMMERCE_CIELO_NOT_AUTHORIZED
     );
   }
   else {
@@ -278,8 +277,7 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
       COMMERCE_CIELO_AUTHENTICATING,
     );
     $failure = array(
-      COMMERCE_CIELO_NOT_AUTHORIZED,
-      COMMERCE_CIELO_NOT_CAPTURED,
+      COMMERCE_CIELO_NOT_AUTHORIZED
     );
   }
 
@@ -341,23 +339,24 @@ function _commerce_cielo_get_status_state($authenticate, $status) {
  */
 function commerce_cielo_save_transaction($response, $transaction, $authenticate, $remote_status = '') {
   $remote_id = '';
-  if (isset($response['tid'])) {
-    $remote_id = check_plain($response['tid']);
+  if (isset($response->tid)) {
+    $remote_id = check_plain($response->tid);
   }
 
   $status = '';
   $message = '';
 
-  if (isset($response['status'])) {
+  if (!empty($response->status)) {
     // No transaction errors have occured.
-    $status = check_plain($response['status']);
+    $status = check_plain($response->status);
     $message = t('Status Code: %code', array('%code' => $status));
 
-    if (isset($response['url-autenticacao'])) {
+    if (!empty($response->{'url-autenticacao'})) {
       $message .= '<br />' . t("Waiting: Buyer was redirected to Cielo.");
       $remote_status = COMMERCE_CIELO_STATUS_REDIRECTED;
     }
 
+    // @TODO: is this working?
     foreach ($response as $process => $values) {
       if (is_array($values)) {
         // Payment tab message.
@@ -368,18 +367,18 @@ function commerce_cielo_save_transaction($response, $transaction, $authenticate,
       }
     }
   }
-  elseif (isset($response['codigo'])) {
+  elseif (!empty($response->codigo)) {
     // The remote server reported an error.
-    $status = check_plain($response['codigo']);
+    $status = check_plain($response->codigo);
     $message = t('Error Code: @code', array('@code' => $status));
-    $message .= '<br />' . t('Error Message: @message', array('@message' => $response['mensagem']));
+    $message .= '<br />' . t('Error Message: @message', array('@message' => $response->mensagem));
   }
 
   $transaction->remote_id = $remote_id;
   $transaction->remote_status = empty($remote_status) ? _commerce_cielo_get_status_state($authenticate, $status) : $remote_status;
   $transaction->status = _commerce_cielo_get_status_state($authenticate, $status);
   $transaction->message = $message;
-  $transaction->payload[REQUEST_TIME] = $response;
+  //$transaction->payload[REQUEST_TIME] = $response;
 
   // Save the transaction.
   commerce_payment_transaction_save($transaction);
@@ -439,10 +438,10 @@ function _commerce_cielo_get_arguments($payment_method, $order_number, $order_am
 function _commerce_cielo_get_remote_status($response, $auto_capture) {
   // Default it to empty.
   $remote_status = '';
-  if (isset($response['status'])) {
+  if (isset($response->status)) {
     if ($auto_capture == 'true') {
       // Check if remote_status requires later capturing attempt.
-      switch ($response['status']) {
+      switch ($response->status) {
         case COMMERCE_CIELO_IN_PROGRESS:
         case COMMERCE_CIELO_AUTHENTICATING:
         case COMMERCE_CIELO_AUTHENTICATED:
@@ -454,7 +453,7 @@ function _commerce_cielo_get_remote_status($response, $auto_capture) {
       }
     }
     else {
-      if ($response['status'] == COMMERCE_CIELO_AUTHORIZED) {
+      if ($response->status == COMMERCE_CIELO_AUTHORIZED) {
         // auto_capture was set to FALSE and the transaction was authorized.
         $remote_status = COMMERCE_CIELO_STATUS_AUTHORIZED;
       }
