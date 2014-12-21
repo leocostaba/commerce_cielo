@@ -188,3 +188,40 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
 function commerce_cielo_capture($settings, $transaction) {
   // @TODO: Build XML envelope and call Cielo webservice.
 }
+
+/**
+ * Call Cielo XML webservice.
+ */
+function commerce_cielo_request($server, $xml) {
+  $curl = curl_init();
+
+  curl_setopt($curl, CURLOPT_URL, $server == COMMERCE_CIELO_LIVE ? COMMERCE_CIELO_LIVE_URL : COMMERCE_CIELO_SANDBOX_URL);
+  curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, ($server == COMMERCE_CIELO_LIVE));
+  curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+
+  if ($server == COMMERCE_CIELO_LIVE) {
+    curl_setopt($curl, CURLOPT_CAINFO, drupal_get_path('module', 'commerce_cielo') . '/VeriSignClass3PublicPrimaryCertificationAuthority-G5.crt');
+  }
+
+  curl_setopt($curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_SSLv3);
+  curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+  curl_setopt($curl, CURLOPT_TIMEOUT, 40);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+  curl_setopt($curl, CURLOPT_POST, TRUE);
+  curl_setopt($curl, CURLOPT_POSTFIELDS, 'mensagem=' . $xml);
+
+  $result = curl_exec($curl);
+
+  if (!$result) {
+    // TODO: log CURL errors.
+    return FALSE;
+  }
+
+  // TODO: parse response.
+  $response = simplexml_load_string($result);
+
+  curl_close($curl);
+
+  return $response;
+}
