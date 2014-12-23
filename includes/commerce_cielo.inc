@@ -228,8 +228,7 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
  */
 function commerce_cielo_check_status($settings, $transaction) {
   $credentials = commerce_cielo_credentials($settings);
-  $xml = commerce_cielo_create_envelope('requisicao-consulta', $credentials['affiliation'], $credentials['token']);
-  $xml->tid = $transaction->remote_status;
+  $xml = commerce_cielo_create_envelope('requisicao-consulta', $credentials['affiliation'], $credentials['token'], $transaction->remote_id);
 
   watchdog('commerce_cielo', 'Envelope check_status: ' . $xml->saveXML());
 
@@ -243,8 +242,12 @@ function commerce_cielo_capture($settings, $transaction) {
   // @TODO: Build XML envelope and call Cielo webservice.
 }
 
-function commerce_cielo_create_envelope($type, $affiliation, $token) {
+function commerce_cielo_create_envelope($type, $affiliation, $token, $tid = FALSE) {
   $xml = new SimpleXMLElement('<?xml version="1.0" encoding="ISO-8859-1"?><' . $type . ' id="' . uuid_generate() . '" versao="' . COMMERCE_CIELO_MESSAGE_VERSION . '" />');
+
+  if (!empty($tid)) {
+    $xml->tid = $tid;
+  }
 
   // Request authenticating node.
   $auth =& $xml->{'dados-ec'};
@@ -311,10 +314,19 @@ function commerce_cielo_request($xml, $test = FALSE) {
 
   $result = curl_exec($curl);
 
-  watchdog('commerce_cielo', 'Result: ' . print_r($result, TRUE));
+  watchdog('commerce_cielo', 'Result: ' . $result);
 
   if (!$result) {
-    // TODO: log CURL errors.
+    watchdog('commerce_cielo', 'CURL Error: @error: @message', array('@error' => curl_errno($curl), '@message' => curl_error($curl)), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+  // Check if we have a success status.
+  if (!in_array((int) $status, array(200, 201))) {
+    commerce_cobrebem_log('boleto error', $result, WATCHDOG_ERROR);
+    watchdog('commerce_cielo', 'Request Error: @response', array('@response' => var_export($response, TRUE)), WATCHDOG_ERROR);
     return FALSE;
   }
 
