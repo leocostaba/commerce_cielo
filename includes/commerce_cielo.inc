@@ -190,6 +190,15 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
   $credentials = commerce_cielo_credentials($settings);
   $xml = commerce_cielo_create_envelope('requisicao-transacao', $credentials['affiliation'], $credentials['token']);
 
+  if ($settings['collect_card_details']) {
+    // Card information.
+    $card_info =& $xml->{'dados-portador'};
+    $card_info->numero = $values['credit_card']['number'];
+    $card_info->validade = $values['credit_card']['exp_year'] . $values['credit_card']['exp_month'];
+    $card_info->indicador = 1;
+    $card_info->{'codigo-seguranca'} = $values['credit_card']['code'];
+  }
+
   // Order information.
   $order_info =& $xml->{'dados-pedido'};
   $order_info->numero = $order->order_id;
@@ -208,10 +217,6 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
   $xml->{'url-retorno'} = url('checkout/' . $order->order_number . '/payment/cielo', array('absolute' => TRUE));
   $xml->autorizar = $settings['authorization_type'];
   $xml->capturar = $settings['auto_capture'];
-
-  if ($settings['collect_card_details']) {
-    // @TODO
-  }
 
   watchdog('commerce_cielo', 'Envelope: ' . $xml->saveXML());
 
