@@ -28,7 +28,7 @@ function commerce_cielo_redirect_back($order) {
       $response = commerce_cielo_status($payment_method['settings'], $transaction);
 
       $message = '';
-      if (!empty($response->status)) {
+      if (isset($response->status)) {
         // No transaction errors have occured.
         $status = $response->status;
         $message = t('Status Code: @code (Follow Up)', array('@code' => $status));

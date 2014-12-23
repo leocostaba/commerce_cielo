@@ -346,7 +346,7 @@ function commerce_cielo_save_transaction($response, $transaction, $authenticate,
   $status = '';
   $message = '';
 
-  if (!empty($response->status)) {
+  if (isset($response->status)) {
     // No transaction errors have occured.
     $status = check_plain($response->status);
     $message = t('Status Code: %code', array('%code' => $status));
@@ -367,7 +367,7 @@ function commerce_cielo_save_transaction($response, $transaction, $authenticate,
       }
     }
   }
-  elseif (!empty($response->codigo)) {
+  elseif (isset($response->codigo)) {
     // The remote server reported an error.
     $status = check_plain($response->codigo);
     $message = t('Error Code: @code', array('@code' => $status));
