@@ -27,30 +27,16 @@ function commerce_cielo_redirect_back($order) {
       // external library class.
       $arguments = _commerce_cielo_get_arguments($payment_method, $order->order_number, $transaction->amount);
 
-      // Instantiate a object from the external library.
-      $cielo = new CommerceCieloLib($arguments);
-
-      // Set the tid assigned by Cielo.
-      $cielo->setTid($transaction->remote_id);
-
-      // Only for testing enviroment.
-      if ($payment_method['settings']['is_test']) {
-        // Make sure we use the same credentials previously used in the
-        // checkout.
-        $cielo->membership['filiacao'] = $_COOKIE['filiacao'];
-        $cielo->membership['chave'] = $_COOKIE['chave'];
-      }
-
-      // Look up on the transaction created while away at Cielo.
-      $cielo->followUp();
+      $response = commerce_cielo_status($payment_method['settings'], $transaction);
 
       $message = '';
-      if (isset($cielo->response['status'])) {
+      if (!empty($response->status)) {
         // No transaction errors have occured.
-        $status = $cielo->response['status'];
+        $status = $response->status;
         $message = t('Status Code: @code (Follow Up)', array('@code' => $status));
 
-        foreach ($cielo->response as $process => $values) {
+        // @TODO: check this is working.
+        foreach ($response as $process => $values) {
           if (is_array($values)) {
             // Payment tab message.
             if (key_exists('mensagem', $values)) {
@@ -78,7 +64,7 @@ function commerce_cielo_redirect_back($order) {
       $trans->remote_status = $remote_status;
       $trans->status = _commerce_cielo_get_status_state($authenticate, $status);
       $trans->message = $message;
-      $trans->payload[REQUEST_TIME] = $cielo->response;
+      //$trans->payload[REQUEST_TIME] = $response;
 
       // Save the follow up transaction.
       commerce_payment_transaction_save($trans);
@@ -93,12 +79,13 @@ function commerce_cielo_redirect_back($order) {
       }
 
       // Capturing.
-      if (isset($cielo->response['status']) &&
-          $cielo->response['status'] == CommerceCieloLib::AUTHORIZED &&
+      if (isset($response->status) &&
+          $response->status == COMMERCE_CIELO_AUTHORIZED &&
           $auto_capture == 'true') {
+
         // Authorization has been granted and auto capture is switched on, so
         // we will try to capture.
-        $cielo->capture();
+        $response = commerce_cielo_capture($payment_method['settings'], $transaction);
 
         // Save the capturing transaction.
         commerce_cielo_save_transaction($response, $trans, $authenticate);
@@ -141,32 +128,32 @@ function commerce_cielo_redirect_back($order) {
     'type'=> 'status',
   );
 
-  if (isset($cielo->response['status'])) {
-    switch ($cielo->response['status']) {
-      case CommerceCieloLib::IN_PROGRESS:
-      case CommerceCieloLib::AUTHENTICATED:
-      case CommerceCieloLib::BEING_AUTHENTICATED:
+  if (isset($response->status)) {
+    switch ($response->status) {
+      case COMMERCE_CIELO_IN_PROGRESS:
+      case COMMERCE_CIELO_AUTHENTICATED:
+      case COMMERCE_CIELO_AUTHENTICATING:
         // The transaction hasn't been denied but hasn't been
         // approved either, so the store manager must try to capture the funds
         // manually.
         $message = $under_clearance;
         break;
 
-      case CommerceCieloLib::AUTHORIZED:
+      case COMMERCE_CIELO_AUTHORIZED:
         $message = $waiting_capture;
         break;
 
-      case CommerceCieloLib::AUTHORIZATION_DENIED:
-      case CommerceCieloLib::NOT_CAPTURED:
-      case CommerceCieloLib::VOIDED:
+      case COMMERCE_CIELO_NOT_AUTHORIZED:
+      case COMMERCE_CIELO_NOT_CAPTURED:
+      case COMMERCE_CIELO_CANCELED:
         $message = $failed;
         break;
 
-      case CommerceCieloLib::CAPTURED:
+      case COMMERCE_CIELO_CAPTURED:
         $message = $success;
         break;
 
-      case CommerceCieloLib::NOT_AUTHENTICATED:
+      case COMMERCE_CIELO_NOT_AUTHENTICATED:
         if ($authenticate) {
           // Store only accepts transactions that has passed by authentication,
           // so we set it as failare.

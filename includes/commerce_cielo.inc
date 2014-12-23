@@ -219,6 +219,19 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
 }
 
 /**
+ * Check status of a transaction.
+ */
+function commerce_cielo_check_status($settings, $transaction) {
+  $credentials = commerce_cielo_credentials($settings);
+  $xml = commerce_cielo_create_envelope('requisicao-consulta', $credentials['affiliation'], $credentials['token']);
+  $xml->tid = $transaction->remote_status;
+
+  watchdog('commerce_cielo', 'Envelope check_status: ' . $xml->saveXML());
+
+  return commerce_cielo_request($xml->saveXML(), $settings['is_test']);
+}
+
+/**
  * Capture a payment.
  */
 function commerce_cielo_capture($settings, $transaction) {
