@@ -143,7 +143,6 @@ function commerce_cielo_redirect_back($order) {
         break;
 
       case COMMERCE_CIELO_NOT_AUTHORIZED:
-      case COMMERCE_CIELO_NOT_CAPTURED:
       case COMMERCE_CIELO_CANCELED:
         $message = $failed;
         break;
