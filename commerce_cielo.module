@@ -357,15 +357,15 @@ function commerce_cielo_save_transaction($response, $transaction, $authenticate,
     }
 
     // @TODO: is this working?
-    foreach ($response as $process => $values) {
-      if (is_array($values)) {
-        // Payment tab message.
-        if (key_exists('mensagem', $values)) {
-          // Assemble payment tab message.
-          $message .= '<br />' . format_string("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
-        }
-      }
-    }
+    // foreach ($response as $process => $values) {
+    //   if (is_array($values)) {
+    //     // Payment tab message.
+    //     if (key_exists('mensagem', $values)) {
+    //       // Assemble payment tab message.
+    //       $message .= '<br />' . format_string("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
+    //     }
+    //   }
+    // }
   }
   elseif (isset($response->codigo)) {
     // The remote server reported an error.

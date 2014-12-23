@@ -34,15 +34,15 @@ function commerce_cielo_redirect_back($order) {
         $message = t('Status Code: @code (Follow Up)', array('@code' => $status));
 
         // @TODO: check this is working.
-        foreach ($response as $process => $values) {
-          if (is_array($values)) {
-            // Payment tab message.
-            if (key_exists('mensagem', $values)) {
-              // Assemble payment tab message.
-              $message .= '<br />' . t("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
-            }
-          }
-        }
+        // foreach ($response as $process => $values) {
+        //   if (is_array($values)) {
+        //     // Payment tab message.
+        //     if (key_exists('mensagem', $values)) {
+        //       // Assemble payment tab message.
+        //       $message .= '<br />' . t("@process: @message", array('@process' => $process, '@message' => $values['mensagem']));
+        //     }
+        //   }
+        // }
       }
 
       $authenticate = !isset($payment_method['settings']['authenticate']) ? TRUE : $payment_method['settings']['authenticate'];
