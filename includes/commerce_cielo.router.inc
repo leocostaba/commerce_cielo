@@ -11,7 +11,6 @@
  * from Cielo.
  */
 function commerce_cielo_redirect_back($order) {
-
   // Set authenticate default value.
   $authenticate = TRUE;
 
@@ -26,7 +25,6 @@ function commerce_cielo_redirect_back($order) {
       $auto_capture = $payment_method['settings']['auto_capture'];
 
       $response = commerce_cielo_check_status($payment_method['settings'], $transaction);
-      watchdog('commerce_cielo', 'Check status: ' . $response->saveXML());
 
       $message = '';
       if (isset($response->status)) {
@@ -98,10 +96,12 @@ function commerce_cielo_redirect_back($order) {
           drupal_goto('checkout/' . $order->order_id . '/review');
         }
       }
+
       // Stop looping.
       break;
     }
   }
+
   // Update the order status to pending.
   commerce_order_status_update($order, 'pending');
 

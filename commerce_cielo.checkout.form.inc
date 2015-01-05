@@ -120,7 +120,7 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
     }
   }
 
-  // Repĺace the form element options.
+  // Replace the form element options.
   $form['commerce_payment']['payment_details']['credit_card']['flag']['#options'] = _commerce_cielo_flags_by_type($type, $settings);
 
   return array(
@@ -137,7 +137,6 @@ function commerce_cielo_credit_card_type_ajax_callback($form, $form_state) {
  * AJAX callback - Calculates the max number of installments.
  */
 function commerce_cielo_credit_card_flag_ajax_callback($form, $form_state) {
-
   $currency = $form_state['order']->commerce_order_total['und'][0]['currency_code'];
   $type = $form_state['values']['commerce_payment']['payment_details']['credit_card']['type'];
 
@@ -183,7 +182,6 @@ function commerce_cielo_submit_form_validate($payment_method, $pane_form, $pane_
 function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   $response = commerce_cielo_authorize($payment_method['settings'], $pane_values, $order, $charge);
 
-  watchdog('commerce_cielo', 'Response: ' . $response->saveXML());
 
   if (empty($response)) {
     return FALSE;
@@ -206,8 +204,6 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     drupal_set_message($transaction->message, 'error');
     return FALSE;
   }
-
-  watchdog('commerce_cielo', 'Response redirect: ' . $response->{'url-autenticacao'});
 
   if (!empty($response->{'url-autenticacao'})) {
     // Send browser to Cielo for collecting card details and/or performing

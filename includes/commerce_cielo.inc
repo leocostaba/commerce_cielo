@@ -183,10 +183,6 @@ define('COMMERCE_CIELO_METHOD_CREDIT_INSTALLMENTS', 2);
  * Authorize a payment.
  */
 function commerce_cielo_authorize($settings, $values, $order, $charge) {
-  watchdog('commerce_cielo', 'Settings: ' . print_r($settings, TRUE));
-  watchdog('commerce_cielo', 'Values: ' . print_r($values, TRUE));
-  watchdog('commerce_cielo', 'Charge: ' . print_r($charge, TRUE));
-
   $credentials = commerce_cielo_credentials($settings);
   $xml = commerce_cielo_create_envelope('requisicao-transacao', $credentials['affiliation'], $credentials['token']);
 
@@ -218,8 +214,6 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
   $xml->autorizar = $settings['authorization_type'];
   $xml->capturar = $settings['auto_capture'];
 
-  watchdog('commerce_cielo', 'Envelope: ' . $xml->saveXML());
-
   return commerce_cielo_request($xml->saveXML(), $settings['is_test']);
 }
 
@@ -229,9 +223,6 @@ function commerce_cielo_authorize($settings, $values, $order, $charge) {
 function commerce_cielo_check_status($settings, $transaction) {
   $credentials = commerce_cielo_credentials($settings);
   $xml = commerce_cielo_create_envelope('requisicao-consulta', $credentials['affiliation'], $credentials['token'], $transaction->remote_id);
-
-  watchdog('commerce_cielo', 'Envelope check_status: ' . $xml->saveXML());
-
   return commerce_cielo_request($xml->saveXML(), $settings['is_test']);
 }
 
@@ -249,7 +240,7 @@ function commerce_cielo_create_envelope($type, $affiliation, $token, $tid = FALS
     $xml->tid = $tid;
   }
 
-  // Request authenticating node.
+  // Request authentication node.
   $auth =& $xml->{'dados-ec'};
   $auth->numero = $affiliation;
   $auth->chave = $token;
