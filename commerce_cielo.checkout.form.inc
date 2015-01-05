@@ -196,7 +196,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
   $remote_status = _commerce_cielo_get_remote_status($response, $payment_method['settings']['auto_capture']);
 
   // Save the transaction.
-  commerce_cielo_save_transaction($response, $transaction, $authenticate, $remote_status);
+  commerce_cielo_save_transaction($response, $transaction, $payment_method['settings']['authenticate'], $remote_status);
 
   // Rebuilds the form if authorize transaction fails.
   if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
@@ -222,7 +222,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     $response = commerce_cielo_capture($payment_method['settings'], $transaction);
 
     // Save the transaction.
-    commerce_cielo_save_transaction($response, $transaction, $authenticate);
+    commerce_cielo_save_transaction($response, $transaction, $payment_method['settings']['authenticate']);
 
     // Rebuilds the form if capture transaction fails.
     if ($transaction->status == COMMERCE_PAYMENT_STATUS_FAILURE) {
