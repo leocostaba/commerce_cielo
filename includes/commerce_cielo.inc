@@ -284,18 +284,15 @@ function commerce_cielo_credentials($settings) {
  * Call Cielo XML webservice.
  */
 function commerce_cielo_request($xml, $test = FALSE) {
-  watchdog('commerce_cielo', 'Test: ' . $test);
+  watchdog('commerce_cielo', 'Request XML: <pre>@xml</pre>', array('@xml' => $xml));
+
   $curl = curl_init();
 
   curl_setopt($curl, CURLOPT_URL, $test ? COMMERCE_CIELO_SANDBOX_URL : COMMERCE_CIELO_LIVE_URL);
   curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
-  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, !$test);
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, TRUE);
   curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
-
-  if (!$test) {
-    curl_setopt($curl, CURLOPT_CAINFO, drupal_get_path('module', 'commerce_cielo') . '/VeriSignClass3PublicPrimaryCertificationAuthority-G5.crt');
-  }
-
+  curl_setopt($curl, CURLOPT_CAINFO, drupal_get_path('module', 'commerce_cielo') . '/VeriSignClass3PublicPrimaryCertificationAuthority-G5.crt');
   curl_setopt($curl, CURLOPT_SSLVERSION, 3);
   curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
   curl_setopt($curl, CURLOPT_TIMEOUT, 40);
@@ -303,28 +300,30 @@ function commerce_cielo_request($xml, $test = FALSE) {
   curl_setopt($curl, CURLOPT_POST, TRUE);
   curl_setopt($curl, CURLOPT_POSTFIELDS, 'mensagem=' . $xml);
 
-  $result = curl_exec($curl);
+  $response = curl_exec($curl);
 
-  watchdog('commerce_cielo', 'Result: ' . $result);
-
-  if (!$result) {
+  if (empty($response)) {
     watchdog('commerce_cielo', 'CURL Error: @error: @message', array('@error' => curl_errno($curl), '@message' => curl_error($curl)), WATCHDOG_ERROR);
     return FALSE;
   }
+
+  // Convert response from ISO-8859-1 to UTF-8.
+  $response = drupal_convert_to_utf8($response, 'ISO-8859-1');
+
+  watchdog('commerce_cielo', 'Response XML: <pre>@xml</pre>', array('@xml' => $response));
 
   $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
   // Check if we have a success status.
   if (!in_array((int) $status, array(200, 201))) {
-    commerce_cobrebem_log('boleto error', $result, WATCHDOG_ERROR);
-    watchdog('commerce_cielo', 'Request Error: @response', array('@response' => var_export($response, TRUE)), WATCHDOG_ERROR);
+    watchdog('commerce_cielo', 'Request Error (@status): <pre>@xml</pre>', array('@status' => $status, '@xml' => $response), WATCHDOG_ERROR);
     return FALSE;
   }
 
-  // TODO: parse response.
-  $response = simplexml_load_string($result);
+  // TODO: parse result and check for errors.
+  $result = simplexml_load_string($response);
 
   curl_close($curl);
 
-  return $response;
+  return $result;
 }
