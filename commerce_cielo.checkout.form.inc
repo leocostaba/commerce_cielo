@@ -210,6 +210,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
     // Send browser to Cielo for collecting card details and/or performing
     // ownership authentication.
     drupal_goto($response->{'url-autenticacao'});
+    return;
   }
 
   // CAPTURING.
