@@ -184,6 +184,7 @@ function commerce_cielo_submit_form_submit($payment_method, $pane_form, $pane_va
 
 
   if (empty($response)) {
+    drupal_set_message(t('There was an error processing your payment, please try again.'), 'error');
     return FALSE;
   }
 
