@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Dependencies:
 * Drupal Commerce and its dependencies.
 * Payment module shipped with Drupal Commerce
@@ -23,3 +24,5 @@ Testing out on Cielo's Sandbox:
   Expiration Date: Any date greater than the current date
 
   Authorizations are granted or denied at random.
+=======
+>>>>>>> First commit at 7.x-2.x branch.

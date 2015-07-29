@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Implements Cielo Webservice in Drupal Commerce checkout.
+ */
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function commerce_cielo_onsite_commerce_payment_method_info() {
+  $payment_methods = array();
+
+  $payment_methods['cielo_onsite'] = array(
+    'base' => 'commerce_cielo_onsite',
+    'title' => t('Cielo Checkout | On-site'),
+    'short_title' => t('Cielo Webservice'),
+    'display_title' => t('By Credit or Debit Card.'),
+    'terminal' => TRUE,
+    'offsite' => FALSE,
+  );
+
+  return $payment_methods;
+}
