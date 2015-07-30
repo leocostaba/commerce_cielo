@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 /**
  * @file
  * Implements Cielo's payment web service for use with Drupal Commerce.
@@ -498,3 +499,13 @@ function commerce_cielo_t($array) {
   }
   return $array;
 }
+=======
+
+/**
+ * @file
+ * Implements Cielo Payment in Drupal Commerce.
+ */
+
+// Include the composer autoload script file.
+module_load_include('php', 'commerce_cielo_offsite', 'vendor/autoload');
+>>>>>>> Added webservice-1.5-php requirement to composer.json

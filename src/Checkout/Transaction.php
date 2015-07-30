@@ -1,10 +1,12 @@
 <?php
 
 namespace CieloCheckout;
+use Cielo\Merchant;
 
 class Transaction {
 
-  const STATUS_CODE_CREATED = 0,
+  const
+	STATUS_CODE_CREATED = 0,
 	STATUS_CODE_IN_PROGRESS = 1,
 	STATUS_CODE_AUTHENTICATED = 2,
 	STATUS_CODE_NOT_AUTHENTICATED = 3,
@@ -17,10 +19,11 @@ class Transaction {
 
   public $response;
 
-  private $Merchant;
-  private $Order;
+  private
+	$Merchant,
+	$Order;
 
-  public function __construct(Cielo\Merchant $Merchant, CieloCheckout\Order $Order) {
+  public function __construct(Merchant $Merchant, Order $Order) {
 	$this->Merchant = $Merchant;
 	$this->Order = $Order;
   }
@@ -28,7 +31,7 @@ class Transaction {
   /**
    * Sends the order object over to Cielo and listen for a response.
    */
-  public function request_transaction() {
+  public function request() {
 	$merchant_key = $this->Merchant->getAffiliationKey();
 	$curl = curl_init();
 
@@ -53,7 +56,7 @@ class Transaction {
    *  List of all transaction statuses.
    *  Index = Status Code | Value = Status Name.
    */
-  public function response_statuses() {
+  public function get_response_statuses() {
 	return [
 	  self::STATUS_CODE_CREATED => 'Transação Criada',
 	  self::STATUS_CODE_IN_PROGRESS => 'Transação em Andamento',
