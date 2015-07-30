@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * @file
+ * Implements Cielo Payment in Drupal Commerce.
+ */
+
+// Include the composer autoload script file.
+module_load_include('php', 'commerce_cielo_offsite', 'vendor/autoload');

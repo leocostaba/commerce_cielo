@@ -1,0 +1,23 @@
+{
+    "name": "drupal/commerce_cielo",
+    "description": "Integrates Cielo Payment to Drupal Commerce.",
+    "homepage": "http://nortaox.com",
+    "license": "GPL-2.0+",
+    "keywords": ["Drupal", "Drupal Commerce", "Commerce", "Cielo"],
+    "authors": [
+        {
+            "name": "Francisco Luz",
+            "email": "franciscoferreiraluz@yahoo.com.au",
+            "homepage": "http://lojas.nortaox.com"
+        }
+    ],
+    "require": {
+        "developercielo/webservice-1.5-php": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "CieloCheckout\\": "src/Checkout"
+        }
+    }
+
+}
