@@ -43,18 +43,18 @@
         "source": {
             "type": "git",
             "url": "https://github.com/drupalista-br/CheckoutCielo-Library.git",
-            "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c"
+            "reference": "491263454f582df2eb805e4e8d6fc40e5370461a"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/5aeb7ba329616378e8d7a71682eecab03d1f245c",
-            "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c",
+            "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/491263454f582df2eb805e4e8d6fc40e5370461a",
+            "reference": "491263454f582df2eb805e4e8d6fc40e5370461a",
             "shasum": ""
         },
         "require": {
-            "developercielo/webservice-1.5-php": "dev-master"
+            "developercielo/webservice-1.5-php": "dev-master#de6d2532643f9d4fba52d12bc1e646bd42355d08"
         },
-        "time": "2015-07-31 01:42:18",
+        "time": "2015-07-31 07:26:28",
         "type": "library",
         "installation-source": "source",
         "autoload": {

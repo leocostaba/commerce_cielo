@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Installation file for Commerce Cielo module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_cielo_uninstall() {
+  variable_del('commerce_cielo_merchant_id');
+  variable_del('commerce_cielo_secret_key');
+  variable_del('commerce_cielo_checkout_return_page');
+}

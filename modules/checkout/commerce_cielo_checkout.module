@@ -1,0 +1,146 @@
+<?php
+
+/**
+ * @file
+ * Implements Cielo Off-site Checkout in Drupal Commerce checkout.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_cielo_checkout_menu() {
+  $items = array();
+
+  // Processes the transaction notifications and status updates posted by
+  // Cielo.
+  $items['cielo/checkout/transaction-status-update'] = array(
+    'page callback' => 'commerce_cielo_checkout_status_update',
+    'access arguments' => array('access checkout'),
+    'delivery callback' => 'deliver_plain',
+    'file' => 'includes/commerce_cielo_checkout_status_update.inc',
+  );
+
+  $items['cielo/checkout/return-page'] = array(
+    'page callback' => 'commerce_cielo_checkout_return_page',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function commerce_cielo_checkout_commerce_payment_method_info() {
+  $payment_methods = array();
+
+  $payment_methods['cielo_checkout'] = array(
+    'base' => 'commerce_cielo_checkout',
+    'title' => t('Cielo Checkout | Off-site'),
+    'short_title' => t('Cielo Checkout'),
+    'display_title' => t('Cielo | Credit or Debit Card'),
+    'description' => t("Cielo Checkout ( Redirects to Cielo )."),
+    'terminal' => FALSE,
+    'offsite' => TRUE,
+	// We gotta first request cielo for a transation id and then redirect the
+	// customer.
+    'offsite_autoredirect' => FALSE,
+  );
+
+  return $payment_methods;
+}
+
+/**
+ * Returns the default settings for the Cielo Checkout payment method.
+ */
+function commerce_cielo_checkout_default_settings() {
+  return array(
+    'show_payment_instructions' => TRUE,
+  );
+}
+
+/**
+ * Payment method callback: settings form.
+ */
+function commerce_cielo_checkout_settings_form($settings = array()) {
+  $form = array();
+
+  // Merge default settings into the stored settings array.
+  $settings = (array) $settings + commerce_cielo_checkout_default_settings();
+
+  $form['show_payment_instructions'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show a message on the checkout form when Cielo Checkout is selected informing customers of "Pay securely without sharing your financial information via Cielo Checkout."'),
+    '#default_value' => $settings['show_payment_instructions'],
+  );
+
+  return $form;
+}
+
+/**
+ * Payment method callback: adds a message to the submission form if enabled in
+ * the payment method settings.
+ */
+function commerce_cielo_checkout_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  $form = array();
+
+  if (!empty($payment_method['settings']['show_payment_instructions'])) {
+    $form['cielo_checkout_information'] = array(
+      '#markup' => '<span class="commerce-cielo-checkout-info">' . t('(Pay securely without sharing your financial information via Cielo Checkout.)') . '</span>',
+    );
+  }
+  
+  /*dpm($payment_method);
+  dpm($pane_values);
+  dpm($checkout_pane);
+  dpm($order);
+  dpm($form);*/
+  
+  //watchdog('test', '<pre>' . print_r($payment_method, TRUE) . '</pre>');
+
+  return $form;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) {
+  // If this checkout form contains the payment method radios...
+  if (!empty($form['commerce_payment']['payment_method']['#options'])) {
+    // Loop over its options array looking for a PayPal WPS option.
+    foreach ($form['commerce_payment']['payment_method']['#options'] as $key => &$value) {
+      list($method_id, $rule_name) = explode('|', $key);
+
+      // If we find Cielo Checkout...
+      if ($method_id == 'cielo_checkout') {
+        // Prepare the replacement radio button text with icons.
+        $icons = commerce_cielo_icons();
+		$cielo = $icons['cielo'];
+		unset($icons['cielo']);
+        $value = t('!logo Debit or Credit Cards | Monthly instalments avaiable when paying with Credit Cards', array('!logo' => $cielo));
+        $value .= '<div class="commerce-cielo-icons"><span class="label">' . t('Includes:') . '</span>' . implode(' ', $icons) . '</div>';
+
+        // Add the CSS.
+        $form['commerce_payment']['payment_method']['#attached']['css'][] = drupal_get_path('module', 'commerce_cielo_checkout') . '/theme/commerce_cielo_checkout.theme.css';
+
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * Handles customer redirection back from Cielo.
+ */
+function commerce_cielo_checkout_return_page() {
+  global $user;
+
+  $destination = "user/{$user->uid}/orders";
+  if (variable_get('commerce_cielo_checkout_return_page')) {
+	$destination = variable_get('commerce_cielo_checkout_return_page');
+  }
+
+  drupal_set_message(t('Your payment via Cielo is being processed. We will keep you updated. Thank you!'));
+  drupal_goto($destination);
+}

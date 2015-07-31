@@ -1,9 +1,90 @@
 <?php
 
+use Cielo\PaymentMethod;
+
 /**
  * @file
  * Implements Cielo Payment in Drupal Commerce.
  */
 
 // Include the composer autoload script file.
-module_load_include('php', 'commerce_cielo_offsite', 'vendor/autoload');
+module_load_include('php', 'commerce_cielo', 'vendor/autoload');
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_cielo_menu() {
+  $items = array();
+
+  $items['admin/commerce/config/cielo'] = array(
+    'title' => 'Cielo',
+    'description' => 'Administer the Cielo\'s Merchant Credentials.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_cielo_admin_merchant_credentials'),
+    'access arguments' => array('administer cielo merchant credentials'),
+    'file' => 'commerce_cielo.admin.merchant.credentials.inc',
+    'weight' => 1,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function commerce_cielo_permission() {
+  return array(
+    'administer cielo merchant credentials' => array(
+      'title' => t('Administer Cielo Merchant Credentials'),
+      'description' => t('Administer cielo merchant credentials'),
+    ),
+  );
+}
+
+/**
+ * Returns an array of Cielo payment method icon img elements.
+ *
+ * @param $methods
+ *   An array of Cielo payment method names to include in the icons array; if
+ *   empty, all icons will be returned.
+ *
+ * @return
+ *   The array of themed payment method icons keyed by name: visa, mastercard,
+ *   amex, discover.
+ */
+function commerce_cielo_icons($methods = array()) {
+  $icons = array();
+
+  foreach (commerce_cielo_payment_methods() as $name => $title) {
+    if (empty($methods) || in_array($name, $methods, TRUE)) {
+      $variables = array(
+        'path' => drupal_get_path('module', 'commerce_cielo') . '/images/' . $name . '.gif',
+        'title' => $title,
+        'alt' => $title,
+        'attributes' => array(
+          'class' => array('commerce-cielo-icon'),
+        ),
+      );
+      $icons[$name] = theme('image', $variables);
+    }
+  }
+
+  return $icons;
+}
+
+/**
+ * Returns an array of Cielo payment methods.
+ */
+function commerce_cielo_payment_methods() {
+  return array(
+	PaymentMethod::VISA => t('Visa'),
+	PaymentMethod::MASTERCARD => t('Mastercard'),
+	PaymentMethod::DINERS => t('Diners Club'),
+	PaymentMethod::DISCOVER => t('Discover'),
+	PaymentMethod::ELO => t('Elo'),
+	PaymentMethod::AMEX => t('American Express'),
+	PaymentMethod::JCB => t('JCB'),
+	PaymentMethod::AURA => t('Aura'),
+    'cielo' => t('Cielo'),
+  );
+}
