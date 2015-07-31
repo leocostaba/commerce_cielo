@@ -35,5 +35,51 @@
         ],
         "description": "SDK PHP para integração com webservice 1.5 da Cielo",
         "homepage": "https://github.com/DeveloperCielo/Webservice-1.5-php"
+    },
+    {
+        "name": "drupalista-br/checkoutcielo-library",
+        "version": "dev-2.x-dev",
+        "version_normalized": "dev-2.x-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/drupalista-br/CheckoutCielo-Library.git",
+            "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/5aeb7ba329616378e8d7a71682eecab03d1f245c",
+            "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c",
+            "shasum": ""
+        },
+        "require": {
+            "developercielo/webservice-1.5-php": "dev-master"
+        },
+        "time": "2015-07-31 01:42:18",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "CieloCheckout\\": "src/Checkout"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Francisco Luz",
+                "email": "franciscoferreiraluz@yahoo.com.au",
+                "homepage": "http://lojas.nortaox.com"
+            }
+        ],
+        "description": "Biblioteca para integração ao perfil CheckoutCielo v2+ da operadora Cielo de Cartões.",
+        "homepage": "http://lojas.nortaox.com",
+        "keywords": [
+            "Cartão de Crédito",
+            "Integração",
+            "Pagamento",
+            "cielo"
+        ]
     }
 ]

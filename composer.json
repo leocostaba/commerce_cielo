@@ -14,6 +14,6 @@
     "require": {
         "developercielo/webservice-1.5-php": "dev-master",
         "drupalista-br/checkoutcielo-library": "dev-2.x-dev"
-    },
+    }
 
 }
