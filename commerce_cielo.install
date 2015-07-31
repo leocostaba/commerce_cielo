@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 /**
  * @file
  * Check if Cielo PHP Library is properly installed.
@@ -25,4 +26,19 @@ function commerce_cielo_requirements($phase) {
   }
 
   return $requirements;
+=======
+
+/**
+ * @file
+ * Installation file for Commerce Cielo module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_cielo_uninstall() {
+  variable_del('commerce_cielo_merchant_id');
+  variable_del('commerce_cielo_secret_key');
+  variable_del('commerce_cielo_checkout_return_page');
+>>>>>>> Update...
 }

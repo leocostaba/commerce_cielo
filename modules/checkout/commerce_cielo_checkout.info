@@ -1,0 +1,6 @@
+name = Cielo Checkout | Off-site
+description = Implements Cielo Off-site Checkout in Drupal Commerce checkout.
+package = Commerce (Cielo)
+dependencies[] = commerce_cielo
+dependencies[] = commerce_addressbook
+core = 7.x

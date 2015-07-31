@@ -8,14 +8,14 @@
 /**
  * Implements hook_commerce_payment_method_info().
  */
-function commerce_cielo_onsite_commerce_payment_method_info() {
+function commerce_cielo_webservice_commerce_payment_method_info() {
   $payment_methods = array();
 
-  $payment_methods['cielo_onsite'] = array(
-    'base' => 'commerce_cielo_onsite',
+  $payment_methods['cielo_webservice'] = array(
+    'base' => 'commerce_cielo_webservice',
     'title' => t('Cielo Checkout | On-site'),
     'short_title' => t('Cielo Webservice'),
-    'display_title' => t('By Credit or Debit Card.'),
+    'display_title' => t('Cielo | Credit or Debit Card'),
     'terminal' => TRUE,
     'offsite' => FALSE,
   );

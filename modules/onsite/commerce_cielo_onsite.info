@@ -1,5 +1,0 @@
-name = Commerce Cielo Webservice | On-site
-description = Implements Cielo Webservice in Drupal Commerce checkout.
-package = Commerce (Cielo)
-dependencies[] = commerce_cielo
-core = 7.x
