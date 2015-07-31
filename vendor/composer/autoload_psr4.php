@@ -6,5 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'CieloCheckout\\' => array($baseDir . '/src/Checkout'),
+    'CieloCheckout\\' => array($vendorDir . '/drupalista-br/checkoutcielo-library/src/Checkout'),
 );

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9ed9c41a1741cb6c8ec648cf21d514f3",
+    "hash": "fe98044ad1805564df226044d194023f",
     "packages": [
         {
             "name": "developercielo/webservice-1.5-php",
@@ -40,13 +40,58 @@
             "description": "SDK PHP para integração com webservice 1.5 da Cielo",
             "homepage": "https://github.com/DeveloperCielo/Webservice-1.5-php",
             "time": "2015-07-21 12:00:23"
+        },
+        {
+            "name": "drupalista-br/checkoutcielo-library",
+            "version": "dev-2.x-dev",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/drupalista-br/CheckoutCielo-Library.git",
+                "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/5aeb7ba329616378e8d7a71682eecab03d1f245c",
+                "reference": "5aeb7ba329616378e8d7a71682eecab03d1f245c",
+                "shasum": ""
+            },
+            "require": {
+                "developercielo/webservice-1.5-php": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CieloCheckout\\": "src/Checkout"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Francisco Luz",
+                    "email": "franciscoferreiraluz@yahoo.com.au",
+                    "homepage": "http://lojas.nortaox.com"
+                }
+            ],
+            "description": "Biblioteca para integração ao perfil CheckoutCielo v2+ da operadora Cielo de Cartões.",
+            "homepage": "http://lojas.nortaox.com",
+            "keywords": [
+                "Cartão de Crédito",
+                "Integração",
+                "Pagamento",
+                "cielo"
+            ],
+            "time": "2015-07-31 01:42:18"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "developercielo/webservice-1.5-php": 20
+        "developercielo/webservice-1.5-php": 20,
+        "drupalista-br/checkoutcielo-library": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
