@@ -47,12 +47,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/drupalista-br/CheckoutCielo-Library.git",
-                "reference": "491263454f582df2eb805e4e8d6fc40e5370461a"
+                "reference": "0dba712b1d95b7559bff89a1e4174b56c274144f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/491263454f582df2eb805e4e8d6fc40e5370461a",
-                "reference": "491263454f582df2eb805e4e8d6fc40e5370461a",
+                "url": "https://api.github.com/repos/drupalista-br/CheckoutCielo-Library/zipball/0dba712b1d95b7559bff89a1e4174b56c274144f",
+                "reference": "0dba712b1d95b7559bff89a1e4174b56c274144f",
                 "shasum": ""
             },
             "require": {
@@ -83,7 +83,7 @@
                 "Pagamento",
                 "cielo"
             ],
-            "time": "2015-07-31 07:26:28"
+            "time": "2015-07-31 22:30:29"
         }
     ],
     "packages-dev": [],
