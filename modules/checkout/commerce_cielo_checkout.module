@@ -197,56 +197,26 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
   $data['products'] = commerce_product_load_multiple($product_ids);
 
   try {
-	// Instantiate the cart item object and set it to an array of product itemns.
+	// Instantiate the cart items array of objects.
 	$Items = [];
 	foreach ($data['line_items'] as $line_item_id => $line_item) {
 	  $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
 	  $properties = [
 		'Name' => $data['products'][$product_id]->title,
-		//'Description' => 'Descrição do produto',
 		'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
 		'Quantity' => (int) $line_item->quantity,
 		'Type' => 'Asset',
 		'Sku' => $line_item->line_item_label,
-		//'Weight' => 200,
 	  ];
 	  $Items[] = new Item($properties);
 	}
-
-	// Instantiate cart discount object.
-	/*$properties = [
-	  'Type' => 'Percent',
-	  'Value' => 10,
-	];
-	$Discount = new Discount($properties);
-
-	// Instantiate the shipping services object.
-	$properties = [
-	  'Name' => 'Serviço de frete',
-	  'Price' => 123,
-	  'DeadLine' => 15,
-	];
-
-	$Services = [
-	  new Services($properties),
-	];*/
 
 	// Instantiate the shipping object.
 	$properties = [
 	  'Type' => $settings['shipping']['Type'],
 	  'SourceZipCode' => $settings['shipping']['SourceZipCode'],
-	  //'TargetZipCode' => '78580000',
-	  //'Address' => $Address,
-	  //'Services' => $Services,
 	];
 	$Shipping = new Shipping($properties);
-
-	/*// Instantiate the payment object.
-	$properties = [
-	  'BoletoDiscount' => 0,
-	  'DebitDiscount' => 10,
-	];
-	$Payment = new Payment($properties);*/
 
 	// Instantiate the options object.
 	$properties = [
@@ -259,11 +229,8 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
 	  'OrderNumber' => $order->order_id,
 	  'SoftDescriptor' => $settings['SoftDescriptor'],
 	  // Instantiate the cart object.
-	  //'Cart' => new Cart(['Discount' => $Discount, 'Items' => $Items]),
 	  'Cart' => new Cart(['Items' => $Items]),
 	  'Shipping' => $Shipping,
-	  //'Payment' => $Payment,
-	  //'Customer' => $Customer,
 	  'Options' => $Options,
 	];
 	$cielo_Order = new Order($properties);
