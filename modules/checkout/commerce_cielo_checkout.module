@@ -1,5 +1,19 @@
 <?php
 
+use
+  CieloCheckout\Order,
+  CieloCheckout\Item,
+  CieloCheckout\Discount,
+  CieloCheckout\Cart,
+  CieloCheckout\Address,
+  CieloCheckout\Services,
+  CieloCheckout\Shipping,
+  CieloCheckout\Payment,
+  CieloCheckout\Customer,
+  CieloCheckout\Options,
+  CieloCheckout\Transaction,
+  Cielo\Merchant;
+
 /**
  * @file
  * Implements Cielo Off-site Checkout in Drupal Commerce checkout.
@@ -15,14 +29,14 @@ function commerce_cielo_checkout_menu() {
   // Cielo.
   $items['cielo/checkout/transaction-status-update'] = array(
     'page callback' => 'commerce_cielo_checkout_status_update',
-    'access arguments' => array('access checkout'),
+    'access callback' => TRUE,
     'delivery callback' => 'deliver_plain',
     'file' => 'includes/commerce_cielo_checkout_status_update.inc',
   );
 
   $items['cielo/checkout/return-page'] = array(
     'page callback' => 'commerce_cielo_checkout_return_page',
-    'access callback' => TRUE,
+	'access arguments' => array('access checkout'),
     'type' => MENU_CALLBACK,
   );
 
@@ -57,6 +71,12 @@ function commerce_cielo_checkout_commerce_payment_method_info() {
 function commerce_cielo_checkout_default_settings() {
   return array(
     'show_payment_instructions' => TRUE,
+	'SoftDescriptor' => '',
+	'AntifraudEnabled' => FALSE,
+	'shipping' => array(
+	  'Type' => 'Free',
+	  'SourceZipCode' => '',
+	),
   );
 }
 
@@ -71,8 +91,43 @@ function commerce_cielo_checkout_settings_form($settings = array()) {
 
   $form['show_payment_instructions'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Show a message on the checkout form when Cielo Checkout is selected informing customers of "Pay securely without sharing your financial information via Cielo Checkout."'),
+    '#title' => t('Show a message on the checkout form when Cielo Checkout is selected informing customers of "You are gonna be redirected to Cielo. Your credit card details won\'t be shared with us."'),
     '#default_value' => $settings['show_payment_instructions'],
+  );
+
+  $form['AntifraudEnabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Antifraud Check'),
+    '#default_value' => $settings['AntifraudEnabled'],
+  );
+
+  $form['SoftDescriptor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Short Description'),
+	'#size' => 15,
+	'#maxlength' => 13,
+    '#default_value' => $settings['SoftDescriptor'],
+	'#description' => t('Text shown on customer\'s bill right after merchant\'s name.'),
+  );
+
+  $form['shipping'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Shipping'),
+  );
+
+  $form['shipping']['Type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+	'#options' => Shipping::get_Types(),
+    '#default_value' => $settings['shipping']['Type'],
+  );
+
+  $form['shipping']['SourceZipCode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Source Zip Code'),
+	'#size' => 15,
+    '#default_value' => $settings['shipping']['SourceZipCode'],
+	'#description' => t('The zip code of where the merchant\'s goods are stored.'),
   );
 
   return $form;
@@ -87,17 +142,9 @@ function commerce_cielo_checkout_submit_form($payment_method, $pane_values, $che
 
   if (!empty($payment_method['settings']['show_payment_instructions'])) {
     $form['cielo_checkout_information'] = array(
-      '#markup' => '<span class="commerce-cielo-checkout-info">' . t('(Pay securely without sharing your financial information via Cielo Checkout.)') . '</span>',
+      '#markup' => '<span class="commerce-cielo-checkout-info">' . t('(You are gonna be redirected to Cielo. Your credit card details won\'t be shared with us.)') . '</span>',
     );
   }
-  
-  /*dpm($payment_method);
-  dpm($pane_values);
-  dpm($checkout_pane);
-  dpm($order);
-  dpm($form);*/
-  
-  //watchdog('test', '<pre>' . print_r($payment_method, TRUE) . '</pre>');
 
   return $form;
 }
@@ -108,7 +155,7 @@ function commerce_cielo_checkout_submit_form($payment_method, $pane_values, $che
 function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) {
   // If this checkout form contains the payment method radios...
   if (!empty($form['commerce_payment']['payment_method']['#options'])) {
-    // Loop over its options array looking for a PayPal WPS option.
+    // Loop over its options array looking for a Cielo Checkout option.
     foreach ($form['commerce_payment']['payment_method']['#options'] as $key => &$value) {
       list($method_id, $rule_name) = explode('|', $key);
 
@@ -118,7 +165,7 @@ function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) 
         $icons = commerce_cielo_icons();
 		$cielo = $icons['cielo'];
 		unset($icons['cielo']);
-        $value = t('!logo Debit or Credit Cards | Monthly instalments avaiable when paying with Credit Cards', array('!logo' => $cielo));
+        $value = t('!logo Debit or Credit Cards | Monthly instalments available when paying with Credit Cards', array('!logo' => $cielo));
         $value .= '<div class="commerce-cielo-icons"><span class="label">' . t('Includes:') . '</span>' . implode(' ', $icons) . '</div>';
 
         // Add the CSS.
@@ -131,13 +178,133 @@ function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) 
 }
 
 /**
+ * Payment method callback: redirect form.
+ */
+function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $payment_method) {
+  $settings = $payment_method['settings'];
+  $line_item_ids = array();
+  $product_ids = array();
+  $data = array('order' => $order, 'payment_method' => $payment_method);
+
+  foreach ($order->commerce_line_items[LANGUAGE_NONE] as $delta => $field_column) {
+	$line_item_ids[] = $field_column['line_item_id'];
+  }
+  $data['line_items'] = commerce_line_item_load_multiple($line_item_ids);
+
+  foreach ($data['line_items'] as $line_item_id => $line_item) {
+	$product_ids[] = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+  }
+  $data['products'] = commerce_product_load_multiple($product_ids);
+
+  try {
+	// Instantiate the cart item object and set it to an array of product itemns.
+	$Items = [];
+	foreach ($data['line_items'] as $line_item_id => $line_item) {
+	  $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+	  $properties = [
+		'Name' => $data['products'][$product_id]->title,
+		//'Description' => 'Descrição do produto',
+		'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
+		'Quantity' => (int) $line_item->quantity,
+		'Type' => 'Asset',
+		'Sku' => $line_item->line_item_label,
+		//'Weight' => 200,
+	  ];
+	  $Items[] = new Item($properties);
+	}
+
+	// Instantiate cart discount object.
+	/*$properties = [
+	  'Type' => 'Percent',
+	  'Value' => 10,
+	];
+	$Discount = new Discount($properties);
+
+	// Instantiate the shipping services object.
+	$properties = [
+	  'Name' => 'Serviço de frete',
+	  'Price' => 123,
+	  'DeadLine' => 15,
+	];
+
+	$Services = [
+	  new Services($properties),
+	];*/
+
+	// Instantiate the shipping object.
+	$properties = [
+	  'Type' => $settings['shipping']['Type'],
+	  'SourceZipCode' => $settings['shipping']['SourceZipCode'],
+	  //'TargetZipCode' => '78580000',
+	  //'Address' => $Address,
+	  //'Services' => $Services,
+	];
+	$Shipping = new Shipping($properties);
+
+	/*// Instantiate the payment object.
+	$properties = [
+	  'BoletoDiscount' => 0,
+	  'DebitDiscount' => 10,
+	];
+	$Payment = new Payment($properties);*/
+
+	// Instantiate the options object.
+	$properties = [
+	  'AntifraudEnabled' => (bool) $settings['AntifraudEnabled'],
+	];
+	$Options = new Options($properties);
+
+	// Instantiate the order object.
+	$properties = [
+	  'OrderNumber' => $order->order_id,
+	  'SoftDescriptor' => $settings['SoftDescriptor'],
+	  // Instantiate the cart object.
+	  //'Cart' => new Cart(['Discount' => $Discount, 'Items' => $Items]),
+	  'Cart' => new Cart(['Items' => $Items]),
+	  'Shipping' => $Shipping,
+	  //'Payment' => $Payment,
+	  //'Customer' => $Customer,
+	  'Options' => $Options,
+	];
+	$cielo_Order = new Order($properties);
+
+	// Allow modules to alter the Order object.
+	drupal_alter('commerce_cielo_checkout_Order', $cielo_Order, $data);
+
+	// Instantiate the merchant object.
+	$Merchant = new Merchant(variable_get('commerce_cielo_merchant_id'), variable_get('commerce_cielo_secret_key'));
+
+	// Instantiate the transaction object.
+	$Transaction = new Transaction($Merchant, $cielo_Order);
+	$Transaction->request_new_transaction();
+	$Transaction->redirect_to_cielo();
+  }
+  catch(Exception $e) {
+	$msg = $e->getMessage();
+	// Alert the customer that something went wrong.
+	form_set_error('exception', $msg);
+	// Log the error.
+	watchdog('commerce_cielo_checkout', "Order {$order->order_id} | $msg", array(), WATCHDOG_ALERT);
+  }
+
+  $form = array();
+  return $form;
+}
+
+/**
  * Handles customer redirection back from Cielo.
  */
 function commerce_cielo_checkout_return_page() {
   global $user;
 
   $destination = "user/{$user->uid}/orders";
+  if (!user_is_logged_in()) {
+	// User is anonymous. We send them to front page.
+	$destination = '<front>';
+  }
+
   if (variable_get('commerce_cielo_checkout_return_page')) {
+	// Administrator has set a custom landing page.
 	$destination = variable_get('commerce_cielo_checkout_return_page');
   }
 
