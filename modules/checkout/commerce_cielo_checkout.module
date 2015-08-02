@@ -36,7 +36,7 @@ function commerce_cielo_checkout_menu() {
 
   $items['cielo/checkout/return-page'] = array(
     'page callback' => 'commerce_cielo_checkout_return_page',
-	'access arguments' => array('access checkout'),
+    'access arguments' => array('access checkout'),
     'type' => MENU_CALLBACK,
   );
 
@@ -57,8 +57,8 @@ function commerce_cielo_checkout_commerce_payment_method_info() {
     'description' => t("Cielo Checkout ( Redirects to Cielo )."),
     'terminal' => FALSE,
     'offsite' => TRUE,
-	// We gotta first request cielo for a transation id and then redirect the
-	// customer.
+    // We gotta first request cielo for a transation id and then redirect the
+    // customer.
     'offsite_autoredirect' => FALSE,
   );
 
@@ -71,12 +71,12 @@ function commerce_cielo_checkout_commerce_payment_method_info() {
 function commerce_cielo_checkout_default_settings() {
   return array(
     'show_payment_instructions' => TRUE,
-	'SoftDescriptor' => '',
-	'AntifraudEnabled' => FALSE,
-	'shipping' => array(
-	  'Type' => 'Free',
-	  'SourceZipCode' => '',
-	),
+    'SoftDescriptor' => '',
+    'AntifraudEnabled' => FALSE,
+    'shipping' => array(
+      'Type' => 'Free',
+      'SourceZipCode' => '',
+    ),
   );
 }
 
@@ -104,10 +104,10 @@ function commerce_cielo_checkout_settings_form($settings = array()) {
   $form['SoftDescriptor'] = array(
     '#type' => 'textfield',
     '#title' => t('Short Description'),
-	'#size' => 15,
-	'#maxlength' => 13,
+    '#size' => 15,
+    '#maxlength' => 13,
     '#default_value' => $settings['SoftDescriptor'],
-	'#description' => t('Text shown on customer\'s bill right after merchant\'s name.'),
+    '#description' => t('Text shown on customer\'s bill right after merchant\'s name.'),
   );
 
   $form['shipping'] = array(
@@ -118,16 +118,16 @@ function commerce_cielo_checkout_settings_form($settings = array()) {
   $form['shipping']['Type'] = array(
     '#type' => 'select',
     '#title' => t('Type'),
-	'#options' => Shipping::get_Types(),
+    '#options' => Shipping::get_Types(),
     '#default_value' => $settings['shipping']['Type'],
   );
 
   $form['shipping']['SourceZipCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Source Zip Code'),
-	'#size' => 15,
+    '#size' => 15,
     '#default_value' => $settings['shipping']['SourceZipCode'],
-	'#description' => t('The zip code of where the merchant\'s goods are stored.'),
+    '#description' => t('The zip code of where the merchant\'s goods are stored.'),
   );
 
   return $form;
@@ -163,8 +163,8 @@ function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) 
       if ($method_id == 'cielo_checkout') {
         // Prepare the replacement radio button text with icons.
         $icons = commerce_cielo_icons();
-		$cielo = $icons['cielo'];
-		unset($icons['cielo']);
+        $cielo = $icons['cielo'];
+        unset($icons['cielo']);
         $value = t('!logo Debit or Credit Cards | Monthly instalments available when paying with Credit Cards', array('!logo' => $cielo));
         $value .= '<div class="commerce-cielo-icons"><span class="label">' . t('Includes:') . '</span>' . implode(' ', $icons) . '</div>';
 
@@ -187,75 +187,83 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
   $data = array('order' => $order, 'payment_method' => $payment_method);
 
   foreach ($order->commerce_line_items[LANGUAGE_NONE] as $delta => $field_column) {
-	$line_item_ids[] = $field_column['line_item_id'];
+    $line_item_ids[] = $field_column['line_item_id'];
   }
   $data['line_items'] = commerce_line_item_load_multiple($line_item_ids);
 
   foreach ($data['line_items'] as $line_item_id => $line_item) {
-	$product_ids[] = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+    $product_ids[] = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
   }
   $data['products'] = commerce_product_load_multiple($product_ids);
 
   try {
-	// Instantiate the cart items array of objects.
-	$Items = [];
-	foreach ($data['line_items'] as $line_item_id => $line_item) {
-	  $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
-	  $properties = [
-		'Name' => $data['products'][$product_id]->title,
-		'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
-		'Quantity' => (int) $line_item->quantity,
-		'Type' => 'Asset',
-		'Sku' => $line_item->line_item_label,
-	  ];
-	  $Items[] = new Item($properties);
-	}
+    // Instantiate the cart items array of objects.
+    $Items = [];
+    foreach ($data['line_items'] as $line_item_id => $line_item) {
+      $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+      $properties = [
+      'Name' => $data['products'][$product_id]->title,
+      'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
+      'Quantity' => (int) $line_item->quantity,
+      'Type' => 'Asset',
+      'Sku' => $line_item->line_item_label,
+      ];
+      $Items[] = new Item($properties);
+    }
 
-	// Instantiate the shipping object.
-	$properties = [
-	  'Type' => $settings['shipping']['Type'],
-	  'SourceZipCode' => $settings['shipping']['SourceZipCode'],
-	];
-	$Shipping = new Shipping($properties);
+    // Instantiate the shipping object.
+    $properties = [
+      'Type' => $settings['shipping']['Type'],
+      'SourceZipCode' => $settings['shipping']['SourceZipCode'],
+    ];
+    $Shipping = new Shipping($properties);
 
-	// Instantiate the options object.
-	$properties = [
-	  'AntifraudEnabled' => (bool) $settings['AntifraudEnabled'],
-	];
-	$Options = new Options($properties);
+    // Instantiate the options object.
+    $properties = [
+      'AntifraudEnabled' => (bool) $settings['AntifraudEnabled'],
+    ];
+    $Options = new Options($properties);
 
-	// Instantiate the order object.
-	$properties = [
-	  'OrderNumber' => $order->order_id,
-	  'SoftDescriptor' => $settings['SoftDescriptor'],
-	  // Instantiate the cart object.
-	  'Cart' => new Cart(['Items' => $Items]),
-	  'Shipping' => $Shipping,
-	  'Options' => $Options,
-	];
-	$cielo_Order = new Order($properties);
+    // Instantiate the order object.
+    $properties = [
+      'OrderNumber' => $order->order_id,
+      'SoftDescriptor' => $settings['SoftDescriptor'],
+      // Instantiate the cart object.
+      'Cart' => new Cart(['Items' => $Items]),
+      'Shipping' => $Shipping,
+      'Options' => $Options,
+    ];
+    $cielo_Order = new Order($properties);
 
-	// Allow modules to alter the Order object.
-	drupal_alter('commerce_cielo_checkout_Order', $cielo_Order, $data);
+    // Allow modules to alter the Order object.
+    drupal_alter('commerce_cielo_checkout_Order', $cielo_Order, $data);
 
-	// Instantiate the merchant object.
-	$Merchant = new Merchant(variable_get('commerce_cielo_merchant_id'), variable_get('commerce_cielo_secret_key'));
+    // Instantiate the merchant object.
+    $Merchant = new Merchant(variable_get('commerce_cielo_merchant_id'), variable_get('commerce_cielo_secret_key'));
 
-	// Instantiate the transaction object.
-	$Transaction = new Transaction($Merchant, $cielo_Order);
-	$Transaction->request_new_transaction();
+    // Instantiate the transaction object.
+    $Transaction = new Transaction($Merchant, $cielo_Order);
+    // FALSE indicates that we don't want to validate the response from Cielo at
+    // this point. If the response returns an error, we first want to log it
+    // into the watchdog and after that call the response_validate method
+    // which might throw an exception.
+    $Transaction->request_new_transaction(FALSE);
 
-	if (!isset($Transaction->response->settings)) {
-	  watchdog('commerce_cielo_checkout', "<pre>" . print_r($Transaction->response, TRUE) . "</pre>");
-	}
-	$Transaction->redirect_to_cielo();
+    if (!isset($Transaction->response->settings)) {
+      watchdog('commerce_cielo_checkout', "<pre>" . print_r($Transaction->response, TRUE) . "</pre>");
+    }
+
+    $Transaction->response_validate();
+
+    commerce_order_status_update($order, COMMERCE_PAYMENT_STATUS_PENDING, FALSE, TRUE, t('Redirected to Cielo.'));
+    $Transaction->redirect_to_cielo();
   }
   catch(Exception $e) {
-	$msg = $e->getMessage();
-	// Alert the customer that something went wrong.
-	form_set_error('exception', $msg);
-	// Log the error.
-	watchdog('commerce_cielo_checkout', "Order {$order->order_id} | $msg", array(), WATCHDOG_ALERT);
+    $msg = $e->getMessage();
+    // Alert the customer that something went wrong.
+    form_set_error('exception', $msg);
+    // Log the error.
+    watchdog('commerce_cielo_checkout', "Order {$order->order_id} | $msg", array(), WATCHDOG_ALERT);
   }
 
   $form = array();
@@ -270,13 +278,13 @@ function commerce_cielo_checkout_return_page() {
 
   $destination = "user/{$user->uid}/orders";
   if (!user_is_logged_in()) {
-	// User is anonymous. We send them to front page.
-	$destination = '<front>';
+    // User is anonymous. We send them to front page.
+    $destination = '<front>';
   }
 
   if (variable_get('commerce_cielo_checkout_return_page')) {
-	// Administrator has set a custom landing page.
-	$destination = variable_get('commerce_cielo_checkout_return_page');
+    // Administrator has set a custom landing page.
+    $destination = variable_get('commerce_cielo_checkout_return_page');
   }
 
   drupal_set_message(t('Your payment via Cielo is being processed. We will keep you updated. Thank you!'));
