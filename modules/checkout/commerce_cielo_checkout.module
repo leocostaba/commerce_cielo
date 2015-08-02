@@ -244,6 +244,10 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
 	// Instantiate the transaction object.
 	$Transaction = new Transaction($Merchant, $cielo_Order);
 	$Transaction->request_new_transaction();
+
+	if (!isset($Transaction->response->settings)) {
+	  watchdog('commerce_cielo_checkout', "<pre>" . print_r($Transaction->response, TRUE) . "</pre>");
+	}
 	$Transaction->redirect_to_cielo();
   }
   catch(Exception $e) {

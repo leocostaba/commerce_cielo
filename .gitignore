@@ -1,3 +1,7 @@
 *.patch
+<<<<<<< HEAD
 old
 vendor
+=======
+vendor
+>>>>>>> Added vendor to .gitignore
