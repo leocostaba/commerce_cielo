@@ -2,6 +2,10 @@
 <<<<<<< HEAD
 old
 vendor
+<<<<<<< HEAD
 =======
 vendor
 >>>>>>> Added vendor to .gitignore
+=======
+composer.lock
+>>>>>>> Added composer.lock to .gitignore
