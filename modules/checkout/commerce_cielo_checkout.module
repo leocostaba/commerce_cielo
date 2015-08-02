@@ -152,7 +152,7 @@ function commerce_cielo_checkout_submit_form($payment_method, $pane_values, $che
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function commerce_cielo_form_commerce_checkout_form_alter(&$form, &$form_state) {
+function commerce_cielo_checkout_form_commerce_checkout_form_alter(&$form, &$form_state) {
   // If this checkout form contains the payment method radios...
   if (!empty($form['commerce_payment']['payment_method']['#options'])) {
     // Loop over its options array looking for a Cielo Checkout option.
@@ -255,7 +255,9 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
 
     $Transaction->response_validate();
 
-    commerce_order_status_update($order, COMMERCE_PAYMENT_STATUS_PENDING, FALSE, TRUE, t('Redirected to Cielo.'));
+    $status_name = "payment_cielo_" . Transaction::STATUS_CODE_IN_PROGRESS;
+    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo.'));
+
     $Transaction->redirect_to_cielo();
   }
   catch(Exception $e) {
