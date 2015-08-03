@@ -6,40 +6,26 @@
  */
 
  /**
-  * Handles the form POSTs done by Cielo to inform the merchant website
-  * about transaction notifications and status updates.
+  * Handles the transaction update POSTs done by Cielo to inform the merchant
+  * website about transaction notifications and status updates.
+  *
+  * @param String $secret_sent
+  *   The URL secret argument for making sure we are communicating with Cielo.
   */
-function commerce_cielo_checkout_status_update() {
-  // Whether or not the posting data is from Cielo.
-  $is_cielo = FALSE;
+function commerce_cielo_checkout_status_update($secret_sent) {
+  $secret_stored = variable_get('commerce_cielo_checkout_status_update_secret');
 
-  // Whether this is the transaction notification or a status update.
-  $is_status_update = empty($_POST['tid']) ? FALSE : TRUE;
+  // Check if we are communicating with Cielo.
+  if ($secret_sent == $secret_stored) {
+    $amount = substr_replace($_POST['amount'], ',', -2, 0);
 
-  $order = commerce_order_load($_POST['order_number']);
+    $order = commerce_order_load($_POST['order_number']);
 
-  switch($is_status_update) {
-    case TRUE:
-      if (!empty($order->data['cielo_tid']) && $order->data['cielo_tid'] == trim($_POST['tid'])) {
-        $is_cielo = TRUE;
-      }
-    break;
-    case FALSE:
-      if (!empty($order->data['cielo_data']['checkout_cielo_order_number']) &&
-          trim($order->data['cielo_tid']['checkout_cielo_order_number']) == trim($_POST['checkout_cielo_order_number'])) {
-        $is_cielo = TRUE;
-      }
-    break;
-  }
-
-  if ($is_cielo) {
-    $order->data['cielo_data'] = $_POST;
+    $order->data['cielo_POST'][time()] = json_encode($_POST);
     $status_name = "payment_cielo_{$_POST['payment_status']}";
 
-    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Amount: !amount', array('!amount' => $_POST['amount'])));
-    print "<status>OK</status>";
+    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Cielo Amount: R$ !amount', array('!amount' => $amount)));
   }
-  else {
-    print "<status>ERROR</status>";
-  }
+
+  print "<status>OK</status>";
 }

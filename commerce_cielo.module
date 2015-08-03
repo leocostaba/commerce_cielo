@@ -1,5 +1,6 @@
 <?php
 <<<<<<< HEAD
+<<<<<<< HEAD
 /**
  * @file
  * Implements Cielo's payment web service for use with Drupal Commerce.
@@ -500,15 +501,19 @@ function commerce_cielo_t($array) {
   return $array;
 }
 =======
+=======
+/**
+ * @file
+ * Implements Cielo Payment in Drupal Commerce.
+ */
+>>>>>>> Updated the order status update triggered by Cielo.
 
 use
   Cielo\PaymentMethod,
   CieloCheckout\Transaction;
 
-/**
- * @file
- * Implements Cielo Payment in Drupal Commerce.
- */
+// This is used only by the checkout sub-module.
+define('COMMERCE_CIELO_CHECKOUT_STATUS_UPDATE_URL', 'checkout-cielo/status');
 
 // Include the composer autoload script file.
 <<<<<<< HEAD

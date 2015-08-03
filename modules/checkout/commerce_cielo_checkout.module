@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Implements Cielo Off-site Checkout in Drupal Commerce checkout.
+ */
 
 use
   CieloCheckout\Order,
@@ -15,11 +19,6 @@ use
   Cielo\Merchant;
 
 /**
- * @file
- * Implements Cielo Off-site Checkout in Drupal Commerce checkout.
- */
-
-/**
  * Implements hook_menu().
  */
 function commerce_cielo_checkout_menu() {
@@ -27,8 +26,11 @@ function commerce_cielo_checkout_menu() {
 
   // Processes the transaction notifications and status updates posted by
   // Cielo.
-  $items['cielo/checkout/transaction-status-update'] = array(
+  $items[COMMERCE_CIELO_CHECKOUT_STATUS_UPDATE_URL . '/%'] = array(
     'page callback' => 'commerce_cielo_checkout_status_update',
+    // The hashed secret for making sure the transaction notification or the
+    // status update post comes from Cielo.
+    'page arguments' => array(2),
     'access callback' => TRUE,
     'delivery callback' => 'deliver_plain',
     'file' => 'includes/commerce_cielo_checkout_status_update.inc',
@@ -257,8 +259,8 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
     $Transaction->response_validate();
 
     $status_name = "payment_cielo_" . Transaction::STATUS_CODE_IN_PROGRESS;
-    $order->data['cielo_tid'] = trim($Transaction->get_response_tid());
-    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo | TID: !tid.', array('!tid' => $order->data['cielo_tid'])));
+    $order->data['cielo_Order'] = json_encode($Transaction->response);
+    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo.'));
 
     $Transaction->redirect_to_cielo();
   }
