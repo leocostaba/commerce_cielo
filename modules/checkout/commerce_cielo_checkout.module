@@ -250,13 +250,15 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
     $Transaction->request_new_transaction(FALSE);
 
     if (!isset($Transaction->response->settings)) {
+      // Very likely things didn't go well.
       watchdog('commerce_cielo_checkout', "<pre>" . print_r($Transaction->response, TRUE) . "</pre>");
     }
 
     $Transaction->response_validate();
 
     $status_name = "payment_cielo_" . Transaction::STATUS_CODE_IN_PROGRESS;
-    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo.'));
+    $order->data['cielo_tid'] = trim($Transaction->get_response_tid());
+    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo | TID: !tid.', array('!tid' => $order->data['cielo_tid'])));
 
     $Transaction->redirect_to_cielo();
   }
