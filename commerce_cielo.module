@@ -1,13 +1,15 @@
 <?php
+/**
+ * @file
+ * Implements Cielo Payment in Drupal Commerce.
+ */
 
 use
   Cielo\PaymentMethod,
   CieloCheckout\Transaction;
 
-/**
- * @file
- * Implements Cielo Payment in Drupal Commerce.
- */
+// This is used only by the checkout sub-module.
+define('COMMERCE_CIELO_CHECKOUT_STATUS_UPDATE_URL', 'checkout-cielo/status');
 
 // Include the composer autoload script file.
 module_load_include('php', 'commerce_cielo', 'vendor/autoload');
