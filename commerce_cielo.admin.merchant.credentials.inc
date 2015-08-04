@@ -35,13 +35,14 @@ function commerce_cielo_admin_merchant_credentials() {
   $form['commerce_cielo_checkout'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cielo Checkout Mode'),
+    '#description' => t("Copy <code>$base_url/cielo/checkout/return-page</code> and paste it into 'URL de Retorno' field at Cielo's Backoffice."),
   );
 
   $form['commerce_cielo_checkout']['commerce_cielo_checkout_return_page'] = array(
     '#type' => 'textfield',
     '#title' => t('Redirect Back Landing Page'),
     '#default_value' => variable_get('commerce_cielo_checkout_return_page', ''),
-    '#description' => t('By default customers are redirected back to user/UID/orders.'),
+    '#description' => t('Leave blank for redirecting to user/UID/orders.'),
   );
 
   $secret = variable_get('commerce_cielo_checkout_status_update_secret', '');
