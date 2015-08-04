@@ -57,7 +57,6 @@ function commerce_cielo_checkout_commerce_payment_method_info() {
     'short_title' => t('Cielo Checkout'),
     'display_title' => t('Cielo | Credit or Debit Card'),
     'description' => t("Cielo Checkout ( Redirects to Cielo )."),
-    'terminal' => FALSE,
     'offsite' => TRUE,
     // We gotta first request cielo for a transation id and then redirect the
     // customer.
