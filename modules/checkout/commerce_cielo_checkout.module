@@ -1,0 +1,297 @@
+<?php
+/**
+ * @file
+ * Implements Cielo Off-site Checkout in Drupal Commerce checkout.
+ */
+
+use
+  CieloCheckout\Order,
+  CieloCheckout\Item,
+  CieloCheckout\Discount,
+  CieloCheckout\Cart,
+  CieloCheckout\Address,
+  CieloCheckout\Services,
+  CieloCheckout\Shipping,
+  CieloCheckout\Payment,
+  CieloCheckout\Customer,
+  CieloCheckout\Options,
+  CieloCheckout\Transaction,
+  Cielo\Merchant;
+
+/**
+ * Implements hook_menu().
+ */
+function commerce_cielo_checkout_menu() {
+  $items = array();
+
+  // Processes the transaction notifications and status updates posted by
+  // Cielo.
+  $items[COMMERCE_CIELO_CHECKOUT_STATUS_UPDATE_URL . '/%'] = array(
+    'page callback' => 'commerce_cielo_checkout_status_update',
+    // The hashed secret for making sure the transaction notification or the
+    // status update post comes from Cielo.
+    'page arguments' => array(2),
+    'access callback' => TRUE,
+    'delivery callback' => 'commerce_cielo_checkout_status_update_deliver_plain',
+    'file' => 'includes/commerce_cielo_checkout_status_update.inc',
+  );
+
+  $items['cielo/checkout/return-page'] = array(
+    'page callback' => 'commerce_cielo_checkout_return_page',
+    'access arguments' => array('access checkout'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_commerce_payment_method_info().
+ */
+function commerce_cielo_checkout_commerce_payment_method_info() {
+  $payment_methods = array();
+
+  $payment_methods['cielo_checkout'] = array(
+    'base' => 'commerce_cielo_checkout',
+    'title' => t('Cielo Checkout | Off-site'),
+    'short_title' => t('Cielo Checkout'),
+    'display_title' => t('Cielo | Credit or Debit Card'),
+    'description' => t("Cielo Checkout ( Redirects to Cielo )."),
+    'offsite' => TRUE,
+    // We gotta first request cielo for a transation id and then redirect the
+    // customer.
+    'offsite_autoredirect' => FALSE,
+  );
+
+  return $payment_methods;
+}
+
+/**
+ * Returns the default settings for the Cielo Checkout payment method.
+ */
+function commerce_cielo_checkout_default_settings() {
+  return array(
+    'show_payment_instructions' => TRUE,
+    'SoftDescriptor' => '',
+    'AntifraudEnabled' => FALSE,
+    'shipping' => array(
+      'Type' => 'Free',
+      'SourceZipCode' => '',
+    ),
+  );
+}
+
+/**
+ * Payment method callback: settings form.
+ */
+function commerce_cielo_checkout_settings_form($settings = array()) {
+  $form = array();
+
+  // Merge default settings into the stored settings array.
+  $settings = (array) $settings + commerce_cielo_checkout_default_settings();
+
+  $form['show_payment_instructions'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show a message on the checkout form when Cielo Checkout is selected informing customers of "You are gonna be redirected to Cielo. Your credit card details won\'t be shared with us."'),
+    '#default_value' => $settings['show_payment_instructions'],
+  );
+
+  $form['AntifraudEnabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Antifraud Check'),
+    '#default_value' => $settings['AntifraudEnabled'],
+  );
+
+  $form['SoftDescriptor'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Short Description'),
+    '#size' => 15,
+    '#maxlength' => 13,
+    '#default_value' => $settings['SoftDescriptor'],
+    '#description' => t('Text shown on customer\'s bill right after merchant\'s name.'),
+  );
+
+  $form['shipping'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Shipping'),
+  );
+
+  $form['shipping']['Type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#options' => Shipping::get_Types(),
+    '#default_value' => $settings['shipping']['Type'],
+  );
+
+  $form['shipping']['SourceZipCode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Source Zip Code'),
+    '#size' => 15,
+    '#default_value' => $settings['shipping']['SourceZipCode'],
+    '#description' => t('The zip code of where the merchant\'s goods are stored.'),
+  );
+
+  return $form;
+}
+
+/**
+ * Payment method callback: adds a message to the submission form if enabled in
+ * the payment method settings.
+ */
+function commerce_cielo_checkout_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  $form = array();
+
+  if (!empty($payment_method['settings']['show_payment_instructions'])) {
+    $form['cielo_checkout_information'] = array(
+      '#markup' => '<span class="commerce-cielo-checkout-info">' . t('(You are gonna be redirected to Cielo. Your credit card details won\'t be shared with us.)') . '</span>',
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_cielo_checkout_form_commerce_checkout_form_alter(&$form, &$form_state) {
+  // If this checkout form contains the payment method radios...
+  if (!empty($form['commerce_payment']['payment_method']['#options'])) {
+    // Loop over its options array looking for a Cielo Checkout option.
+    foreach ($form['commerce_payment']['payment_method']['#options'] as $key => &$value) {
+      list($method_id, $rule_name) = explode('|', $key);
+
+      // If we find Cielo Checkout...
+      if ($method_id == 'cielo_checkout') {
+        // Prepare the replacement radio button text with icons.
+        $icons = commerce_cielo_icons();
+        $cielo = $icons['cielo'];
+        unset($icons['cielo']);
+        $value = t('!logo Debit or Credit Cards | Monthly instalments available when paying with Credit Cards', array('!logo' => $cielo));
+        $value .= '<div class="commerce-cielo-icons"><span class="label">' . t('Includes:') . '</span>' . implode(' ', $icons) . '</div>';
+
+        // Add the CSS.
+        $form['commerce_payment']['payment_method']['#attached']['css'][] = drupal_get_path('module', 'commerce_cielo_checkout') . '/theme/commerce_cielo_checkout.theme.css';
+
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * Payment method callback: redirect form.
+ */
+function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $payment_method) {
+  $settings = $payment_method['settings'];
+  $line_item_ids = array();
+  $product_ids = array();
+  $data = array('order' => $order, 'payment_method' => $payment_method);
+
+  foreach ($order->commerce_line_items[LANGUAGE_NONE] as $delta => $field_column) {
+    $line_item_ids[] = $field_column['line_item_id'];
+  }
+  $data['line_items'] = commerce_line_item_load_multiple($line_item_ids);
+
+  foreach ($data['line_items'] as $line_item_id => $line_item) {
+    $product_ids[] = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+  }
+  $data['products'] = commerce_product_load_multiple($product_ids);
+
+  try {
+    // Instantiate the cart items array of objects.
+    $Items = [];
+    foreach ($data['line_items'] as $line_item_id => $line_item) {
+      $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+      $properties = [
+      'Name' => $data['products'][$product_id]->title,
+      'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
+      'Quantity' => (int) $line_item->quantity,
+      'Type' => 'Asset',
+      'Sku' => $line_item->line_item_label,
+      ];
+      $Items[] = new Item($properties);
+    }
+
+    // Instantiate the shipping object.
+    $properties = [
+      'Type' => $settings['shipping']['Type'],
+      'SourceZipCode' => $settings['shipping']['SourceZipCode'],
+    ];
+    $Shipping = new Shipping($properties);
+
+    // Instantiate the options object.
+    $properties = [
+      'AntifraudEnabled' => (bool) $settings['AntifraudEnabled'],
+    ];
+    $Options = new Options($properties);
+
+    // Instantiate the order object.
+    $properties = [
+      'OrderNumber' => $order->order_id,
+      'SoftDescriptor' => $settings['SoftDescriptor'],
+      // Instantiate the cart object.
+      'Cart' => new Cart(['Items' => $Items]),
+      'Shipping' => $Shipping,
+      'Options' => $Options,
+    ];
+    $cielo_Order = new Order($properties);
+
+    // Allow modules to alter the Order object.
+    drupal_alter('commerce_cielo_checkout_Order', $cielo_Order, $data);
+
+    // Instantiate the merchant object.
+    $Merchant = new Merchant(variable_get('commerce_cielo_merchant_id'), variable_get('commerce_cielo_secret_key'));
+
+    // Instantiate the transaction object.
+    $Transaction = new Transaction($Merchant, $cielo_Order);
+    // FALSE indicates that we don't want to validate the response from Cielo at
+    // this point. If the response returns an error, we first want to log it
+    // into the watchdog and after that call the response_validate method
+    // which might throw an exception.
+    $Transaction->request_new_transaction(FALSE);
+
+    if (!isset($Transaction->response->settings)) {
+      // Very likely things didn't go well.
+      watchdog('commerce_cielo_checkout', "<pre>" . print_r($Transaction->response, TRUE) . "</pre>");
+    }
+
+    $Transaction->response_validate();
+
+    $status_name = "payment_cielo_" . Transaction::STATUS_CODE_IN_PROGRESS;
+    $order->data['cielo_Order'] = json_encode($Transaction->response);
+    commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo.'));
+
+    $Transaction->redirect_to_cielo();
+  }
+  catch(Exception $e) {
+    $msg = $e->getMessage();
+    // Alert the customer that something went wrong.
+    form_set_error('exception', $msg);
+    // Log the error.
+    watchdog('commerce_cielo_checkout', "Order {$order->order_id} | $msg", array(), WATCHDOG_ALERT);
+  }
+
+  $form = array();
+  return $form;
+}
+
+/**
+ * Handles customer redirection back from Cielo.
+ */
+function commerce_cielo_checkout_return_page() {
+  global $user;
+
+  $destination = "user/{$user->uid}/orders";
+  if (!user_is_logged_in()) {
+    // User is anonymous. We send them to front page.
+    $destination = '<front>';
+  }
+
+  if (variable_get('commerce_cielo_checkout_return_page')) {
+    // Administrator has set a custom landing page.
+    $destination = variable_get('commerce_cielo_checkout_return_page');
+  }
+
+  drupal_set_message(t('Your payment via Cielo is being processed. We will keep you updated. Thank you!'));
+  drupal_goto($destination);
+}
