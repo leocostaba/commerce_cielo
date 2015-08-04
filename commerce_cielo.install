@@ -1,32 +1,4 @@
 <?php
-<<<<<<< HEAD
-/**
- * @file
- * Check if Cielo PHP Library is properly installed.
- */
-
-/**
- * Implements hook_requirements().
- */
-function commerce_cielo_requirements($phase) {
-  $requirements = array();
-
-  $t = get_t();
-
-  $has_curl = function_exists('curl_init');
-
-  $requirements['curl'] = array(
-    'title' => $t('cURL'),
-    'value' => $has_curl ? $t('Enabled') : $t('Not found'),
-  );
-
-  if (!$has_curl) {
-    $requirements['curl']['severity'] = REQUIREMENT_ERROR;
-    $requirements['curl']['description'] = $t('The Commerce Cielo module could not be installed because the PHP <a href="@curl_url">cURL</a> library is not available.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
-  }
-
-  return $requirements;
-=======
 
 /**
  * @file
@@ -40,12 +12,8 @@ function commerce_cielo_uninstall() {
   variable_del('commerce_cielo_merchant_id');
   variable_del('commerce_cielo_secret_key');
   variable_del('commerce_cielo_checkout_return_page');
-<<<<<<< HEAD
->>>>>>> Update...
-=======
 
   variable_del('commerce_cielo_checkout_status_update_url');
   variable_del('commerce_cielo_checkout_status_update_secret');
 
->>>>>>> Updated the order status update triggered by Cielo.
 }
