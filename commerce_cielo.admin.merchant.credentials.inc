@@ -35,7 +35,7 @@ function commerce_cielo_admin_merchant_credentials() {
   $form['commerce_cielo_checkout'] = array(
     '#type' => 'fieldset',
     '#title' => t('Cielo Checkout Mode'),
-    '#description' => t("Copy <code>$base_url/cielo/checkout/return-page</code> and paste it into 'URL de Retorno' field at Cielo's Backoffice."),
+    '#description' => t("Copy !url and paste it into 'URL de Retorno' field at Cielo's Backoffice.", array('!url' => "<code>$base_url/cielo/checkout/return-page</code>")),
   );
 
   $form['commerce_cielo_checkout']['commerce_cielo_checkout_return_page'] = array(
