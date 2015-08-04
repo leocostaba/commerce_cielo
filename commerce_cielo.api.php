@@ -37,8 +37,10 @@ function hook_commerce_cielo_checkout_Order_alter(&$cielo_Order, $data) {
     'City' => $address['locality'],
     'State' => $address['state'],
   ];
-  $cielo_Order->Shipping->Address = new Address($properties);
-  $cielo_Order->Shipping->TargetZipCode = $address['postal_code'];
+  $cielo_Order->Shipping->set_properties([
+    'Address' => new Address($properties),
+    'TargetZipCode' => $address['postal_code'],
+  ]);
 
   // Make sure phone has only numbers.
   $phone = preg_replace('/[^0-9]+/', '', $profile->field_celular[LANGUAGE_NONE][0]['value']);
@@ -54,5 +56,5 @@ function hook_commerce_cielo_checkout_Order_alter(&$cielo_Order, $data) {
     'Email' => $user->mail,
     'Phone' => $phone,
   ];
-  $cielo_Order->Customer = new Customer($properties);
+  $cielo_Order->set_properties(['Customer' => new Customer($properties)]);
 }
