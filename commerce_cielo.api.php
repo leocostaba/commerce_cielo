@@ -11,9 +11,8 @@ use
   CieloCheckout\Customer;
 
 /**
- * Implements hook_commerce_cielo_checkout_Order_alter().
- *
- * Adds buyer and shipping details into the cielo order.
+ * This example adds buyer and shipping details into the cielo order.
+ * You can modify any aspect of the Cielo order before it gets sent to Cielo.
  *
  * @param Object $cielo_Order
  *   The order object which will be sent to Cielo.
