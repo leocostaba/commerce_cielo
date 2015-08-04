@@ -257,7 +257,7 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
 
     $Transaction->response_validate();
 
-    $status_name = "payment_cielo_" . Transaction::STATUS_CODE_IN_PROGRESS;
+    $status_name = "payment_cielo_" . Transaction::STATUS_CODE_PENDING;
     $order->data['cielo_Order'] = json_encode($Transaction->response);
     commerce_order_status_update($order, $status_name, FALSE, TRUE, t('Redirected to Cielo.'));
 
