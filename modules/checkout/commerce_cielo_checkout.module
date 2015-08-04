@@ -32,7 +32,7 @@ function commerce_cielo_checkout_menu() {
     // status update post comes from Cielo.
     'page arguments' => array(2),
     'access callback' => TRUE,
-    'delivery callback' => 'deliver_plain',
+    'delivery callback' => 'commerce_cielo_checkout_status_update_deliver_plain',
     'file' => 'includes/commerce_cielo_checkout_status_update.inc',
   );
 
