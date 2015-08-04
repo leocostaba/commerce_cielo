@@ -28,7 +28,6 @@ function hook_commerce_cielo_checkout_Order_alter(&$cielo_Order, $data) {
   $profile_id = $data['order']->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'];
   $profile = commerce_customer_profile_load($profile_id);
   $address = $profile->commerce_customer_address[LANGUAGE_NONE][0];
-  $city = _nortaox_user_cities()['current_selection'];
   
   // Instantiate the shipping address object.
   $properties = [
@@ -36,8 +35,8 @@ function hook_commerce_cielo_checkout_Order_alter(&$cielo_Order, $data) {
     'Number' => 's/n',
     'Complement' => $address['premise'],
     'District' => $address['dependent_locality'],
-    'City' => $city['city_name'],
-    'State' => $city['uf'],
+    'City' => $address['locality'],
+    'State' => $address['state'],
   ];
   $cielo_Order->Shipping->Address = new Address($properties);
   $cielo_Order->Shipping->TargetZipCode = $address['postal_code'];
