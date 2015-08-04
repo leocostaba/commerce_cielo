@@ -221,11 +221,11 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
     foreach ($data['line_items'] as $line_item_id => $line_item) {
       $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
       $properties = [
-      'Name' => $data['products'][$product_id]->title,
-      'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
-      'Quantity' => (int) $line_item->quantity,
-      'Type' => 'Asset',
-      'Sku' => $line_item->line_item_label,
+        'Name' => $data['products'][$product_id]->title,
+        'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
+        'Quantity' => (int) $line_item->quantity,
+        'Type' => 'Asset',
+        'Sku' => $line_item->line_item_label,
       ];
       $Items[] = new Item($properties);
     }
