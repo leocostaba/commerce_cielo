@@ -4,11 +4,11 @@
   * `drush dl commerce_cielo`
   * `composer install`
   * Este módulo acompanha 2 sub-módulos, são eles:
-   * **commerce_cielo_checkout**:
-     * `drush en -y commerce_cielo_checkout`
-   * **commerce_cielo_webservice**
-     * **ATENÇÃO:** NÃO ESTÁ PRONTO PARA SER USADO
-     * `drush en -y commerce_cielo_webservice`
+     * **commerce_cielo_checkout**:
+       * `drush en -y commerce_cielo_checkout`
+     * **commerce_cielo_webservice**
+       * **ATENÇÃO:** NÃO ESTÁ PRONTO PARA SER USADO
+       * `drush en -y commerce_cielo_webservice`
 * Acesse `admin/commerce/config/cielo`, siga as instruções, informe os dados necessários e salve o formulário.
 
 #Utilização
