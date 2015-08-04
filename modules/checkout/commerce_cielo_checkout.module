@@ -67,6 +67,24 @@ function commerce_cielo_checkout_commerce_payment_method_info() {
 }
 
 /**
+ * Implements hook_commerce_order_status_info().
+ */
+function commerce_cielo_checkout_commerce_order_status_info() {
+  $order_statuses = array();
+
+  foreach(Transaction::get_response_statuses() as $status_code => $status_name) {
+    $status_machine_name = "payment_cielo_{$status_code}";
+    $order_statuses[$status_machine_name] = array(
+      'name' => $status_machine_name,
+      'title' => t('Cielo: !payment_cielo_status_name', array('!payment_cielo_status_name' => $status_name)),
+      'state' => 'payment_cielo',
+    );
+  }
+
+  return $order_statuses;
+}
+
+/**
  * Returns the default settings for the Cielo Checkout payment method.
  */
 function commerce_cielo_checkout_default_settings() {

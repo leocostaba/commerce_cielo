@@ -4,9 +4,7 @@
  * Implements Cielo Payment in Drupal Commerce.
  */
 
-use
-  Cielo\PaymentMethod,
-  CieloCheckout\Transaction;
+use Cielo\PaymentMethod;
 
 // This is used only by the checkout sub-module.
 define('COMMERCE_CIELO_CHECKOUT_STATUS_UPDATE_URL', 'checkout-cielo/status');
@@ -91,24 +89,6 @@ function commerce_cielo_commerce_order_state_info() {
   );
 
   return $order_states;
-}
-
-/**
- * Implements hook_commerce_order_status_info().
- */
-function commerce_cielo_commerce_order_status_info() {
-  $order_statuses = array();
-
-  foreach(Transaction::get_response_statuses() as $status_code => $status_name) {
-    $status_machine_name = "payment_cielo_{$status_code}";
-    $order_statuses[$status_machine_name] = array(
-      'name' => $status_machine_name,
-      'title' => t('Cielo: !payment_cielo_status_name', array('!payment_cielo_status_name' => $status_name)),
-      'state' => 'payment_cielo',
-    );
-  }
-
-  return $order_statuses;
 }
 
 /**
