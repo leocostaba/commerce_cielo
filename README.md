@@ -22,3 +22,6 @@
   * **NÃO ESTÁ PRONTO PARA SER USADO**
   * Procuro interessado em ser co-mantenedor
   * [Clique aqui](https://developercielo.github.io/Webservice-1.5) para ver o manual de integração
+
+* [Clique aqui](https://github.com/drupalista-br/CheckoutCielo-Library/blob/2.x-dev/card_numbers_for_testing.txt)
+para ver lista com dados de cartões para serem usados em testes.
