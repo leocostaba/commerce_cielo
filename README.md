@@ -2,6 +2,7 @@
 * Via Drush
   * `cd sites/SEUDOMINIO`
   * `drush dl commerce_cielo`
+  * `cd modules/commerce_cielo`
   * `composer install`
 
   * Este módulo acompanha 2 sub-módulos, são eles:
