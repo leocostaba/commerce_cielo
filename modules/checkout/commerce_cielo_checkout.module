@@ -189,7 +189,6 @@ function commerce_cielo_checkout_form_commerce_checkout_form_alter(&$form, &$for
 
         // Add the CSS.
         $form['commerce_payment']['payment_method']['#attached']['css'][] = drupal_get_path('module', 'commerce_cielo_checkout') . '/theme/commerce_cielo_checkout.theme.css';
-
         break;
       }
     }
@@ -203,33 +202,44 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
   $settings = $payment_method['settings'];
   $line_item_ids = array();
   $product_ids = array();
+  $discount = 0;
   $data = array('order' => $order, 'payment_method' => $payment_method);
 
-  foreach ($order->commerce_line_items[LANGUAGE_NONE] as $delta => $field_column) {
+  foreach ($order->commerce_line_items["und"] as $delta => $field_column) {
     $line_item_ids[] = $field_column['line_item_id'];
   }
   $data['line_items'] = commerce_line_item_load_multiple($line_item_ids);
-
   foreach ($data['line_items'] as $line_item_id => $line_item) {
-    $product_ids[] = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
+    
+    if(isset($line_item->commerce_product)){
+         $product_ids[] = $line_item->commerce_product["und"][0]['product_id'];
+    }
+    
+    if($line_item->type == "commerce_discount"){
+      $discount += $line_item->commerce_total["und"][0]['amount'];
+    }
+       
   }
+    
   $data['products'] = commerce_product_load_multiple($product_ids);
 
   try {
     // Instantiate the cart items array of objects.
     $Items = [];
     foreach ($data['line_items'] as $line_item_id => $line_item) {
-      $product_id = $line_item->commerce_product[LANGUAGE_NONE][0]['product_id'];
-      $properties = [
-        'Name' => $data['products'][$product_id]->title,
-        'UnitPrice' => (int) $line_item->commerce_unit_price[LANGUAGE_NONE][0]['amount'],
-        'Quantity' => (int) $line_item->quantity,
-        'Type' => 'Asset',
-        'Sku' => $line_item->line_item_label,
-      ];
-      $Items[] = new Item($properties);
+        if(isset($line_item->commerce_product)){
+          $product_id = $line_item->commerce_product["und"][0]['product_id'];
+          $properties = [
+            'Name' => $data['products'][$product_id]->title,
+            'UnitPrice' => (int) $line_item->commerce_unit_price["und"][0]['amount'],
+            'Quantity' => (int) $line_item->quantity,
+            'Type' => 'Asset',
+            'Sku' => $line_item->line_item_label,
+          ];
+          $Items[] = new Item($properties);
+        }
     }
-
+    
     // Instantiate the shipping object.
     $properties = [
       'Type' => $settings['shipping']['Type'],
@@ -253,13 +263,70 @@ function commerce_cielo_checkout_redirect_form($form, &$form_state, $order, $pay
       'Options' => $Options,
     ];
     $cielo_Order = new Order($properties);
+    
+    $addressToShip = db_select('field_data_commerce_customer_address', 'address')
+      ->fields('address')
+      ->condition('entity_id', $order->commerce_customer_shipping["und"][0])
+      ->execute()
+      ->fetchAll();
 
+    $properties = [
+      'Street' => $addressToShip[0]->commerce_customer_address_thoroughfare,
+      'Number' => 's/n',
+      'Complement' => $addressToShip[0]->commerce_customer_address_premise,
+      'District' => $addressToShip[0]->commerce_customer_address_dependent_locality,
+      'City' => $addressToShip[0]->commerce_customer_address_locality,
+      'State' => $addressToShip[0]->commerce_customer_address_administrative_area,
+    ];
+    
+    
+    if($order->commerce_order_total["und"]["0"]["data"]["components"][1]["name"] == "shipping"){
+      $services_list = [
+        'Name' => 'Custo de envio',
+        'Price' => $order->commerce_order_total["und"]["0"]["data"]["components"][1]["price"]["amount"],
+        'DeadLine' => 15,
+      ];
+    }
+    else{
+      $services_list = [
+        'Name' => 'Custo de envio',
+        'Price' => $order->commerce_order_total["und"]["0"]["data"]["components"][2]["price"]["amount"],
+        'DeadLine' => 15,
+      ];
+    }
+
+  
+    $ship_address = new Address($properties);
+    $services = new Services($services_list);
+    
+    if($discount != 0){
+      $discount_list = [
+        'Type' => 'Amount',
+        'Value' => abs($discount),
+      ];
+    }
+    
+    $try_descount = new Discount($discount_list);
+    
+    
+    $cielo_Order->Shipping->set_properties([
+      'Address' => $ship_address,
+      'TargetZipCode' => $addressToShip[0]->commerce_customer_address_postal_code,
+      'Services' => $services,
+      
+    ]);
+    
+    $cielo_Order->set_properties(['Discount' => $try_descount]);
+  
+    
+  
+      
     // Allow modules to alter the Order object.
     drupal_alter('commerce_cielo_checkout_Order', $cielo_Order, $data);
 
     // Instantiate the merchant object.
-    $Merchant = new Merchant(variable_get('commerce_cielo_merchant_id'), variable_get('commerce_cielo_secret_key'));
-
+    $Merchant = new Merchant("", "");
+    
     // Instantiate the transaction object.
     $Transaction = new Transaction($Merchant, $cielo_Order);
     // FALSE indicates that we don't want to validate the response from Cielo at
